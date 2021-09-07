@@ -12,5 +12,11 @@ namespace Domain
         public List<Game> PublishedGames { get; set; }
         public List<Game> PurchasedGames { get; set; }
 
+        public User()
+        {
+            this.PublishedGames = new List<Game>();
+            this.PurchasedGames = new List<Game>();
+        }
+
     }
 }

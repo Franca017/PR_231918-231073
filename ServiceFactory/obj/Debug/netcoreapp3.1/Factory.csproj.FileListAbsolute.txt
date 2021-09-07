@@ -1,0 +1,6 @@
+C:\Users\franc\Desktop\PR_231918-231073\ServiceFactory\bin\Debug\netcoreapp3.1\Domain.dll
+C:\Users\franc\Desktop\PR_231918-231073\ServiceFactory\bin\Debug\netcoreapp3.1\Repository.dll
+C:\Users\franc\Desktop\PR_231918-231073\ServiceFactory\bin\Debug\netcoreapp3.1\RepositoryInterface.dll
+C:\Users\franc\Desktop\PR_231918-231073\ServiceFactory\obj\Debug\netcoreapp3.1\Factory.csprojAssemblyReference.cache
+C:\Users\franc\Desktop\PR_231918-231073\ServiceFactory\obj\Debug\netcoreapp3.1\Factory.AssemblyInfoInputs.cache
+C:\Users\franc\Desktop\PR_231918-231073\ServiceFactory\obj\Debug\netcoreapp3.1\Factory.AssemblyInfo.cs

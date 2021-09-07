@@ -1585,22 +1585,6 @@
           "bin/placeholder/Domain.dll": {}
         }
       },
-      "Factory/1.0.0": {
-        "type": "project",
-        "framework": ".NETCoreApp,Version=v3.1",
-        "dependencies": {
-          "Microsoft.EntityFrameworkCore.SqlServer": "5.0.9",
-          "Microsoft.Extensions.DependencyInjection.Abstractions": "5.0.0",
-          "Repository": "1.0.0",
-          "RepositoryInterface": "1.0.0"
-        },
-        "compile": {
-          "bin/placeholder/Factory.dll": {}
-        },
-        "runtime": {
-          "bin/placeholder/Factory.dll": {}
-        }
-      },
       "Repository/1.0.0": {
         "type": "project",
         "framework": ".NETCoreApp,Version=v3.1",
@@ -5995,11 +5979,6 @@
       "path": "../Domain/Domain.csproj",
       "msbuildProject": "../Domain/Domain.csproj"
     },
-    "Factory/1.0.0": {
-      "type": "project",
-      "path": "../ServiceFactory/Factory.csproj",
-      "msbuildProject": "../ServiceFactory/Factory.csproj"
-    },
     "Repository/1.0.0": {
       "type": "project",
       "path": "../Repository/Repository.csproj",
@@ -6013,8 +5992,10 @@
   },
   "projectFileDependencyGroups": {
     ".NETCoreApp,Version=v3.1": [
-      "Factory >= 1.0.0",
-      "Microsoft.EntityFrameworkCore >= 5.0.9"
+      "Microsoft.EntityFrameworkCore.SqlServer >= 5.0.9",
+      "Microsoft.Extensions.DependencyInjection.Abstractions >= 5.0.0",
+      "Repository >= 1.0.0",
+      "RepositoryInterface >= 1.0.0"
     ]
   },
   "packageFolders": {
@@ -6023,11 +6004,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\franc\\Desktop\\PR_231918-231073\\GameStore\\GameStore.csproj",
-      "projectName": "GameStore",
-      "projectPath": "C:\\Users\\franc\\Desktop\\PR_231918-231073\\GameStore\\GameStore.csproj",
+      "projectUniqueName": "C:\\Users\\franc\\Desktop\\PR_231918-231073\\ServiceFactory\\Factory.csproj",
+      "projectName": "Factory",
+      "projectPath": "C:\\Users\\franc\\Desktop\\PR_231918-231073\\ServiceFactory\\Factory.csproj",
       "packagesPath": "C:\\Users\\franc\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\franc\\Desktop\\PR_231918-231073\\GameStore\\obj\\",
+      "outputPath": "C:\\Users\\franc\\Desktop\\PR_231918-231073\\ServiceFactory\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "C:\\Users\\franc\\AppData\\Roaming\\NuGet\\NuGet.Config",
@@ -6044,8 +6025,11 @@
         "netcoreapp3.1": {
           "targetAlias": "netcoreapp3.1",
           "projectReferences": {
-            "C:\\Users\\franc\\Desktop\\PR_231918-231073\\ServiceFactory\\Factory.csproj": {
-              "projectPath": "C:\\Users\\franc\\Desktop\\PR_231918-231073\\ServiceFactory\\Factory.csproj"
+            "C:\\Users\\franc\\Desktop\\PR_231918-231073\\RepositoryInterface\\RepositoryInterface.csproj": {
+              "projectPath": "C:\\Users\\franc\\Desktop\\PR_231918-231073\\RepositoryInterface\\RepositoryInterface.csproj"
+            },
+            "C:\\Users\\franc\\Desktop\\PR_231918-231073\\Repository\\Repository.csproj": {
+              "projectPath": "C:\\Users\\franc\\Desktop\\PR_231918-231073\\Repository\\Repository.csproj"
             }
           }
         }
@@ -6060,9 +6044,13 @@
       "netcoreapp3.1": {
         "targetAlias": "netcoreapp3.1",
         "dependencies": {
-          "Microsoft.EntityFrameworkCore": {
+          "Microsoft.EntityFrameworkCore.SqlServer": {
             "target": "Package",
             "version": "[5.0.9, )"
+          },
+          "Microsoft.Extensions.DependencyInjection.Abstractions": {
+            "target": "Package",
+            "version": "[5.0.0, )"
           }
         },
         "imports": [

@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "QhKSNSDQ9FTtBwWTeR2Sdxayrj2Gt9/JgM9+/pwxa50KfJ8gLrKi+SJOd1OB98AI8SQv8oDxAme7qtmHs1e+UA==",
+  "dgSpecHash": "hVgZNyyqUF7aakYI6HgrCNQqRVPpH0VlKKUPmOIu7/Tsi4CWRA49sLDgI7CDk4X7/W87hJYxQUWrD7AdU3zO7w==",
   "success": true,
-  "projectFilePath": "C:\\Users\\franc\\Desktop\\PR_231918-231073\\GameStore\\GameStore.csproj",
+  "projectFilePath": "C:\\Users\\franc\\Desktop\\PR_231918-231073\\ServiceFactory\\Factory.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\franc\\.nuget\\packages\\microsoft.csharp\\4.5.0\\microsoft.csharp.4.5.0.nupkg.sha512",
     "C:\\Users\\franc\\.nuget\\packages\\microsoft.data.sqlclient\\2.0.1\\microsoft.data.sqlclient.2.0.1.nupkg.sha512",
