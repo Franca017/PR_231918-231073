@@ -23,7 +23,7 @@ namespace Repository
             {
                 string directory = Directory.GetCurrentDirectory();
 
-                IConfigurationRoot configuration = new ConfigurationgBuilder()
+                IConfigurationRoot configuration = new ConfigurationBuilder()
                     .SetBasePath(directory)
                     .AddJsonFile("appsettings.json")
                     .Build();
