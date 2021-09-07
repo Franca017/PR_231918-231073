@@ -1584,6 +1584,19 @@
         "runtime": {
           "bin/placeholder/Domain.dll": {}
         }
+      },
+      "RepositoryInterface/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v3.1",
+        "dependencies": {
+          "Domain": "1.0.0"
+        },
+        "compile": {
+          "bin/placeholder/RepositoryInterface.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/RepositoryInterface.dll": {}
+        }
       }
     }
   },
@@ -5945,6 +5958,11 @@
       "type": "project",
       "path": "../Domain/Domain.csproj",
       "msbuildProject": "../Domain/Domain.csproj"
+    },
+    "RepositoryInterface/1.0.0": {
+      "type": "project",
+      "path": "../RepositoryInterface/RepositoryInterface.csproj",
+      "msbuildProject": "../RepositoryInterface/RepositoryInterface.csproj"
     }
   },
   "projectFileDependencyGroups": {
@@ -5955,7 +5973,8 @@
       "Microsoft.Extensions.Configuration >= 5.0.0",
       "Microsoft.Extensions.Configuration.Abstractions >= 5.0.0",
       "Microsoft.Extensions.Configuration.FileExtensions >= 5.0.0",
-      "Microsoft.Extensions.Configuration.Json >= 5.0.0"
+      "Microsoft.Extensions.Configuration.Json >= 5.0.0",
+      "RepositoryInterface >= 1.0.0"
     ]
   },
   "packageFolders": {
@@ -5987,6 +6006,9 @@
           "projectReferences": {
             "C:\\Users\\franc\\Desktop\\PR_231918-231073\\Domain\\Domain.csproj": {
               "projectPath": "C:\\Users\\franc\\Desktop\\PR_231918-231073\\Domain\\Domain.csproj"
+            },
+            "C:\\Users\\franc\\Desktop\\PR_231918-231073\\RepositoryInterface\\RepositoryInterface.csproj": {
+              "projectPath": "C:\\Users\\franc\\Desktop\\PR_231918-231073\\RepositoryInterface\\RepositoryInterface.csproj"
             }
           }
         }

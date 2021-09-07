@@ -5,7 +5,7 @@ using Domain;
 
 namespace RepositoryInterface
 {
-    public interface IReviewInterface
+    public interface IReviewRepository
     {
         IEnumerable<Review> GetAll();
         void Add(Review review);
