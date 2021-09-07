@@ -6,6 +6,7 @@ namespace Domain
 {
     public class Review
     {
+        public int Id { get; set; }
         public User User { get; set; }
         public Game Game { get; set; }
         public int Rating { get; set; }
