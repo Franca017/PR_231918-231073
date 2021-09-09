@@ -1,8 +1,8 @@
 ﻿using System;
 
-namespace GameStore
+namespace GameStoreServer
 {
-    class Program
+    class ConsoleServer
     {
         static void Main(string[] args)
         {

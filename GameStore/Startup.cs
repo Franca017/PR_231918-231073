@@ -5,7 +5,7 @@ using Factory;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace GameStore
+namespace GameStoreServer
 {
     public class Startup
     {

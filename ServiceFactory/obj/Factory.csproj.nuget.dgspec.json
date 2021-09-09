@@ -146,9 +146,6 @@
           "netcoreapp3.1": {
             "targetAlias": "netcoreapp3.1",
             "projectReferences": {
-              "C:\\Users\\franc\\Desktop\\PR_231918-231073\\Domain\\Domain.csproj": {
-                "projectPath": "C:\\Users\\franc\\Desktop\\PR_231918-231073\\Domain\\Domain.csproj"
-              },
               "C:\\Users\\franc\\Desktop\\PR_231918-231073\\RepositoryInterface\\RepositoryInterface.csproj": {
                 "projectPath": "C:\\Users\\franc\\Desktop\\PR_231918-231073\\RepositoryInterface\\RepositoryInterface.csproj"
               }
