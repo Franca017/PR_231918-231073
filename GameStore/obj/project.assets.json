@@ -1605,7 +1605,6 @@
         "type": "project",
         "framework": ".NETCoreApp,Version=v3.1",
         "dependencies": {
-          "Domain": "1.0.0",
           "Microsoft.EntityFrameworkCore": "5.0.9",
           "Microsoft.EntityFrameworkCore.SqlServer": "5.0.9",
           "Microsoft.Extensions.Configuration": "5.0.0",
@@ -6023,9 +6022,9 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\franc\\Desktop\\PR_231918-231073\\GameStore\\GameStore.csproj",
-      "projectName": "GameStore",
-      "projectPath": "C:\\Users\\franc\\Desktop\\PR_231918-231073\\GameStore\\GameStore.csproj",
+      "projectUniqueName": "C:\\Users\\franc\\Desktop\\PR_231918-231073\\GameStore\\GameStoreServer.csproj",
+      "projectName": "GameStoreServer",
+      "projectPath": "C:\\Users\\franc\\Desktop\\PR_231918-231073\\GameStore\\GameStoreServer.csproj",
       "packagesPath": "C:\\Users\\franc\\.nuget\\packages\\",
       "outputPath": "C:\\Users\\franc\\Desktop\\PR_231918-231073\\GameStore\\obj\\",
       "projectStyle": "PackageReference",

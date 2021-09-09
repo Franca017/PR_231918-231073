@@ -4,3 +4,13 @@ C:\Users\franc\Desktop\PR_231918-231073\ServiceFactory\bin\Debug\netcoreapp3.1\R
 C:\Users\franc\Desktop\PR_231918-231073\ServiceFactory\obj\Debug\netcoreapp3.1\Factory.csprojAssemblyReference.cache
 C:\Users\franc\Desktop\PR_231918-231073\ServiceFactory\obj\Debug\netcoreapp3.1\Factory.AssemblyInfoInputs.cache
 C:\Users\franc\Desktop\PR_231918-231073\ServiceFactory\obj\Debug\netcoreapp3.1\Factory.AssemblyInfo.cs
+C:\Users\franc\Desktop\PR_231918-231073\ServiceFactory\bin\Debug\netcoreapp3.1\Factory.deps.json
+C:\Users\franc\Desktop\PR_231918-231073\ServiceFactory\bin\Debug\netcoreapp3.1\Factory.dll
+C:\Users\franc\Desktop\PR_231918-231073\ServiceFactory\bin\Debug\netcoreapp3.1\Factory.pdb
+C:\Users\franc\Desktop\PR_231918-231073\ServiceFactory\bin\Debug\netcoreapp3.1\RepositoryInterface.pdb
+C:\Users\franc\Desktop\PR_231918-231073\ServiceFactory\bin\Debug\netcoreapp3.1\Repository.pdb
+C:\Users\franc\Desktop\PR_231918-231073\ServiceFactory\bin\Debug\netcoreapp3.1\Domain.pdb
+C:\Users\franc\Desktop\PR_231918-231073\ServiceFactory\obj\Debug\netcoreapp3.1\Factory.csproj.CoreCompileInputs.cache
+C:\Users\franc\Desktop\PR_231918-231073\ServiceFactory\obj\Debug\netcoreapp3.1\Factory.csproj.CopyComplete
+C:\Users\franc\Desktop\PR_231918-231073\ServiceFactory\obj\Debug\netcoreapp3.1\Factory.dll
+C:\Users\franc\Desktop\PR_231918-231073\ServiceFactory\obj\Debug\netcoreapp3.1\Factory.pdb

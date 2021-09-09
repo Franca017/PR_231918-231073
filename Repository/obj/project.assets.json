@@ -5967,7 +5967,6 @@
   },
   "projectFileDependencyGroups": {
     ".NETCoreApp,Version=v3.1": [
-      "Domain >= 1.0.0",
       "Microsoft.EntityFrameworkCore >= 5.0.9",
       "Microsoft.EntityFrameworkCore.SqlServer >= 5.0.9",
       "Microsoft.Extensions.Configuration >= 5.0.0",
@@ -6004,9 +6003,6 @@
         "netcoreapp3.1": {
           "targetAlias": "netcoreapp3.1",
           "projectReferences": {
-            "C:\\Users\\franc\\Desktop\\PR_231918-231073\\Domain\\Domain.csproj": {
-              "projectPath": "C:\\Users\\franc\\Desktop\\PR_231918-231073\\Domain\\Domain.csproj"
-            },
             "C:\\Users\\franc\\Desktop\\PR_231918-231073\\RepositoryInterface\\RepositoryInterface.csproj": {
               "projectPath": "C:\\Users\\franc\\Desktop\\PR_231918-231073\\RepositoryInterface\\RepositoryInterface.csproj"
             }
