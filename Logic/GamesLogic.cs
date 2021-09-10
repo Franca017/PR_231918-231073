@@ -9,8 +9,7 @@ namespace Logic
 {
     public class GamesLogic : IGamesLogic
     {
-        private static List<Game> Games { get; set; }
-        private static IGameRepository gamesRepository;
+        private IGameRepository gamesRepository;
 
         public GamesLogic(IServiceProvider serviceProvider)
         {
