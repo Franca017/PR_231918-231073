@@ -9,9 +9,11 @@ namespace GameStoreServer
 {
     public class Startup
     {
-        public Startup(IConfiguration configuration)
+        public Startup()
         {
-            Configuration = configuration;
+            var builder = new ConfigurationBuilder();
+
+            Configuration = builder.Build();
         }
 
         public IConfiguration Configuration { get; }
@@ -19,9 +21,8 @@ namespace GameStoreServer
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            ServiceFactory fabricaDeServicios = new ServiceFactory(services);
-            fabricaDeServicios.AgregarServicios();
-            fabricaDeServicios.AgregarServicioContextoBD(this.Configuration.GetConnectionString("GameStoreDB"));
+            ServiceFactory serviceFactory = new ServiceFactory(services);
+            serviceFactory.ConfigureServices();
         }
     }
 }
