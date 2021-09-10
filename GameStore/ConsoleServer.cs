@@ -18,6 +18,8 @@ namespace GameStoreServer
         private static bool _exit = false;
         private static List<Socket> _clients = new List<Socket>();
         private static IGamesLogic gamesLogic;
+        private static IUserLogic userLogic;
+        private static IReviewLogic reviewLogic;
 
         static void Main(string[] args)
         {
@@ -87,6 +89,8 @@ namespace GameStoreServer
             IServiceProvider serviceProvider = services.BuildServiceProvider();
 
             gamesLogic = serviceProvider.GetService<IGamesLogic>();
+            userLogic = serviceProvider.GetService<IUserLogic>();
+            reviewLogic = serviceProvider.GetService<IReviewLogic>();
         }
 
 

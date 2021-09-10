@@ -9,12 +9,10 @@ namespace Repository
 {
     public class GameRepository : IGameRepository
     {
-        private readonly DbContext contexto;
         private readonly List<Game> games;
 
         public GameRepository()
         {
-            //this.contexto = contexto;
             this.games = new List<Game>();
         }
 

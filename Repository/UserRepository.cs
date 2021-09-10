@@ -9,13 +9,11 @@ namespace Repository
 {
     public class UserRepository : IUserRepository
     {
-        private readonly DbContext contexto;
-        private readonly DbSet<User> users;
+        private readonly List<User> users;
 
         public UserRepository(DbContext contexto)
         {
-            this.contexto = contexto;
-            this.users = contexto.Set<User>();
+            this.users = new List<User>();
         }
 
         public void Add(User user)

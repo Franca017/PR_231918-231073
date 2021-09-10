@@ -19,7 +19,7 @@ namespace Logic
         
         public List<Game> GetAll()
         {
-            return (List<Game>) gamesRepository.GetAll();
+            return gamesRepository.GetAll();
         }
     }
 }

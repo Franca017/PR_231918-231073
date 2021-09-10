@@ -9,13 +9,11 @@ namespace Repository
 {
     public class ReviewRepository : IReviewRepository
     {
-        private readonly DbContext contexto;
-        private readonly DbSet<Review> reviews;
+        private readonly List<Review> reviews;
 
-        public ReviewRepository(DbContext contexto)
+        public ReviewRepository()
         {
-            this.contexto = contexto;
-            this.reviews = contexto.Set<Review>();
+            this.reviews = new List<Review>();
         }
 
         public void Add(Review review)
