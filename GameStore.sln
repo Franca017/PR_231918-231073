@@ -17,6 +17,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProtocolLibrary", "..\Proto
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Domain", "Domain\Domain.csproj", "{BDDB9A9E-8225-4897-BD94-9E05EB23DB6C}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LogicInterface", "LogicInterface\LogicInterface.csproj", "{00E2F133-92F6-4E90-B64B-D297E8963CB2}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Logic", "Logic\Logic.csproj", "{EAAFA9AA-9D10-40EB-9946-F2935D62D00C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -51,6 +55,14 @@ Global
 		{BDDB9A9E-8225-4897-BD94-9E05EB23DB6C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BDDB9A9E-8225-4897-BD94-9E05EB23DB6C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BDDB9A9E-8225-4897-BD94-9E05EB23DB6C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{00E2F133-92F6-4E90-B64B-D297E8963CB2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{00E2F133-92F6-4E90-B64B-D297E8963CB2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{00E2F133-92F6-4E90-B64B-D297E8963CB2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{00E2F133-92F6-4E90-B64B-D297E8963CB2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EAAFA9AA-9D10-40EB-9946-F2935D62D00C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EAAFA9AA-9D10-40EB-9946-F2935D62D00C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EAAFA9AA-9D10-40EB-9946-F2935D62D00C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EAAFA9AA-9D10-40EB-9946-F2935D62D00C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -1,4 +1,6 @@
 ﻿using System;
+using Logic;
+using LogicInterface;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Repository;
@@ -15,21 +17,16 @@ namespace Factory
             this.services = services;
         }
 
-        public void AgregarServicios()
+        public void ConfigureServices()
         {
-            /*services.AddScoped<ISesionLogica, SesionLogica>();
-            services.AddScoped<IAdministradorLogica, AdministradorLogica>();
-            services.AddScoped<ICategoriaLogica, CategoriaLogica>();*/
+            services.AddSingleton<IGamesLogic, GamesLogic>();
+            services.AddSingleton<IUserLogic, UserLogic>();
+            services.AddSingleton<IReviewLogic, ReviewLogic>();
 
-            services.AddScoped<IGameRepository, GameRepository>();
-            services.AddScoped<IUserRepository, UserRepository>();
-            services.AddScoped<IReviewRepository, ReviewRepository>();
+            services.AddSingleton<IGameRepository, GameRepository>();
+            services.AddSingleton<IUserRepository, UserRepository>();
+            services.AddSingleton<IReviewRepository, ReviewRepository>();
             
-        }
-
-        public void AgregarServicioContextoBD(string connectionString)
-        {
-            this.services.AddDbContext<DbContext, Context>(options => options.UseSqlServer(connectionString));
         }
     }
 }

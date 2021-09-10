@@ -7,7 +7,7 @@ namespace RepositoryInterface
 {
     public interface IGameRepository
     {
-        IEnumerable<Game> GetAll();
+        List<Game> GetAll();
         void Add(Game game);
 
 

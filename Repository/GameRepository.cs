@@ -10,12 +10,12 @@ namespace Repository
     public class GameRepository : IGameRepository
     {
         private readonly DbContext contexto;
-        private readonly DbSet<Game> games;
+        private readonly List<Game> games;
 
-        public GameRepository(DbContext contexto)
+        public GameRepository()
         {
-            this.contexto = contexto;
-            this.games = contexto.Set<Game>();
+            //this.contexto = contexto;
+            this.games = new List<Game>();
         }
 
         public void Add(Game game)
@@ -23,9 +23,9 @@ namespace Repository
             throw new NotImplementedException();
         }
 
-        public IEnumerable<Game> GetAll()
+        public List<Game> GetAll()
         {
-            throw new NotImplementedException();
+            return this.games;
         }
     }
 }
