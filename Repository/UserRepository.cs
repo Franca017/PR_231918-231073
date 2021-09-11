@@ -11,7 +11,7 @@ namespace Repository
     {
         private readonly List<User> users;
 
-        public UserRepository(DbContext contexto)
+        public UserRepository()
         {
             this.users = new List<User>();
         }
