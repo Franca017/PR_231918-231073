@@ -7,11 +7,11 @@ namespace Logic
 {
     public class UserLogic : IUserLogic
     {
-        private IUserLogic userRepository;
+        private IUserRepository userRepository;
 
         public UserLogic(IServiceProvider serviceProvider)
         {
-            userRepository = serviceProvider.GetService<IUserLogic>();
+            userRepository = serviceProvider.GetService<IUserRepository>();
             
         }
     }
