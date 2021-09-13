@@ -20,6 +20,7 @@ namespace GameStoreServer
         private static IGamesLogic gamesLogic;
         private static IUserLogic userLogic;
         private static IReviewLogic reviewLogic;
+        private static User userLogged;
 
         static void Main(string[] args)
         {
@@ -36,23 +37,17 @@ namespace GameStoreServer
             while (!_exit)
             {
                 Console.WriteLine("Opciones validas: ");
-                Console.WriteLine("ListGames -> abandonar el programa");
                 Console.WriteLine("exit -> abandonar el programa");
                 Console.WriteLine("Ingrese su opcion: ");
 
                 var userInput = Console.ReadLine();
 
-                switch (userInput)
+                if (userInput.ToLower().Equals("exit"))
                 {
-                    case "ListGames":
-                        var games = gamesLogic.GetAll();
-                        Console.WriteLine(games.Count);
-                        break;
                     // Cosas a hacer al cerrar el server
                     // 1 - Cerrar el socket que esta escuchando conexiones nuevas
                     // 2 - Cerrar todas las conexiones abiertas desde los clientes
-                    case "exit":
-                        _exit = true;
+                    _exit = true;
                         socketServer.Close(0);
                         foreach (var client in _clients)
                         {
@@ -62,10 +57,10 @@ namespace GameStoreServer
 
                         var fakeSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
                         fakeSocket.Connect("127.0.0.1", 20000);
-                        break;
-                    default:
-                        Console.WriteLine("Opcion incorrecta ingresada");
-                        break;
+                }
+                else
+                {
+                    Console.WriteLine("Opcion incorrecta ingresada");
                 }
             }
         }
@@ -130,6 +125,16 @@ namespace GameStoreServer
                     switch (header.ICommand)
                     {
                         case CommandConstants.Login:
+                            var bufferData1 = new byte[header.IDataLength];  
+                            ReceiveData(connectedSocket,header.IDataLength,bufferData1);
+                            var user = Encoding.UTF8.GetString(bufferData1);
+                            Console.WriteLine("Usuario: "+ Encoding.UTF8.GetString(bufferData1));
+                            var userInDb = userLogic.Login(user);
+                            userLogged = userInDb;
+                            var response = $"Se inicio sesion en el usuario {userInDb.UserName} (creado el {userInDb.DateCreated.Day}/{userInDb.DateCreated.Month})."; 
+                            ResponseRequest(response, connectedSocket, CommandConstants.Login);
+                            
+                            break;
                         case CommandConstants.ListGames:
                             Console.WriteLine("Not Implemented yet...");
                             break;
@@ -147,7 +152,24 @@ namespace GameStoreServer
                 }
             }
         }
-        
+        private static void ResponseRequest(string mensaje, Socket socket, int command)
+        {
+            var header = new Header(HeaderConstants.Request, command, mensaje.Length);
+            var data = header.GetRequest();
+            var sentBytes = 0;
+            while (sentBytes < data.Length)
+            {
+                sentBytes += socket.Send(data, sentBytes, data.Length - sentBytes, SocketFlags.None);
+            }
+
+            sentBytes = 0;
+            var bytesMessage = Encoding.UTF8.GetBytes(mensaje);
+            while (sentBytes < bytesMessage.Length)
+            {
+                sentBytes += socket.Send(bytesMessage, sentBytes, bytesMessage.Length - sentBytes,
+                    SocketFlags.None);
+            }
+        }
         private static void ReceiveData(Socket clientSocket,  int length, byte[] buffer)
         {
             var iRecv = 0;
@@ -173,6 +195,12 @@ namespace GameStoreServer
                 }
                 catch (SocketException se)
                 {
+                    if (!_exit)
+                    {
+                        clientSocket.Shutdown(SocketShutdown.Both);
+                        clientSocket.Close();
+                        _exit = true;
+                    }
                     Console.WriteLine(se.Message);
                     return;
                 }

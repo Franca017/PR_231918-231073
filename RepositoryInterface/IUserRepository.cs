@@ -7,7 +7,8 @@ namespace RepositoryInterface
 {
     public interface IUserRepository
     {
-        IEnumerable<User> GetAll();
+        List<User> GetAll();
+        User GetUser(string user);
         void Add(User user);
 
     }

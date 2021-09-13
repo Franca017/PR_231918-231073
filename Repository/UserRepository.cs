@@ -16,12 +16,17 @@ namespace Repository
             this.users = new List<User>();
         }
 
-        public void Add(User user)
+        public User GetUser(string user)
         {
-            throw new NotImplementedException();
+            return this.users.Find(e => e.UserName.Equals(user));
         }
 
-        public IEnumerable<User> GetAll()
+        public void Add(User user)
+        {
+            this.users.Add(user);
+        }
+
+        public List<User> GetAll()
         {
             throw new NotImplementedException();
         }
