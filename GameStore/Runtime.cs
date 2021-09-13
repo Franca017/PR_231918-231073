@@ -10,7 +10,7 @@ namespace GameStoreServer
 {
     public class Runtime
     {
-        public bool Exit = false;
+        public bool Exit { get; set; }
         
         private IGamesLogic _gamesLogic;
         private IUserLogic _userLogic;
