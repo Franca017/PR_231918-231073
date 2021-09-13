@@ -22,7 +22,7 @@ namespace GameStoreClient
             while (!logged)
             {
                 Console.WriteLine("Bienvenido al Sistema Client");
-                Console.Write("Ingrese su nombre de Usuario (en caso de no existir se le creara uno: ");
+                Console.Write("Ingrese su nombre de Usuario (en caso de no existir se le creara uno): ");
                 var usuario = Console.ReadLine();
                 Request(usuario, socket, CommandConstants.Login);
                 var headerLength = HeaderConstants.Request.Length + HeaderConstants.CommandLength +

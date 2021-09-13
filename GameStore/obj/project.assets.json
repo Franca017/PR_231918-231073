@@ -6050,8 +6050,8 @@
     },
     "ProtocolLibrary/1.0.0": {
       "type": "project",
-      "path": "../../ProtocolLibrary/ProtocolLibrary.csproj",
-      "msbuildProject": "../../ProtocolLibrary/ProtocolLibrary.csproj"
+      "path": "../ProtocolLibrary/ProtocolLibrary.csproj",
+      "msbuildProject": "../ProtocolLibrary/ProtocolLibrary.csproj"
     },
     "Repository/1.0.0": {
       "type": "project",
@@ -6104,6 +6104,9 @@
             },
             "C:\\Users\\franc\\Desktop\\PR_231918-231073\\LogicInterface\\LogicInterface.csproj": {
               "projectPath": "C:\\Users\\franc\\Desktop\\PR_231918-231073\\LogicInterface\\LogicInterface.csproj"
+            },
+            "C:\\Users\\franc\\Desktop\\PR_231918-231073\\ProtocolLibrary\\ProtocolLibrary.csproj": {
+              "projectPath": "C:\\Users\\franc\\Desktop\\PR_231918-231073\\ProtocolLibrary\\ProtocolLibrary.csproj"
             },
             "C:\\Users\\franc\\Desktop\\PR_231918-231073\\ServiceFactory\\Factory.csproj": {
               "projectPath": "C:\\Users\\franc\\Desktop\\PR_231918-231073\\ServiceFactory\\Factory.csproj"
