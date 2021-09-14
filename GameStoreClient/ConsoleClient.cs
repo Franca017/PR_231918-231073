@@ -9,16 +9,28 @@ namespace GameStoreClient
     class ConsoleClient
     {
         static bool _exit = false;
+        private static IServiceProvider _serviceProvider;
 
         static void Main(string[] args)
         {
+            Setup setup = new Setup();
+            _serviceProvider = setup.BuildServiceProvider();
+            Runtime runtime = new Runtime(_serviceProvider);
+
+            var socket = setup.InitializeSocketServer(runtime);
+            
             //Setup
-            var socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+            /*var socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
             socket.Bind(new IPEndPoint(IPAddress.Parse("127.0.0.1"), 0));
-            socket.Connect("127.0.0.1", 20000);
+            socket.Connect("127.0.0.1", 20000);*/
             
             //Runtime
-            bool logged = false;
+            runtime.Execute(socket);
+        }
+
+        /*private static void Execute(out bool logged)
+        {
+            logged = false;
             while (!logged)
             {
                 Console.WriteLine("Bienvenido al Sistema Client");
@@ -33,18 +45,18 @@ namespace GameStoreClient
                     ReceiveData(socket, headerLength, buffer);
                     var header = new Header();
                     header.DecodeData(buffer);
-                    var bufferData1 = new byte[header.IDataLength];  
-                    ReceiveData(socket,header.IDataLength,bufferData1);
+                    var bufferData1 = new byte[header.IDataLength];
+                    ReceiveData(socket, header.IDataLength, bufferData1);
                     Console.WriteLine(Encoding.UTF8.GetString(bufferData1));
-                    
+
                     logged = true;
                 }
                 catch (Exception e)
                 {
-                    Console.WriteLine($"---- -> Message {e.Message}..");    
+                    Console.WriteLine($"---- -> Message {e.Message}..");
                 }
             }
-            
+
             while (!_exit)
             {
                 Console.WriteLine("Opciones validas: ");
@@ -72,9 +84,9 @@ namespace GameStoreClient
             }
 
             Console.WriteLine("Exiting Application");
-        }
+        }*/
 
-        private static void Request(string mensaje, Socket socket, int command)
+        /*private static void Request(string mensaje, Socket socket, int command)
         {
             var header = new Header(HeaderConstants.Request, command, mensaje.Length);
             var data = header.GetRequest();
@@ -91,9 +103,9 @@ namespace GameStoreClient
                 sentBytes += socket.Send(bytesMessage, sentBytes, bytesMessage.Length - sentBytes,
                     SocketFlags.None);
             }
-        }
+        }*/
         
-        private static void ReceiveData(Socket clientSocket,  int length, byte[] buffer)
+        /*private static void ReceiveData(Socket clientSocket,  int length, byte[] buffer)
         {
             var iRecv = 0;
             while (iRecv < length)
@@ -122,6 +134,6 @@ namespace GameStoreClient
                     return;
                 }
             }
-        }
+        }*/
     }
 }

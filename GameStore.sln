@@ -13,13 +13,13 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Factory", "ServiceFactory\F
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Domain", "Domain\Domain.csproj", "{BDDB9A9E-8225-4897-BD94-9E05EB23DB6C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LogicInterface", "LogicInterface\LogicInterface.csproj", "{00E2F133-92F6-4E90-B64B-D297E8963CB2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LogicInterface", "LogicInterface\LogicInterface.csproj", "{00E2F133-92F6-4E90-B64B-D297E8963CB2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Logic", "Logic\Logic.csproj", "{EAAFA9AA-9D10-40EB-9946-F2935D62D00C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Logic", "Logic\Logic.csproj", "{EAAFA9AA-9D10-40EB-9946-F2935D62D00C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GameStoreClient", "GameStoreClient\GameStoreClient.csproj", "{4B64E174-318A-48CE-B432-FE1F94C0C42A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GameStoreClient", "GameStoreClient\GameStoreClient.csproj", "{4B64E174-318A-48CE-B432-FE1F94C0C42A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProtocolLibrary", "ProtocolLibrary\ProtocolLibrary.csproj", "{6F718F56-3EFC-43B7-AA55-CA9BEF68384E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ProtocolLibrary", "ProtocolLibrary\ProtocolLibrary.csproj", "{7E6A17F9-BD0B-4DD3-9889-DC703540779E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -59,10 +59,10 @@ Global
 		{4B64E174-318A-48CE-B432-FE1F94C0C42A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4B64E174-318A-48CE-B432-FE1F94C0C42A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4B64E174-318A-48CE-B432-FE1F94C0C42A}.Release|Any CPU.Build.0 = Release|Any CPU
-		{6F718F56-3EFC-43B7-AA55-CA9BEF68384E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{6F718F56-3EFC-43B7-AA55-CA9BEF68384E}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{6F718F56-3EFC-43B7-AA55-CA9BEF68384E}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{6F718F56-3EFC-43B7-AA55-CA9BEF68384E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7E6A17F9-BD0B-4DD3-9889-DC703540779E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7E6A17F9-BD0B-4DD3-9889-DC703540779E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7E6A17F9-BD0B-4DD3-9889-DC703540779E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7E6A17F9-BD0B-4DD3-9889-DC703540779E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
