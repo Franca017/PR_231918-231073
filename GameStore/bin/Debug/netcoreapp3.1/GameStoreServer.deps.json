@@ -8,6 +8,7 @@
     ".NETCoreApp,Version=v3.1": {
       "GameStoreServer/1.0.0": {
         "dependencies": {
+          "Domain": "1.0.0",
           "Factory": "1.0.0",
           "LogicInterface": "1.0.0",
           "Microsoft.EntityFrameworkCore": "5.0.9",

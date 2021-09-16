@@ -10,8 +10,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\ProtocolLibrary\ProtocolLibrary.csproj" />
+    <ProjectReference Include="..\Domain\Domain.csproj" />
     <ProjectReference Include="..\LogicInterface\LogicInterface.csproj" />
+    <ProjectReference Include="..\ProtocolLibrary\ProtocolLibrary.csproj" />
     <ProjectReference Include="..\ServiceFactory\Factory.csproj" />
   </ItemGroup>
 
