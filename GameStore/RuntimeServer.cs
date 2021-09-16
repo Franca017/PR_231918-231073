@@ -51,7 +51,14 @@ namespace GameStoreServer
                             
                             break;
                         case CommandConstants.ListGames:
-                            Console.WriteLine("Not Implemented yet...");
+                            var list = _gamesLogic.GetAll();
+                            Request(list.Count.ToString(),connectedSocket,CommandConstants.ListGames);
+                            for (int i = 0; i < list.Count; i++)
+                            {
+                                var game = list[i];
+                                string gameToString = $"{game.Id}*{game.Title}*{game.Genre}*{game.Rating}*{game.Sinopsis}*{game.Image}";
+                                Request(gameToString,connectedSocket,CommandConstants.ListGames);
+                            }
                             break;
                         case CommandConstants.Message:
                             Console.WriteLine("Will receive message to display...");
