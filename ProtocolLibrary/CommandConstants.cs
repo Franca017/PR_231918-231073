@@ -7,5 +7,6 @@ namespace ProtocolLibrary
         public const int Login =  1;
         public const int ListGames = 2;
         public const int Message = 3;
+        public const int Purchase = 4;
     }
 }
