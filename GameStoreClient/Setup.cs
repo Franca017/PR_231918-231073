@@ -7,15 +7,6 @@ namespace GameStoreClient
 {
     public class Setup
     {
-        public IServiceProvider BuildServiceProvider()
-        {
-            IServiceCollection services = new ServiceCollection();
-            var startup = new Startup();
-            startup.ConfigureServices(services);
-            IServiceProvider serviceProvider = services.BuildServiceProvider();
-            return serviceProvider;
-        }
-        
         public Socket InitializeSocketServer(Runtime runtime)
         {
             var socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);

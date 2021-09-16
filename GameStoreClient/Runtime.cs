@@ -2,25 +2,13 @@
 using System.Net.Sockets;
 using System.Text;
 using Domain;
-using LogicInterface;
-using Microsoft.Extensions.DependencyInjection;
 using ProtocolLibrary;
 
 namespace GameStoreClient
 {
     public class Runtime
     {
-        private IGamesLogic _gamesLogic;
-        private IUserLogic _userLogic;
-        private IReviewLogic _reviewLogic;
-        
-        static bool _exit = false;
-        public Runtime(IServiceProvider serviceProvider)
-        {
-            _gamesLogic = serviceProvider.GetService<IGamesLogic>();
-            _userLogic = serviceProvider.GetService<IUserLogic>();
-            _reviewLogic = serviceProvider.GetService<IReviewLogic>();
-        }
+        private bool _exit = false;
 
         public void Execute(Socket socket)
         {
@@ -80,7 +68,7 @@ namespace GameStoreClient
             Console.WriteLine("Exiting Application");
         }
         
-        private static void Request(string mensaje, Socket socket, int command)
+        private void Request(string mensaje, Socket socket, int command)
         {
             var header = new Header(HeaderConstants.Request, command, mensaje.Length);
             var data = header.GetRequest();
@@ -99,7 +87,7 @@ namespace GameStoreClient
             }
         }
         
-        private static void ReceiveData(Socket clientSocket,  int length, byte[] buffer)
+        private void ReceiveData(Socket clientSocket,  int length, byte[] buffer)
         {
             var iRecv = 0;
             while (iRecv < length)
