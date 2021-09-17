@@ -12,16 +12,18 @@ namespace GameStoreClient
     {
         private bool _exit = false;
         private List<Game> gamesLoaded = new List<Game>();
+        private int userId;
 
         public void Execute(Socket socket)
         {
             Console.WriteLine("Bienvenido al Sistema Client");
             Console.Write("Ingrese su nombre de Usuario (en caso de no existir se le creara uno): ");
-            var usuario = Console.ReadLine();
-            Request(usuario, socket, CommandConstants.Login);
+            var user = Console.ReadLine();
+            Request(user, socket, CommandConstants.Login);
             var bufferResponse = Response(socket);
             
             Console.WriteLine(Encoding.UTF8.GetString(bufferResponse));
+            //Setear el userId
 
             while (!_exit)
             {
@@ -30,8 +32,8 @@ namespace GameStoreClient
                 Console.WriteLine("message -> envia un mensaje al server");
                 Console.WriteLine("exit -> abandonar el programa");
                 Console.Write("Ingrese su opcion: ");
-                var opcion = Console.ReadLine();
-                switch (opcion)
+                var option = Console.ReadLine();
+                switch (option)
                 {
                     case "list":
                         ListGames(socket);
@@ -43,8 +45,8 @@ namespace GameStoreClient
                         break;
                     case "message":
                         Console.WriteLine("Ingrese el mensaje a enviar:");
-                        var mensaje = Console.ReadLine();
-                        Request(mensaje, socket, CommandConstants.Message);
+                        var message = Console.ReadLine();
+                        Request(message, socket, CommandConstants.Message);
 
                         break;
                     default:
@@ -90,6 +92,7 @@ namespace GameStoreClient
                         DetailGame();
                         break;
                     case "purchase":
+                        Purchase(socket);
                         break;
                     case "main":
                         main = true;
@@ -97,6 +100,29 @@ namespace GameStoreClient
                     default:
                         Console.WriteLine("Opcion invalida");
                         break;
+                }
+            }
+        }
+
+        private void Purchase(Socket socket)
+        {
+            var idCorrecto = false;
+            while (!idCorrecto)
+            {
+                Console.Write("Insert the id of the game to purchase: ");
+                var gameId = Console.ReadLine();
+                var game = gamesLoaded.Find(e => e.Id.Equals(Convert.ToInt32(gameId)));
+                if (game == null)
+                {
+                    Console.WriteLine("Id inexistente");
+                }
+                else
+                {
+                    Request(gameId, socket, CommandConstants.Purchase);
+                    var bufferResponse = Response(socket);
+            
+                    Console.WriteLine(Encoding.UTF8.GetString(bufferResponse));
+                    idCorrecto = true;
                 }
             }
         }

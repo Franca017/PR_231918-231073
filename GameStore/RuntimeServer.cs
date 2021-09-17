@@ -25,7 +25,7 @@ namespace GameStoreServer
 
         public void HandleConnection(Socket connectedSocket)
         {
-            User userLogged;
+            User userLogged = null;
             while (!Exit)
             {
                 var headerLength = HeaderConstants.Request.Length + HeaderConstants.CommandLength +
@@ -61,6 +61,22 @@ namespace GameStoreServer
                             break;
                         case CommandConstants.Purchase:
                             //Agarra userLogged y le mete el game por medio del id que le pase en el mensaje de la request. Si ya lo tiene le avisa que no se le agrego.
+                            var bufferData2 = new byte[header.IDataLength];  
+                            ReceiveData(connectedSocket,header.IDataLength,bufferData2);
+                            var gameIdString = Encoding.UTF8.GetString(bufferData2);
+                            Console.WriteLine(gameIdString);
+                            var gameId = Convert.ToInt32(gameIdString);
+                            var purchased = _userLogic.PurchaseGame(userLogged, gameId);
+                            if (purchased)
+                            {
+                                response = $"Game {gameId} was purchased by {userLogged.UserName}";
+                            }
+                            else
+                            {
+                                response = $"The game {gameId} is already purchased by {userLogged.UserName}";
+                            }
+                            Request(response, connectedSocket, CommandConstants.Login);
+                            
                             break;
                         case CommandConstants.Message:
                             Console.WriteLine("Will receive message to display...");

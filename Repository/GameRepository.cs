@@ -21,9 +21,14 @@ namespace Repository
 
         public void Add(Game game)
         {
-                var highestId = games.Any() ? games.Max(x => x.Id) : 1;
-                game.Id = highestId + 1;
-                games.Add(game);
+            var highestId = games.Any() ? games.Max(x => x.Id) : 1;
+            game.Id = highestId + 1;
+            games.Add(game);
+        }
+
+        public Game GetById(int gameId)
+        {
+            return this.games.First(g => g.Id == gameId);
         }
 
         public List<Game> GetAll()

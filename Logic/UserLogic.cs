@@ -9,6 +9,7 @@ namespace Logic
     public class UserLogic : IUserLogic
     {
         private IUserRepository userRepository;
+        private IGamesLogic _gamesLogic;
 
         public UserLogic(IServiceProvider serviceProvider)
         {
@@ -26,6 +27,20 @@ namespace Logic
             }
 
             return user;
+        }
+
+        public bool PurchaseGame(User userLogged, int gameId)
+        {
+            var game = _gamesLogic.GetById(gameId);
+            if (userLogged.PurchasedGames.Contains(game))
+            {
+                return false;
+            }
+            else
+            {
+                userLogged.PurchasedGames.Add(game);
+                return true;
+            }
         }
     }
 }
