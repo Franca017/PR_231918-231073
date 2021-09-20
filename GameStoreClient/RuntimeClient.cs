@@ -83,6 +83,7 @@ namespace GameStoreClient
                 Console.WriteLine("\n Options:");
                 Console.WriteLine("detail -> Get details of a game");
                 Console.WriteLine("purchase -> Purchase a game");
+                Console.WriteLine("search -> Search a game by its Title, Category, or Rating");
                 Console.WriteLine("main <- Go to main menu");
                 Console.Write("Option: ");
                 var option = Console.ReadLine();
@@ -94,6 +95,9 @@ namespace GameStoreClient
                     case "purchase":
                         Purchase(socket);
                         break;
+                    case "search":
+                        Search(socket);
+                        break;
                     case "main":
                         main = true;
                         break;
@@ -101,6 +105,36 @@ namespace GameStoreClient
                         Console.WriteLine("Opcion invalida");
                         break;
                 }
+            }
+        }
+
+        private void Search(Socket socket)
+        {
+            var foundedGames = new List<Game>();
+            Console.WriteLine("Insert some keywords to search a game: ");
+            string keywords = Console.ReadLine();
+            Request(keywords, socket, CommandConstants.Search);
+            var bufferResponse = Response(socket);
+            var length = Convert.ToInt32(Encoding.UTF8.GetString(bufferResponse));
+            foundedGames.Clear();
+            Console.WriteLine("\n Search result: \n");
+            if (length == 0)
+            {
+                Console.WriteLine("0 games founded with the indicated parameters");
+            }
+            else
+            {
+                for (int i = 0; i < length; i++)
+                {
+                    bufferResponse = Response(socket);
+                    var split = (Encoding.UTF8.GetString(bufferResponse)).Split("*");
+                    var game = new Game(split[1], split[2], split[4]);
+                    game.Id = Convert.ToInt32(split[0]);
+                    game.Rating = Convert.ToInt32(split[3]);
+                    game.Image = split[5];
+                    foundedGames.Add(game);
+                    Console.WriteLine($"{game.Id}. {game.Title} - {game.Genre} - {game.Rating}\n");
+                } 
             }
         }
 

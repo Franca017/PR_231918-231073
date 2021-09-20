@@ -26,5 +26,28 @@ namespace Logic
         {
             return gamesRepository.GetById(gameId);
         }
+
+        public List<Game> GetSearchedGames(string keywords)
+        {
+            var allGames = GetAll();
+            var ret = new List<Game>();
+            string lowerKeywords = keywords.ToLower();
+            var words = lowerKeywords.Split(" ");
+            for (int i = 0; i < allGames.Count; i++)
+            {
+                for (int j = 0; j < words.Length; j++)
+                {
+                    if (allGames[i].Title.ToLower().Contains(words[j]) || allGames[i].Genre.ToLower().Contains(words[j]))
+                    {
+                        if (!ret.Contains(allGames[i]))
+                        {
+                            ret.Add(allGames[i]);
+                        }
+                    }
+                }
+            }
+
+            return ret;
+        }
     }
 }
