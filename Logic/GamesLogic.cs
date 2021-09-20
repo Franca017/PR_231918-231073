@@ -27,6 +27,11 @@ namespace Logic
             return gamesRepository.GetById(gameId);
         }
 
+        public Game Add(Game game)
+        {
+            return gamesRepository.Add(game);
+        }
+
         public List<Game> GetSearchedGames(string keywords)
         {
             var allGames = GetAll();

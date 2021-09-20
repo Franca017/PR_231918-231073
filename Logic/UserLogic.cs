@@ -39,5 +39,10 @@ namespace Logic
             }
             return false;
         }
+
+        public void NewGame(Game newGame, User userLogged)
+        {
+            userLogged.PublishedGames.Add(newGame);
+        }
     }
 }

@@ -46,17 +46,17 @@ namespace GameStoreServer
                             var userInDb = _userLogic.Login(user);
                             userLogged = userInDb;
                             var response = $"Se inicio sesion en el usuario {userInDb.UserName} (creado el {userInDb.DateCreated.Day}/{userInDb.DateCreated.Month})."; 
-                            Request(response, connectedSocket, CommandConstants.Login);
+                            Response(response, connectedSocket, CommandConstants.Login);
                             
                             break;
                         case CommandConstants.ListGames:
                             var list = _gamesLogic.GetAll();
-                            Request(list.Count.ToString(),connectedSocket,CommandConstants.ListGames);
+                            Response(list.Count.ToString(),connectedSocket,CommandConstants.ListGames);
                             for (int i = 0; i < list.Count; i++)
                             {
                                 var game = list[i];
                                 string gameToString = $"{game.Id}*{game.Title}*{game.Genre}*{game.Rating}*{game.Sinopsis}*{game.Image}";
-                                Request(gameToString,connectedSocket,CommandConstants.ListGames);
+                                Response(gameToString,connectedSocket,CommandConstants.ListGames);
                             }
                             break;
                         case CommandConstants.Purchase:
@@ -75,8 +75,19 @@ namespace GameStoreServer
                             {
                                 response = $"The game {gameId} is already purchased by {userLogged.UserName}";
                             }
-                            Request(response, connectedSocket, CommandConstants.Login);
+                            Response(response, connectedSocket, CommandConstants.Login);
                             
+                            break;
+                        case CommandConstants.Publish:
+                            var bufferData3 = new byte[header.IDataLength];  
+                            ReceiveData(connectedSocket,header.IDataLength,bufferData3);
+                            
+                            var split = (Encoding.UTF8.GetString(bufferData3)).Split("*");
+                            var newGame = new Game(split[0], split[1], split[2]);
+                            var newGameInDb = _gamesLogic.Add(newGame);
+                            _userLogic.NewGame(newGameInDb, userLogged);
+                            /*response = $"El juego {newGame.Title} fue añadido al store.";
+                            Response(response, connectedSocket,CommandConstants.Publish);*/
                             break;
                         case CommandConstants.Search:
                             var bufferData3 = new byte[header.IDataLength];  
@@ -107,9 +118,9 @@ namespace GameStoreServer
         }
         
         
-        private void Request(string mensaje, Socket socket, int command)
+        private void Response(string mensaje, Socket socket, int command)
         {
-            var header = new Header(HeaderConstants.Request, command, mensaje.Length);
+            var header = new Header(HeaderConstants.Response, command, mensaje.Length);
             var data = header.GetRequest();
             var sentBytes = 0;
             while (sentBytes < data.Length)

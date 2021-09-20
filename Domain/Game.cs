@@ -17,6 +17,7 @@ namespace Domain
             this.Genre = genre;
             this.Sinopsis = sinopsis;
             this.Rating = 0;
+            this.Image = "";
         }
     }
 }
