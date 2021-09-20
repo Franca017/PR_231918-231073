@@ -64,7 +64,7 @@ namespace GameStoreServer
                             var bufferData2 = new byte[header.IDataLength];  
                             ReceiveData(connectedSocket,header.IDataLength,bufferData2);
                             var gameIdString = Encoding.UTF8.GetString(bufferData2);
-                            Console.WriteLine(gameIdString);
+                            
                             var gameId = Convert.ToInt32(gameIdString);
                             var purchased = _userLogic.PurchaseGame(userLogged, gameId);
                             if (purchased)
