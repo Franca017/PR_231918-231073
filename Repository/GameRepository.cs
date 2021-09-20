@@ -21,7 +21,7 @@ namespace Repository
 
         public void Add(Game game)
         {
-            var highestId = games.Any() ? games.Max(x => x.Id) : 1;
+            var highestId = games.Any() ? games.Max(x => x.Id) : 0;
             game.Id = highestId + 1;
             games.Add(game);
         }
