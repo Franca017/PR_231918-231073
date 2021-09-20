@@ -90,16 +90,16 @@ namespace GameStoreServer
                             Response(response, connectedSocket,CommandConstants.Publish);*/
                             break;
                         case CommandConstants.Search:
-                            var bufferData3 = new byte[header.IDataLength];  
-                            ReceiveData(connectedSocket,header.IDataLength,bufferData3);
-                            var keywords = Encoding.UTF8.GetString(bufferData3);
+                            var bufferData4 = new byte[header.IDataLength];  
+                            ReceiveData(connectedSocket,header.IDataLength,bufferData4);
+                            var keywords = Encoding.UTF8.GetString(bufferData4);
                             var foundedGames = _gamesLogic.GetSearchedGames(keywords);
-                            Request(foundedGames.Count.ToString(),connectedSocket,CommandConstants.Search);
+                            Response(foundedGames.Count.ToString(),connectedSocket,CommandConstants.Search);
                             for (int i = 0; i < foundedGames.Count; i++)
                             {
                                 var game = foundedGames[i];
                                 string gameToString = $"{game.Id}*{game.Title}*{game.Genre}*{game.Rating}*{game.Sinopsis}*{game.Image}";
-                                Request(gameToString,connectedSocket,CommandConstants.Search);
+                                Response(gameToString,connectedSocket,CommandConstants.Search);
                             }
                             break;
                         case CommandConstants.Message:
