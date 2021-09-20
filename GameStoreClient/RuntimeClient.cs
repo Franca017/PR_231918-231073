@@ -12,7 +12,6 @@ namespace GameStoreClient
     {
         private bool _exit = false;
         private List<Game> gamesLoaded = new List<Game>();
-        private int userId;
 
         public void Execute(Socket socket)
         {
@@ -23,36 +22,40 @@ namespace GameStoreClient
             var bufferResponse = Response(socket);
             
             Console.WriteLine(Encoding.UTF8.GetString(bufferResponse));
-            //Setear el userId
 
             while (!_exit)
             {
                 Console.WriteLine("Opciones validas: ");
                 Console.WriteLine("list -> Visualiza la lista de juegos");
+                Console.WriteLine("publish -> Publicar un juego");
                 Console.WriteLine("message -> envia un mensaje al server");
                 Console.WriteLine("exit -> abandonar el programa");
                 Console.Write("Ingrese su opcion: ");
                 var option = Console.ReadLine();
-                switch (option)
-                {
-                    case "list":
-                        ListGames(socket);
-                        break;
-                    case "exit":
-                        socket.Shutdown(SocketShutdown.Both);
-                        socket.Close();
-                        _exit = true;
-                        break;
-                    case "message":
-                        Console.WriteLine("Ingrese el mensaje a enviar:");
-                        var message = Console.ReadLine();
-                        Request(message, socket, CommandConstants.Message);
+                if (option != null)
+                    switch (option.ToLower())
+                    {
+                        case "list":
+                            ListGames(socket);
+                            break;
+                        case "publish":
+                            Publish(socket);
+                            break;
+                        case "exit":
+                            socket.Shutdown(SocketShutdown.Both);
+                            socket.Close();
+                            _exit = true;
+                            break;
+                        case "message":
+                            Console.WriteLine("Ingrese el mensaje a enviar:");
+                            var message = Console.ReadLine();
+                            Request(message, socket, CommandConstants.Message);
 
-                        break;
-                    default:
-                        Console.WriteLine("Opcion invalida");
-                        break;
-                }
+                            break;
+                        default:
+                            Console.WriteLine("Opcion invalida");
+                            break;
+                    }
             }
 
             Console.WriteLine("Exiting Application");
@@ -62,7 +65,8 @@ namespace GameStoreClient
         {
             Request("", socket, CommandConstants.ListGames);
             var bufferResponse = Response(socket);
-            var length = Convert.ToInt32(Encoding.UTF8.GetString(bufferResponse));
+            var lengthString = Encoding.UTF8.GetString(bufferResponse);
+            var length = Convert.ToInt32(lengthString);
             gamesLoaded.Clear();
             Console.WriteLine("\n Games list: \n");
             for (int i = 0; i < length; i++)
@@ -153,10 +157,30 @@ namespace GameStoreClient
             }
         }
 
+        private void Publish(Socket socket)
+        {
+            Console.WriteLine("\n Publish a game");
+            var game = "";
+            var atributes = new List<string>
+            {
+                "Title", "Genre", "Sinopsis"
+            };
+            for (int i = 0; i < atributes.Count; i++)
+            {
+                Console.Write($"\n Ingrese el {atributes[i]}:");
+                var insert = Console.ReadLine();
+                game += insert + "*";
+            }
+            Request(game,socket,CommandConstants.Publish);
+            /*var bufferResponse = Response(socket);
+            
+            Console.WriteLine(Encoding.UTF8.GetString(bufferResponse));*/
+        }
+
         private byte[] Response(Socket socket)
         {
             byte[] bufferResponse = new byte[] { };
-            var headerLength = HeaderConstants.Request.Length + HeaderConstants.CommandLength +
+            var headerLength = HeaderConstants.Response.Length + HeaderConstants.CommandLength +
                                HeaderConstants.DataLength;
             var buffer = new byte[headerLength];
             try

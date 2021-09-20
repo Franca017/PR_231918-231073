@@ -7,5 +7,6 @@ namespace LogicInterface
     {
         List<Game> GetAll();
         Game GetById(int gameId);
+        Game Add(Game game);
     }
 }
