@@ -9,7 +9,6 @@ namespace RepositoryInterface
     {
         List<Game> GetAll();
         void Add(Game game);
-
-
+        Game GetById(int gameId);
     }
 }

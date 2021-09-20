@@ -6,5 +6,6 @@ namespace LogicInterface
     public interface IGamesLogic
     {
         List<Game> GetAll();
+        Game GetById(int gameId);
     }
 }

@@ -15,8 +15,6 @@ namespace GameStoreServer
         private IGamesLogic _gamesLogic;
         private IUserLogic _userLogic;
         private IReviewLogic _reviewLogic;
-        
-        private User _userLogged;
 
         public Runtime(IServiceProvider serviceProvider)
         {
@@ -27,6 +25,7 @@ namespace GameStoreServer
 
         public void HandleConnection(Socket connectedSocket)
         {
+            User userLogged = null;
             while (!Exit)
             {
                 var headerLength = HeaderConstants.Request.Length + HeaderConstants.CommandLength +
@@ -45,13 +44,39 @@ namespace GameStoreServer
                             var user = Encoding.UTF8.GetString(bufferData1);
                             Console.WriteLine("Usuario: "+ Encoding.UTF8.GetString(bufferData1));
                             var userInDb = _userLogic.Login(user);
-                            _userLogged = userInDb;
+                            userLogged = userInDb;
                             var response = $"Se inicio sesion en el usuario {userInDb.UserName} (creado el {userInDb.DateCreated.Day}/{userInDb.DateCreated.Month})."; 
                             Request(response, connectedSocket, CommandConstants.Login);
                             
                             break;
                         case CommandConstants.ListGames:
-                            Console.WriteLine("Not Implemented yet...");
+                            var list = _gamesLogic.GetAll();
+                            Request(list.Count.ToString(),connectedSocket,CommandConstants.ListGames);
+                            for (int i = 0; i < list.Count; i++)
+                            {
+                                var game = list[i];
+                                string gameToString = $"{game.Id}*{game.Title}*{game.Genre}*{game.Rating}*{game.Sinopsis}*{game.Image}";
+                                Request(gameToString,connectedSocket,CommandConstants.ListGames);
+                            }
+                            break;
+                        case CommandConstants.Purchase:
+                            //Agarra userLogged y le mete el game por medio del id que le pase en el mensaje de la request. Si ya lo tiene le avisa que no se le agrego.
+                            var bufferData2 = new byte[header.IDataLength];  
+                            ReceiveData(connectedSocket,header.IDataLength,bufferData2);
+                            var gameIdString = Encoding.UTF8.GetString(bufferData2);
+                            
+                            var gameId = Convert.ToInt32(gameIdString);
+                            var purchased = _userLogic.PurchaseGame(userLogged, gameId);
+                            if (purchased)
+                            {
+                                response = $"Game {gameId} was purchased by {userLogged.UserName}";
+                            }
+                            else
+                            {
+                                response = $"The game {gameId} is already purchased by {userLogged.UserName}";
+                            }
+                            Request(response, connectedSocket, CommandConstants.Login);
+                            
                             break;
                         case CommandConstants.Message:
                             Console.WriteLine("Will receive message to display...");

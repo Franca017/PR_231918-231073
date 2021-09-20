@@ -11,5 +11,12 @@ namespace Domain
         public string Sinopsis { get; set; }
         public string Image { get; set; }
 
+        public Game(string title, string genre, string sinopsis)
+        {
+            this.Title = title;
+            this.Genre = genre;
+            this.Sinopsis = sinopsis;
+            this.Rating = 0;
+        }
     }
 }

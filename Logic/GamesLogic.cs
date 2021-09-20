@@ -21,5 +21,10 @@ namespace Logic
         {
             return gamesRepository.GetAll();
         }
+
+        public Game GetById(int gameId)
+        {
+            return gamesRepository.GetById(gameId);
+        }
     }
 }
