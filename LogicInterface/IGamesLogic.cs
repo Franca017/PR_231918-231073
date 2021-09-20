@@ -7,5 +7,6 @@ namespace LogicInterface
     {
         List<Game> GetAll();
         Game GetById(int gameId);
+        List<Game> GetSearchedGames(string keywords);
     }
 }
