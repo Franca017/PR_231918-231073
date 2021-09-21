@@ -7,10 +7,10 @@ namespace GameStoreServer
 {
     public class Connections
     {
-        public static bool _exit = false;
+        private static bool _exit = false;
         private List<Socket> _clients = new List<Socket>();
 
-        public void ListenConnections(Socket socketServer, Runtime runtime)
+        public void ListenConnections(Socket socketServer, IServiceProvider serviceProvider)
         {
             while (!_exit)
             {
@@ -19,7 +19,7 @@ namespace GameStoreServer
                     var clientConnected = socketServer.Accept();
                     _clients.Add(clientConnected);
                     Console.WriteLine("Accepted new connection...");
-                    var threadcClient = new Thread(() => runtime.HandleConnection(clientConnected));
+                    var threadcClient = new Thread(() => startRuntime(serviceProvider, clientConnected));
                     threadcClient.Start();
                 }
                 catch (Exception e)
@@ -29,10 +29,15 @@ namespace GameStoreServer
                 }
             }
 
-            runtime.Exit = true;
             Console.WriteLine("Exiting....");
         }
-        
+
+        private void startRuntime(IServiceProvider serviceProvider, Socket clientConnected)
+        {
+            var runtime = new Runtime(serviceProvider);
+            runtime.HandleConnection(clientConnected);
+        }
+
         public void HandleServer(Socket socketServer)
         {
             Console.WriteLine("Bienvenido al Sistema Server");

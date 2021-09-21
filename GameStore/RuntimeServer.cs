@@ -139,7 +139,7 @@ namespace GameStoreServer
         private void ReceiveData(Socket clientSocket,  int length, byte[] buffer)
         {
             var iRecv = 0;
-            while (iRecv < length)
+            while (iRecv < length && !Exit)
             {
                 try
                 {
@@ -150,6 +150,7 @@ namespace GameStoreServer
                         {
                             clientSocket.Shutdown(SocketShutdown.Both);
                             clientSocket.Close();
+                            Exit = true;
                         }
                         else
                         {

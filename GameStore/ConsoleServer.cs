@@ -11,9 +11,8 @@ namespace GameStoreServer
         {
             Setup setup = new Setup();
             _serviceProvider = setup.BuildServiceProvider();
-            Runtime runtime = new Runtime(_serviceProvider);
 
-            setup.InitializeSocketServer(runtime);
+            setup.InitializeSocketServer(_serviceProvider);
 
         }
     }
