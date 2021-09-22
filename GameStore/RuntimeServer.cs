@@ -2,6 +2,7 @@
 using System.Net.Sockets;
 using System.Text;
 using Domain;
+using Domain.Exceptions;
 using LogicInterface;
 using Microsoft.Extensions.DependencyInjection;
 using ProtocolLibrary;
@@ -39,32 +40,35 @@ namespace GameStoreServer
                     switch (header.ICommand)
                     {
                         case CommandConstants.Login:
-                            var bufferData1 = new byte[header.IDataLength];  
-                            ReceiveData(connectedSocket,header.IDataLength,bufferData1);
+                            var bufferData1 = new byte[header.IDataLength];
+                            ReceiveData(connectedSocket, header.IDataLength, bufferData1);
                             var user = Encoding.UTF8.GetString(bufferData1);
-                            Console.WriteLine("Usuario: "+ Encoding.UTF8.GetString(bufferData1));
+                            Console.WriteLine("Usuario: " + Encoding.UTF8.GetString(bufferData1));
                             var userInDb = _userLogic.Login(user);
                             userLogged = userInDb;
-                            var response = $"Se inicio sesion en el usuario {userInDb.UserName} (creado el {userInDb.DateCreated.Day}/{userInDb.DateCreated.Month})."; 
+                            var response =
+                                $"Se inicio sesion en el usuario {userInDb.UserName} (creado el {userInDb.DateCreated.Day}/{userInDb.DateCreated.Month}).";
                             Response(response, connectedSocket, CommandConstants.Login);
-                            
+
                             break;
                         case CommandConstants.ListGames:
                             var list = _gamesLogic.GetAll();
-                            Response(list.Count.ToString(),connectedSocket,CommandConstants.ListGames);
+                            Response(list.Count.ToString(), connectedSocket, CommandConstants.ListGames);
                             for (int i = 0; i < list.Count; i++)
                             {
                                 var game = list[i];
-                                string gameToString = $"{game.Id}*{game.Title}*{game.Genre}*{game.Rating}*{game.Sinopsis}*{game.Image}";
-                                Response(gameToString,connectedSocket,CommandConstants.ListGames);
+                                string gameToString =
+                                    $"{game.Id}*{game.Title}*{game.Genre}*{game.Rating}*{game.Sinopsis}*{game.Image}";
+                                Response(gameToString, connectedSocket, CommandConstants.ListGames);
                             }
+
                             break;
                         case CommandConstants.Purchase:
                             //Agarra userLogged y le mete el game por medio del id que le pase en el mensaje de la request. Si ya lo tiene le avisa que no se le agrego.
-                            var bufferData2 = new byte[header.IDataLength];  
-                            ReceiveData(connectedSocket,header.IDataLength,bufferData2);
+                            var bufferData2 = new byte[header.IDataLength];
+                            ReceiveData(connectedSocket, header.IDataLength, bufferData2);
                             var gameIdString = Encoding.UTF8.GetString(bufferData2);
-                            
+
                             var gameId = Convert.ToInt32(gameIdString);
                             var purchased = _userLogic.PurchaseGame(userLogged, gameId);
                             if (purchased)
@@ -75,13 +79,14 @@ namespace GameStoreServer
                             {
                                 response = $"The game {gameId} is already purchased by {userLogged.UserName}";
                             }
+
                             Response(response, connectedSocket, CommandConstants.Login);
-                            
+
                             break;
                         case CommandConstants.Publish:
-                            var bufferData3 = new byte[header.IDataLength];  
-                            ReceiveData(connectedSocket,header.IDataLength,bufferData3);
-                            
+                            var bufferData3 = new byte[header.IDataLength];
+                            ReceiveData(connectedSocket, header.IDataLength, bufferData3);
+
                             var split = (Encoding.UTF8.GetString(bufferData3)).Split("*");
                             var newGame = new Game(split[0], split[1], split[2]);
                             var newGameInDb = _gamesLogic.Add(newGame);
@@ -90,25 +95,31 @@ namespace GameStoreServer
                             Response(response, connectedSocket,CommandConstants.Publish);*/
                             break;
                         case CommandConstants.Search:
-                            var bufferData4 = new byte[header.IDataLength];  
-                            ReceiveData(connectedSocket,header.IDataLength,bufferData4);
+                            var bufferData4 = new byte[header.IDataLength];
+                            ReceiveData(connectedSocket, header.IDataLength, bufferData4);
                             var keywords = Encoding.UTF8.GetString(bufferData4);
                             var foundedGames = _gamesLogic.GetSearchedGames(keywords);
-                            Response(foundedGames.Count.ToString(),connectedSocket,CommandConstants.Search);
+                            Response(foundedGames.Count.ToString(), connectedSocket, CommandConstants.Search);
                             for (int i = 0; i < foundedGames.Count; i++)
                             {
                                 var game = foundedGames[i];
-                                string gameToString = $"{game.Id}*{game.Title}*{game.Genre}*{game.Rating}*{game.Sinopsis}*{game.Image}";
-                                Response(gameToString,connectedSocket,CommandConstants.Search);
+                                string gameToString =
+                                    $"{game.Id}*{game.Title}*{game.Genre}*{game.Rating}*{game.Sinopsis}*{game.Image}";
+                                Response(gameToString, connectedSocket, CommandConstants.Search);
                             }
+
                             break;
                         case CommandConstants.Message:
                             Console.WriteLine("Will receive message to display...");
-                            var bufferData = new byte[header.IDataLength];  
-                            ReceiveData(connectedSocket,header.IDataLength,bufferData);
+                            var bufferData = new byte[header.IDataLength];
+                            ReceiveData(connectedSocket, header.IDataLength, bufferData);
                             Console.WriteLine("Message received: " + Encoding.UTF8.GetString(bufferData));
                             break;
                     }
+                }
+                catch (ClientDisconnected c)
+                {
+                    Console.WriteLine($"{userLogged.UserName} disconnected");
                 }
                 catch (Exception e)
                 {
@@ -139,7 +150,7 @@ namespace GameStoreServer
         private void ReceiveData(Socket clientSocket,  int length, byte[] buffer)
         {
             var iRecv = 0;
-            while (iRecv < length)
+            while (iRecv < length && !Exit)
             {
                 try
                 {
@@ -150,6 +161,8 @@ namespace GameStoreServer
                         {
                             clientSocket.Shutdown(SocketShutdown.Both);
                             clientSocket.Close();
+                            Exit = true;
+                            throw new ClientDisconnected();
                         }
                         else
                         {

@@ -18,14 +18,14 @@ namespace GameStoreServer
             return serviceProvider;
         }
         
-        public void InitializeSocketServer(Runtime runtime)
+        public void InitializeSocketServer(IServiceProvider serviceProvider)
         {
             var socketServer = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
             socketServer.Bind(new IPEndPoint(IPAddress.Parse("127.0.0.1"), 20000));
             socketServer.Listen(100);
             Connections connections = new Connections();
 
-            var threadServer = new Thread(() => connections.ListenConnections(socketServer, runtime));
+            var threadServer = new Thread(() => connections.ListenConnections(socketServer, serviceProvider));
             threadServer.Start();
             
             connections.HandleServer(socketServer);
