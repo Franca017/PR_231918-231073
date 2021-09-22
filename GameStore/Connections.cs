@@ -19,7 +19,7 @@ namespace GameStoreServer
                     var clientConnected = socketServer.Accept();
                     _clients.Add(clientConnected);
                     Console.WriteLine("Accepted new connection...");
-                    var threadcClient = new Thread(() => startRuntime(serviceProvider, clientConnected));
+                    var threadcClient = new Thread(() => StartRuntime(serviceProvider, clientConnected));
                     threadcClient.Start();
                 }
                 catch (Exception e)
@@ -32,7 +32,7 @@ namespace GameStoreServer
             Console.WriteLine("Exiting....");
         }
 
-        private void startRuntime(IServiceProvider serviceProvider, Socket clientConnected)
+        private void StartRuntime(IServiceProvider serviceProvider, Socket clientConnected)
         {
             var runtime = new Runtime(serviceProvider);
             runtime.HandleConnection(clientConnected);
@@ -45,7 +45,7 @@ namespace GameStoreServer
             {
                 Console.WriteLine("Opciones validas: ");
                 Console.WriteLine("exit -> abandonar el programa");
-                Console.WriteLine("Ingrese su opcion: ");
+                Console.Write("Ingrese su opcion: ");
 
                 var userInput = Console.ReadLine();
 
