@@ -9,5 +9,6 @@ namespace LogicInterface
         Game GetById(int gameId);
         Game Add(Game game);
         List<Game> GetSearchedGames(string keywords);
+        void Delete(int gameId);
     }
 }

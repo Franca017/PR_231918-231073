@@ -10,5 +10,6 @@ namespace RepositoryInterface
         List<Game> GetAll();
         Game Add(Game game);
         Game GetById(int gameId);
+        void Delete(int gameId);
     }
 }

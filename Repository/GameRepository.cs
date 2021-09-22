@@ -33,6 +33,12 @@ namespace Repository
             return this.games.First(g => g.Id == gameId);
         }
 
+        public void Delete(int gameId)
+        {
+            var game = GetById(gameId);
+            games.Remove(game);
+        }
+
         public List<Game> GetAll()
         {
             return this.games;
