@@ -37,6 +37,8 @@ namespace GameStoreServer
                     ReceiveData(connectedSocket, headerLength, buffer);
                     var header = new Header();
                     header.DecodeData(buffer);
+                    string gameIdString;
+                    int gameId;
                     switch (header.ICommand)
                     {
                         case CommandConstants.Login:
@@ -65,11 +67,11 @@ namespace GameStoreServer
                             break;
                         case CommandConstants.Purchase:
                             //Agarra userLogged y le mete el game por medio del id que le pase en el mensaje de la request. Si ya lo tiene le avisa que no se le agrego.
-                            var bufferData2 = new byte[header.IDataLength];
-                            ReceiveData(connectedSocket, header.IDataLength, bufferData2);
-                            var gameIdString = Encoding.UTF8.GetString(bufferData2);
+                            var bufferPurchase = new byte[header.IDataLength];
+                            ReceiveData(connectedSocket, header.IDataLength, bufferPurchase);
+                            gameIdString = Encoding.UTF8.GetString(bufferPurchase);
 
-                            var gameId = Convert.ToInt32(gameIdString);
+                            gameId = Convert.ToInt32(gameIdString);
                             var purchased = _userLogic.PurchaseGame(userLogged, gameId);
                             if (purchased)
                             {
@@ -84,20 +86,20 @@ namespace GameStoreServer
 
                             break;
                         case CommandConstants.Publish:
-                            var bufferData3 = new byte[header.IDataLength];
-                            ReceiveData(connectedSocket, header.IDataLength, bufferData3);
+                            var bufferPublish = new byte[header.IDataLength];
+                            ReceiveData(connectedSocket, header.IDataLength, bufferPublish);
 
-                            var split = (Encoding.UTF8.GetString(bufferData3)).Split("*");
+                            var split = (Encoding.UTF8.GetString(bufferPublish)).Split("*");
                             var newGame = new Game(split[0], split[1], split[2]);
                             var newGameInDb = _gamesLogic.Add(newGame);
                             _userLogic.NewGame(newGameInDb, userLogged);
-                            /*response = $"El juego {newGame.Title} fue añadido al store.";
-                            Response(response, connectedSocket,CommandConstants.Publish);*/
+                            response = $"El juego {newGame.Title} fue añadido al store";
+                            Response(response, connectedSocket,CommandConstants.Publish);
                             break;
                         case CommandConstants.Search:
-                            var bufferData4 = new byte[header.IDataLength];
-                            ReceiveData(connectedSocket, header.IDataLength, bufferData4);
-                            var keywords = Encoding.UTF8.GetString(bufferData4);
+                            var bufferSearch = new byte[header.IDataLength];
+                            ReceiveData(connectedSocket, header.IDataLength, bufferSearch);
+                            var keywords = Encoding.UTF8.GetString(bufferSearch);
                             var foundedGames = _gamesLogic.GetSearchedGames(keywords);
                             Response(foundedGames.Count.ToString(), connectedSocket, CommandConstants.Search);
                             for (int i = 0; i < foundedGames.Count; i++)
@@ -108,6 +110,26 @@ namespace GameStoreServer
                                 Response(gameToString, connectedSocket, CommandConstants.Search);
                             }
 
+                            break;
+                        case CommandConstants.ListPublishedGames:
+                            var listPublished = userLogged.PublishedGames;
+                            Response(listPublished.Count.ToString(), connectedSocket, CommandConstants.ListPublishedGames);
+                            for (int i = 0; i < listPublished.Count; i++)
+                            {
+                                var game = listPublished[i];
+                                string gameToString =
+                                    $"{game.Id}*{game.Title}*{game.Genre}*{game.Rating}*{game.Sinopsis}*{game.Image}";
+                                Response(gameToString, connectedSocket, CommandConstants.ListGames);
+                            }
+                            break;
+                        case CommandConstants.DeleteGame:
+                            var bufferDelete = new byte[header.IDataLength];
+                            ReceiveData(connectedSocket, header.IDataLength, bufferDelete);
+                            gameIdString = Encoding.UTF8.GetString(bufferDelete);
+
+                            gameId = Convert.ToInt32(gameIdString);
+                            _gamesLogic.Delete(gameId);
+                            Response($"Your game with id {gameId} was deleted.", connectedSocket, CommandConstants.DeleteGame);
                             break;
                         case CommandConstants.Message:
                             Console.WriteLine("Will receive message to display...");
@@ -120,6 +142,7 @@ namespace GameStoreServer
                 catch (ClientDisconnected c)
                 {
                     Console.WriteLine($"{userLogged.UserName} disconnected");
+                    Exit = true;
                 }
                 catch (Exception e)
                 {
@@ -150,7 +173,7 @@ namespace GameStoreServer
         private void ReceiveData(Socket clientSocket,  int length, byte[] buffer)
         {
             var iRecv = 0;
-            while (iRecv < length && !Exit)
+            while (iRecv < length)
             {
                 try
                 {
@@ -161,7 +184,6 @@ namespace GameStoreServer
                         {
                             clientSocket.Shutdown(SocketShutdown.Both);
                             clientSocket.Close();
-                            Exit = true;
                             throw new ClientDisconnected();
                         }
                         else
@@ -175,7 +197,7 @@ namespace GameStoreServer
                 catch (SocketException se)
                 {
                     Console.WriteLine(se.Message);
-                    return;
+                    throw new ClientDisconnected();
                 }
             }
         }

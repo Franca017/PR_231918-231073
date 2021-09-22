@@ -19,7 +19,7 @@ namespace GameStoreClient
             Console.Write("Ingrese su nombre de Usuario (en caso de no existir se le creara uno): ");
             var user = Console.ReadLine();
             Request(user, socket, CommandConstants.Login);
-            var bufferResponse = Response(socket);
+            var bufferResponse = Response(socket, CommandConstants.Login);
             
             Console.WriteLine(Encoding.UTF8.GetString(bufferResponse));
 
@@ -28,6 +28,7 @@ namespace GameStoreClient
                 Console.WriteLine("Opciones validas: ");
                 Console.WriteLine("list -> Visualiza la lista de juegos");
                 Console.WriteLine("publish -> Publicar un juego");
+                Console.WriteLine("publishedgames -> Visualiza la lista de juegos publicados");
                 Console.WriteLine("message -> envia un mensaje al server");
                 Console.WriteLine("exit -> abandonar el programa");
                 Console.Write("Ingrese su opcion: ");
@@ -40,6 +41,9 @@ namespace GameStoreClient
                             break;
                         case "publish":
                             Publish(socket);
+                            break;
+                        case "publishedgames":
+                            ListPublishedGames(socket);
                             break;
                         case "exit":
                             socket.Shutdown(SocketShutdown.Both);
@@ -61,17 +65,83 @@ namespace GameStoreClient
             Console.WriteLine("Exiting Application");
         }
 
+        private void ListPublishedGames(Socket socket)
+        {
+            Request("", socket, CommandConstants.ListPublishedGames);
+            var bufferResponse = Response(socket, CommandConstants.ListPublishedGames);
+            var lengthString = Encoding.UTF8.GetString(bufferResponse);
+            var length = Convert.ToInt32(lengthString);
+            var gamesPublished = new List<Game>();
+            Console.WriteLine("\n Published games list: \n");
+            for (int i = 0; i < length; i++)
+            {
+                bufferResponse = Response(socket, CommandConstants.ListPublishedGames);
+                var split = (Encoding.UTF8.GetString(bufferResponse)).Split("*");
+                var game = new Game(split[1], split[2], split[4]);
+                game.Id = Convert.ToInt32(split[0]);
+                game.Rating = Convert.ToInt32(split[3]);
+                game.Image = split[5];
+                gamesPublished.Add(game);
+                Console.WriteLine($"{game.Id}. {game.Title} - {game.Genre} - {game.Rating}\n");
+            }
+            
+            var main = false;
+            while (!main)
+            {
+                Console.WriteLine("\n Options:");
+                Console.WriteLine("delete -> Get details of a game");
+                Console.WriteLine("main <- Go to main menu");
+                Console.Write("Option: ");
+                var option = Console.ReadLine();
+                switch (option)
+                {
+                    case "delete":
+                        DeleteGame(socket, gamesPublished);
+                        break;
+                    case "main":
+                        main = true;
+                        break;
+                    default:
+                        Console.WriteLine("Opcion invalida");
+                        break;
+                }
+            }
+        }
+
+        private void DeleteGame(Socket socket, List<Game> gamesPublished)
+        {
+            var idCorrecto = false;
+            while (!idCorrecto)
+            {
+                Console.Write("Insert the id of the game to delete: ");
+                var gameId = Console.ReadLine();
+                var game = gamesPublished.Find(e => e.Id.Equals(Convert.ToInt32(gameId)));
+                if (game == null)
+                {
+                    Console.WriteLine("Id inexistente");
+                }
+                else
+                {
+                    Request(gameId, socket, CommandConstants.DeleteGame);
+                    var bufferResponse = Response(socket, CommandConstants.DeleteGame);
+            
+                    Console.WriteLine(Encoding.UTF8.GetString(bufferResponse));
+                    idCorrecto = true;
+                }
+            }
+        }
+
         private void ListGames(Socket socket)
         {
             Request("", socket, CommandConstants.ListGames);
-            var bufferResponse = Response(socket);
+            var bufferResponse = Response(socket, CommandConstants.ListGames);
             var lengthString = Encoding.UTF8.GetString(bufferResponse);
             var length = Convert.ToInt32(lengthString);
             gamesLoaded.Clear();
             Console.WriteLine("\n Games list: \n");
             for (int i = 0; i < length; i++)
             {
-                bufferResponse = Response(socket);
+                bufferResponse = Response(socket, CommandConstants.ListGames);
                 var split = (Encoding.UTF8.GetString(bufferResponse)).Split("*");
                 var game = new Game(split[1], split[2], split[4]);
                 game.Id = Convert.ToInt32(split[0]);
@@ -118,7 +188,7 @@ namespace GameStoreClient
             Console.WriteLine("Insert some keywords to search a game: ");
             string keywords = Console.ReadLine();
             Request(keywords, socket, CommandConstants.Search);
-            var bufferResponse = Response(socket);
+            var bufferResponse = Response(socket, CommandConstants.Search);
             var length = Convert.ToInt32(Encoding.UTF8.GetString(bufferResponse));
             foundedGames.Clear();
             Console.WriteLine("\n Search result: \n");
@@ -130,7 +200,7 @@ namespace GameStoreClient
             {
                 for (int i = 0; i < length; i++)
                 {
-                    bufferResponse = Response(socket);
+                    bufferResponse = Response(socket, CommandConstants.Search);
                     var split = (Encoding.UTF8.GetString(bufferResponse)).Split("*");
                     var game = new Game(split[1], split[2], split[4]);
                     game.Id = Convert.ToInt32(split[0]);
@@ -157,7 +227,7 @@ namespace GameStoreClient
                 else
                 {
                     Request(gameId, socket, CommandConstants.Purchase);
-                    var bufferResponse = Response(socket);
+                    var bufferResponse = Response(socket, CommandConstants.Purchase);
             
                     Console.WriteLine(Encoding.UTF8.GetString(bufferResponse));
                     idCorrecto = true;
@@ -206,12 +276,12 @@ namespace GameStoreClient
                 game += insert + "*";
             }
             Request(game,socket,CommandConstants.Publish);
-            /*var bufferResponse = Response(socket);
+            var bufferResponse = Response(socket, CommandConstants.Publish);
             
-            Console.WriteLine(Encoding.UTF8.GetString(bufferResponse));*/
+            Console.WriteLine(Encoding.UTF8.GetString(bufferResponse));
         }
 
-        private byte[] Response(Socket socket)
+        private byte[] Response(Socket socket, int command)
         {
             byte[] bufferResponse = new byte[] { };
             var headerLength = HeaderConstants.Response.Length + HeaderConstants.CommandLength +
@@ -222,8 +292,15 @@ namespace GameStoreClient
                 ReceiveData(socket, headerLength, buffer);
                 var header = new Header();
                 header.DecodeData(buffer);
-                bufferResponse = new byte[header.IDataLength];
-                ReceiveData(socket, header.IDataLength, bufferResponse);
+                if (header.ICommand.Equals(command))
+                {
+                    bufferResponse = new byte[header.IDataLength];
+                    ReceiveData(socket, header.IDataLength, bufferResponse);
+                }
+                else
+                {
+                    Console.WriteLine(header.ICommand + " " + command);
+                }
             }
             catch (Exception e)
             {

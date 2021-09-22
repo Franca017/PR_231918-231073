@@ -54,5 +54,10 @@ namespace Logic
 
             return ret;
         }
+
+        public void Delete(int gameId)
+        {
+            gamesRepository.Delete(gameId);
+        }
     }
 }
