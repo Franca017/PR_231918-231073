@@ -50,7 +50,7 @@ namespace GameStoreServer
                             userLogged = userInDb;
                             var response =
                                 $"Se inicio sesion en el usuario {userInDb.UserName} (creado el {userInDb.DateCreated.Day}/{userInDb.DateCreated.Month}).";
-                            Response(response, connectedSocket, CommandConstants.Login);
+                            Response(response, connectedSocket, header.ICommand);
 
                             break;
                         case CommandConstants.ListGames:
@@ -61,7 +61,7 @@ namespace GameStoreServer
                                 var game = list[i];
                                 string gameToString =
                                     $"{game.Id}*{game.Title}*{game.Genre}*{game.Rating}*{game.Sinopsis}*{game.Image}";
-                                Response(gameToString, connectedSocket, CommandConstants.ListGames);
+                                Response(gameToString, connectedSocket, header.ICommand);
                             }
 
                             break;
@@ -82,7 +82,7 @@ namespace GameStoreServer
                                 response = $"The game {gameId} is already purchased by {userLogged.UserName}";
                             }
 
-                            Response(response, connectedSocket, CommandConstants.Login);
+                            Response(response, connectedSocket, header.ICommand);
 
                             break;
                         case CommandConstants.Publish:
@@ -93,8 +93,8 @@ namespace GameStoreServer
                             var newGame = new Game(split[0], split[1], split[2]);
                             var newGameInDb = _gamesLogic.Add(newGame);
                             _userLogic.NewGame(newGameInDb, userLogged);
-                            response = $"El juego {newGame.Title} fue añadido al store";
-                            Response(response, connectedSocket,CommandConstants.Publish);
+                            response = $"{newGameInDb.Title} was published to the store with id {newGameInDb.Id}";
+                            Response(response, connectedSocket, header.ICommand);
                             break;
                         case CommandConstants.Search:
                             var bufferSearch = new byte[header.IDataLength];
@@ -107,7 +107,7 @@ namespace GameStoreServer
                                 var game = foundedGames[i];
                                 string gameToString =
                                     $"{game.Id}*{game.Title}*{game.Genre}*{game.Rating}*{game.Sinopsis}*{game.Image}";
-                                Response(gameToString, connectedSocket, CommandConstants.Search);
+                                Response(gameToString, connectedSocket, header.ICommand);
                             }
 
                             break;
@@ -119,7 +119,7 @@ namespace GameStoreServer
                                 var game = listPublished[i];
                                 string gameToString =
                                     $"{game.Id}*{game.Title}*{game.Genre}*{game.Rating}*{game.Sinopsis}*{game.Image}";
-                                Response(gameToString, connectedSocket, CommandConstants.ListGames);
+                                Response(gameToString, connectedSocket, header.ICommand);
                             }
                             break;
                         case CommandConstants.DeleteGame:
@@ -129,7 +129,7 @@ namespace GameStoreServer
 
                             gameId = Convert.ToInt32(gameIdString);
                             _gamesLogic.Delete(gameId);
-                            Response($"Your game with id {gameId} was deleted.", connectedSocket, CommandConstants.DeleteGame);
+                            Response($"Your game with id {gameId} was deleted.", connectedSocket, header.ICommand);
                             break;
                         case CommandConstants.Message:
                             Console.WriteLine("Will receive message to display...");

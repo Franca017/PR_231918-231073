@@ -25,7 +25,7 @@ namespace GameStoreClient
 
             while (!_exit)
             {
-                Console.WriteLine("Opciones validas: ");
+                Console.WriteLine("\n Options: ");
                 Console.WriteLine("list -> Visualiza la lista de juegos");
                 Console.WriteLine("publish -> Publicar un juego");
                 Console.WriteLine("publishedgames -> Visualiza la lista de juegos publicados");
