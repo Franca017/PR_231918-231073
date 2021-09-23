@@ -546,19 +546,19 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\franc\\.nuget\\packages\\": {}
+    "C:\\Users\\Matias\\.nuget\\packages\\": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\franc\\Desktop\\PR_231918-231073\\RepositoryInterface\\RepositoryInterface.csproj",
+      "projectUniqueName": "C:\\Users\\Matias\\Desktop\\PR_231918-231073\\RepositoryInterface\\RepositoryInterface.csproj",
       "projectName": "RepositoryInterface",
-      "projectPath": "C:\\Users\\franc\\Desktop\\PR_231918-231073\\RepositoryInterface\\RepositoryInterface.csproj",
-      "packagesPath": "C:\\Users\\franc\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\franc\\Desktop\\PR_231918-231073\\RepositoryInterface\\obj\\",
+      "projectPath": "C:\\Users\\Matias\\Desktop\\PR_231918-231073\\RepositoryInterface\\RepositoryInterface.csproj",
+      "packagesPath": "C:\\Users\\Matias\\.nuget\\packages\\",
+      "outputPath": "C:\\Users\\Matias\\Desktop\\PR_231918-231073\\RepositoryInterface\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
-        "C:\\Users\\franc\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Users\\Matias\\AppData\\Roaming\\NuGet\\NuGet.Config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],
       "originalTargetFrameworks": [
@@ -572,8 +572,8 @@
         "netcoreapp3.1": {
           "targetAlias": "netcoreapp3.1",
           "projectReferences": {
-            "C:\\Users\\franc\\Desktop\\PR_231918-231073\\Domain\\Domain.csproj": {
-              "projectPath": "C:\\Users\\franc\\Desktop\\PR_231918-231073\\Domain\\Domain.csproj"
+            "C:\\Users\\Matias\\Desktop\\PR_231918-231073\\Domain\\Domain.csproj": {
+              "projectPath": "C:\\Users\\Matias\\Desktop\\PR_231918-231073\\Domain\\Domain.csproj"
             }
           }
         }

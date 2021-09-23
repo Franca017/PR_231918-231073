@@ -70,7 +70,6 @@ namespace GameStoreServer
                             var bufferPurchase = new byte[header.IDataLength];
                             ReceiveData(connectedSocket, header.IDataLength, bufferPurchase);
                             gameIdString = Encoding.UTF8.GetString(bufferPurchase);
-
                             gameId = Convert.ToInt32(gameIdString);
                             var purchased = _userLogic.PurchaseGame(userLogged, gameId);
                             if (purchased)
@@ -81,9 +80,21 @@ namespace GameStoreServer
                             {
                                 response = $"The game {gameId} is already purchased by {userLogged.UserName}";
                             }
-
                             Response(response, connectedSocket, header.ICommand);
-
+                            break;
+                        case CommandConstants.GetReviews:
+                            var bufferReviews = new byte[header.IDataLength];
+                            ReceiveData(connectedSocket, header.IDataLength, bufferReviews);
+                            gameIdString = Encoding.UTF8.GetString(bufferReviews);
+                            gameId = Convert.ToInt32(gameIdString);
+                            var reviewsList = _gamesLogic.GetGameReviews(gameId);
+                            Response(reviewsList.Count.ToString(), connectedSocket, CommandConstants.GetReviews);
+                            for (int i = 0; i < reviewsList.Count; i++)
+                            {
+                                var review = reviewsList[i];
+                                string reviewToString = review.Rating + "*" + review.Comment;
+                                Response(reviewToString, connectedSocket, header.ICommand);
+                            }
                             break;
                         case CommandConstants.Publish:
                             var bufferPublish = new byte[header.IDataLength];

@@ -39,6 +39,12 @@ namespace Repository
             games.Remove(game);
         }
 
+        public List<Review> GetGameReviews(int gameId)
+        {
+            var game = GetById(gameId);
+            return game.Reviews;
+        }
+
         public List<Game> GetAll()
         {
             return this.games;
