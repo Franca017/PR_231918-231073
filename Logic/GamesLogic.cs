@@ -59,5 +59,10 @@ namespace Logic
         {
             gamesRepository.Delete(gameId);
         }
+
+        public List<Game> GetPublishedGames(User userLogged)
+        {
+            return gamesRepository.GetPublishedGames(userLogged);
+        }
     }
 }

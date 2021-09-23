@@ -11,11 +11,11 @@ namespace GameStoreServer
 {
     public class Runtime
     {
-        public bool Exit { get; set; }
+        private bool Exit { get; set; }
         
-        private IGamesLogic _gamesLogic;
-        private IUserLogic _userLogic;
-        private IReviewLogic _reviewLogic;
+        private readonly IGamesLogic _gamesLogic;
+        private readonly IUserLogic _userLogic;
+        private readonly IReviewLogic _reviewLogic;
 
         public Runtime(IServiceProvider serviceProvider)
         {
@@ -56,9 +56,8 @@ namespace GameStoreServer
                         case CommandConstants.ListGames:
                             var list = _gamesLogic.GetAll();
                             Response(list.Count.ToString(), connectedSocket, CommandConstants.ListGames);
-                            for (int i = 0; i < list.Count; i++)
+                            foreach (var game in list)
                             {
-                                var game = list[i];
                                 string gameToString =
                                     $"{game.Id}*{game.Title}*{game.Genre}*{game.Rating}*{game.Sinopsis}*{game.Image}";
                                 Response(gameToString, connectedSocket, header.ICommand);
@@ -73,14 +72,8 @@ namespace GameStoreServer
 
                             gameId = Convert.ToInt32(gameIdString);
                             var purchased = _userLogic.PurchaseGame(userLogged, gameId);
-                            if (purchased)
-                            {
-                                response = $"Game {gameId} was purchased by {userLogged.UserName}";
-                            }
-                            else
-                            {
-                                response = $"The game {gameId} is already purchased by {userLogged.UserName}";
-                            }
+                            response = purchased ? $"Game {gameId} was purchased by {userLogged.UserName}" 
+                                : $"The game {gameId} is already purchased by {userLogged.UserName}";
 
                             Response(response, connectedSocket, header.ICommand);
 
@@ -90,9 +83,12 @@ namespace GameStoreServer
                             ReceiveData(connectedSocket, header.IDataLength, bufferPublish);
 
                             var split = (Encoding.UTF8.GetString(bufferPublish)).Split("*");
-                            var newGame = new Game(split[0], split[1], split[2]);
+                            var newGame = new Game(split[0], split[1], split[2])
+                            {
+                                Creator = userLogged
+                            };
                             var newGameInDb = _gamesLogic.Add(newGame);
-                            _userLogic.NewGame(newGameInDb, userLogged);
+                            
                             response = $"{newGameInDb.Title} was published to the store with id {newGameInDb.Id}";
                             Response(response, connectedSocket, header.ICommand);
                             break;
@@ -102,9 +98,8 @@ namespace GameStoreServer
                             var keywords = Encoding.UTF8.GetString(bufferSearch);
                             var foundedGames = _gamesLogic.GetSearchedGames(keywords);
                             Response(foundedGames.Count.ToString(), connectedSocket, CommandConstants.Search);
-                            for (int i = 0; i < foundedGames.Count; i++)
+                            foreach (var game in foundedGames)
                             {
-                                var game = foundedGames[i];
                                 string gameToString =
                                     $"{game.Id}*{game.Title}*{game.Genre}*{game.Rating}*{game.Sinopsis}*{game.Image}";
                                 Response(gameToString, connectedSocket, header.ICommand);
@@ -112,11 +107,10 @@ namespace GameStoreServer
 
                             break;
                         case CommandConstants.ListPublishedGames:
-                            var listPublished = userLogged.PublishedGames;
+                            var listPublished = _gamesLogic.GetPublishedGames(userLogged);
                             Response(listPublished.Count.ToString(), connectedSocket, CommandConstants.ListPublishedGames);
-                            for (int i = 0; i < listPublished.Count; i++)
+                            foreach (var game in listPublished)
                             {
-                                var game = listPublished[i];
                                 string gameToString =
                                     $"{game.Id}*{game.Title}*{game.Genre}*{game.Rating}*{game.Sinopsis}*{game.Image}";
                                 Response(gameToString, connectedSocket, header.ICommand);
@@ -139,7 +133,7 @@ namespace GameStoreServer
                             break;
                     }
                 }
-                catch (ClientDisconnected c)
+                catch (ClientDisconnected)
                 {
                     Console.WriteLine($"{userLogged.UserName} disconnected");
                     Exit = true;
