@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using Domain;
 using Microsoft.EntityFrameworkCore;
@@ -18,7 +19,9 @@ namespace Repository
 
         public void Add(Review review)
         {
-            throw new NotImplementedException();
+            var highestId = reviews.Any() ? reviews.Max(x => x.Id) : 0;
+            review.Id = highestId + 1;
+            reviews.Add(review);
         }
 
         public IEnumerable<Review> GetAll()

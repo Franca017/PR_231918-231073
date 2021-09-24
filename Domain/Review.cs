@@ -12,5 +12,12 @@ namespace Domain
         public int Rating { get; set; }
         public string Comment { get; set; }
 
+        public Review(User user, Game game, int rating, string comment)
+        {
+            this.User = user;
+            this.Game = game;
+            this.Rating = rating;
+            this.Comment = comment;
+        }
     }
 }

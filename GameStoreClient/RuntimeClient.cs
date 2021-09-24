@@ -158,6 +158,8 @@ namespace GameStoreClient
                 Console.WriteLine("detail -> Get details of a game");
                 Console.WriteLine("purchase -> Purchase a game");
                 Console.WriteLine("search -> Search a game by its Title, Category, or Rating");
+                Console.WriteLine("reviews -> Get reviews of a game");
+                Console.WriteLine("rate -> Rate and comment a game");
                 Console.WriteLine("main <- Go to main menu");
                 Console.Write("Option: ");
                 var option = Console.ReadLine();
@@ -172,12 +174,101 @@ namespace GameStoreClient
                     case "search":
                         Search(socket);
                         break;
+                    case "reviews":
+                        GetReviews(socket);
+                        break;
+                    case "rate":
+                        Rate(socket);
+                        break;
                     case "main":
                         main = true;
                         break;
                     default:
                         Console.WriteLine("Opcion invalida");
                         break;
+                }
+            }
+        }
+
+        private void Rate(Socket socket)
+        {
+            Console.WriteLine("\n Rate and comment a game");
+            var idCorrecto = false;
+            while (!idCorrecto)
+            {
+                Console.Write("Insert the id of the game to rate and comment: ");
+                var gameId = Console.ReadLine();
+                var game = gamesLoaded.Find(e => e.Id.Equals(Convert.ToInt32(gameId)));
+                if (game == null)
+                {
+                    Console.WriteLine("Id inexistente");
+                }
+                else
+                {
+                    string review = gameId + "*";
+                    Console.WriteLine("Ingrese el rating en un rango del 1 al 5");
+                    var ratingCorrecto = false;
+                    while (!ratingCorrecto)
+                    {
+                        var insert = Console.ReadLine();
+                        int rating = Convert.ToInt32(insert);
+                        if (rating < 1 || rating > 5)
+                        {
+                            Console.WriteLine("Rating incorrecto, ingrese nuevamente. Debe estar entre 1 y 5");
+                        }
+                        else
+                        {
+                            review += insert + "*";
+                            ratingCorrecto = true;
+                        }
+                    }
+                    Console.WriteLine("Ingrese el comentario");
+                    var comment = Console.ReadLine();
+                    review += comment;
+                    Request(review,socket,CommandConstants.Rate);
+                    var bufferResponse = Response(socket, CommandConstants.Rate);
+                    Console.WriteLine(Encoding.UTF8.GetString(bufferResponse));
+                    idCorrecto = true;
+                }
+            }
+        }
+
+        private void GetReviews(Socket socket)
+        {
+            var idCorrecto = false;
+            while (!idCorrecto)
+            {
+                Console.Write("Insert the id of the game to get its reviews: ");
+                var gameId = Console.ReadLine();
+                var game = gamesLoaded.Find(e => e.Id.Equals(Convert.ToInt32(gameId)));
+                if (game == null)
+                {
+                    Console.WriteLine("Id doesnt exist");
+                }
+                else
+                {
+                    Request(gameId, socket, CommandConstants.GetReviews);
+                    var bufferResponse = Response(socket, CommandConstants.GetReviews);
+                    var lengthString = Encoding.UTF8.GetString(bufferResponse);
+                    var length = Convert.ToInt32(lengthString);
+                    Console.WriteLine("\n Game reviews: \n");
+                    if (length == 0)
+                    {
+                        Console.WriteLine("The game doesnt have any reviews");
+                    }
+                    else
+                    {
+                        for (int i = 0; i < length; i++)
+                        {
+                            bufferResponse = Response(socket, CommandConstants.GetReviews);
+                            string[] splittedReview = (Encoding.UTF8.GetString(bufferResponse)).Split("*");
+                            string rating = splittedReview[0];
+                            string comment = splittedReview[1];
+                            Console.WriteLine($"{i+1}: Rating: {rating}");
+                            Console.WriteLine($"{comment}");
+                        }
+                    }
+                    idCorrecto = true;
                 }
             }
         }

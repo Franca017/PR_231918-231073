@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace Domain
 {
@@ -8,6 +9,7 @@ namespace Domain
         public string Title { get; set; }
         public string Genre { get; set; }
         public int Rating { get; set; }
+        public List<Review> Reviews { get; set; }
         public string Sinopsis { get; set; }
         public string Image { get; set; }
 
@@ -18,6 +20,7 @@ namespace Domain
             this.Sinopsis = sinopsis;
             this.Rating = 0;
             this.Image = "";
+            this.Reviews = new List<Review>();
         }
     }
 }
