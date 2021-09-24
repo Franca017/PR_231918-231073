@@ -12,6 +12,7 @@ namespace Domain
         public List<Review> Reviews { get; set; }
         public string Sinopsis { get; set; }
         public string Image { get; set; }
+        public User Creator { get; set; }
 
         public Game(string title, string genre, string sinopsis)
         {

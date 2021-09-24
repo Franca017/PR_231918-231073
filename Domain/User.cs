@@ -9,14 +9,12 @@ namespace Domain
         public int Id { get; set; }
         public string UserName { get; set; }
         public DateTime DateCreated { get; set; }
-        public List<Game> PublishedGames { get; set; }
         public List<Game> PurchasedGames { get; set; }
 
         public User(string userName, DateTime date)
         {
             this.UserName = userName;
             this.DateCreated = date;
-            this.PublishedGames = new List<Game>();
             this.PurchasedGames = new List<Game>();
         }
 

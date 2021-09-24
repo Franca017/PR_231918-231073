@@ -9,7 +9,7 @@ namespace RepositoryInterface
     {
         List<User> GetAll();
         User GetUser(string user);
-        void Add(User user);
+        User Add(User user);
 
     }
 }

@@ -89,21 +89,70 @@ namespace GameStoreClient
             while (!main)
             {
                 Console.WriteLine("\n Options:");
+                Console.WriteLine("modify -> Modify an existing game");
                 Console.WriteLine("delete -> Get details of a game");
                 Console.WriteLine("main <- Go to main menu");
                 Console.Write("Option: ");
                 var option = Console.ReadLine();
-                switch (option)
+                if (option != null)
+                    switch (option.ToLower())
+                    {
+                        case "modify":
+                            ModifyGame(socket, gamesPublished);
+                            break;
+                        case "delete":
+                            DeleteGame(socket, gamesPublished);
+                            break;
+                        case "main":
+                            main = true;
+                            break;
+                        default:
+                            Console.WriteLine("Opcion invalida");
+                            break;
+                    }
+            }
+        }
+
+        private void ModifyGame(Socket socket, List<Game> gamesPublished)
+        {
+            var idCorrecto = false;
+            while (!idCorrecto)
+            {
+                Console.Write("Insert the id of the game to modify: ");
+                var gameId = Console.ReadLine();
+                var game = gamesPublished.Find(e => e.Id.Equals(Convert.ToInt32(gameId)));
+                if (game == null)
                 {
-                    case "delete":
-                        DeleteGame(socket, gamesPublished);
-                        break;
-                    case "main":
-                        main = true;
-                        break;
-                    default:
-                        Console.WriteLine("Opcion invalida");
-                        break;
+                    Console.WriteLine("Id inexistente");
+                }
+                else
+                {
+                    var values = new List<string>()
+                    {
+                        "title",
+                        "genre",
+                        "sinopsis"
+                    };
+                    var valueCorrect = false;
+                    while (!valueCorrect)
+                    {
+                        Console.Write("Select the value to modify: ");
+                        var value = Console.ReadLine();
+                        if (values.Contains(value.ToLower()))
+                        {
+                            Console.Write($"Write the new {value}: ");
+                            var modification = Console.ReadLine();
+                            //Como enviar la modificacion y el id?
+                            Request(modification, socket, CommandConstants.ModifyGame);
+                            var bufferResponse = Response(socket, CommandConstants.ModifyGame);
+
+                            Console.WriteLine(Encoding.UTF8.GetString(bufferResponse));
+                            valueCorrect = true;
+                        }
+                        
+                    }
+
+                    idCorrecto = true;
                 }
             }
         }

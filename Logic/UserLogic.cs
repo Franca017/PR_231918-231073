@@ -23,7 +23,7 @@ namespace Logic
             if (user == null)
             {
                 user = new User(userName.ToLower(), DateTime.Now);
-                userRepository.Add(user);
+                user = userRepository.Add(user);
             }
 
             return user;
@@ -38,11 +38,6 @@ namespace Logic
                 return true;
             }
             return false;
-        }
-
-        public void NewGame(Game newGame, User userLogged)
-        {
-            userLogged.PublishedGames.Add(newGame);
         }
     }
 }

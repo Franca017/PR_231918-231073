@@ -11,6 +11,7 @@ namespace RepositoryInterface
         Game Add(Game game);
         Game GetById(int gameId);
         void Delete(int gameId);
+        List<Game> GetPublishedGames(User userLogged);
         List<Review> GetGameReviews(int gameId);
         void AddReviewToGame(Review newReview);
     }

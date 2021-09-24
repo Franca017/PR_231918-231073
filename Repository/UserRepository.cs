@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using Domain;
 using Microsoft.EntityFrameworkCore;
@@ -9,21 +10,24 @@ namespace Repository
 {
     public class UserRepository : IUserRepository
     {
-        private readonly List<User> users;
+        private readonly List<User> _users;
 
         public UserRepository()
         {
-            this.users = new List<User>();
+            this._users = new List<User>();
         }
 
         public User GetUser(string user)
         {
-            return this.users.Find(e => e.UserName.Equals(user));
+            return this._users.Find(e => e.UserName.Equals(user));
         }
 
-        public void Add(User user)
+        public User Add(User user)
         {
-            this.users.Add(user);
+            var highestId = _users.Any() ? _users.Max(x => x.Id) : 0;
+            user.Id = highestId + 1;
+            _users.Add(user);
+            return user;
         }
 
         public List<User> GetAll()
