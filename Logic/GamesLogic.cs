@@ -64,5 +64,10 @@ namespace Logic
         {
             return gamesRepository.GetGameReviews(gameId);
         }
+
+        public void AddReviewToGame(Review newReview)
+        {
+            this.gamesRepository.AddReviewToGame(newReview);
+        }
     }
 }

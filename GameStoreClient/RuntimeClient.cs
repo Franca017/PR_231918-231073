@@ -252,14 +252,21 @@ namespace GameStoreClient
                     var lengthString = Encoding.UTF8.GetString(bufferResponse);
                     var length = Convert.ToInt32(lengthString);
                     Console.WriteLine("\n Game reviews: \n");
-                    for (int i = 0; i < length; i++)
+                    if (length == 0)
                     {
-                        bufferResponse = Response(socket, CommandConstants.GetReviews);
-                        string[] splittedReview = (Encoding.UTF8.GetString(bufferResponse)).Split("*");
-                        string rating = splittedReview[0];
-                        string comment = splittedReview[1];
-                        Console.WriteLine($"{i}: Rating: {rating}");
-                        Console.WriteLine($"{comment}");
+                        Console.WriteLine("The game doesnt have any reviews");
+                    }
+                    else
+                    {
+                        for (int i = 0; i < length; i++)
+                        {
+                            bufferResponse = Response(socket, CommandConstants.GetReviews);
+                            string[] splittedReview = (Encoding.UTF8.GetString(bufferResponse)).Split("*");
+                            string rating = splittedReview[0];
+                            string comment = splittedReview[1];
+                            Console.WriteLine($"{i+1}: Rating: {rating}");
+                            Console.WriteLine($"{comment}");
+                        }
                     }
                     idCorrecto = true;
                 }

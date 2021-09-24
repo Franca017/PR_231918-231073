@@ -66,7 +66,6 @@ namespace GameStoreServer
 
                             break;
                         case CommandConstants.Purchase:
-                            //Agarra userLogged y le mete el game por medio del id que le pase en el mensaje de la request. Si ya lo tiene le avisa que no se le agrego.
                             var bufferPurchase = new byte[header.IDataLength];
                             ReceiveData(connectedSocket, header.IDataLength, bufferPurchase);
                             gameIdString = Encoding.UTF8.GetString(bufferPurchase);
@@ -141,6 +140,17 @@ namespace GameStoreServer
                             gameId = Convert.ToInt32(gameIdString);
                             _gamesLogic.Delete(gameId);
                             Response($"Your game with id {gameId} was deleted.", connectedSocket, header.ICommand);
+                            break;
+                        case CommandConstants.Rate:
+                            var bufferRate = new byte[header.IDataLength];
+                            ReceiveData(connectedSocket, header.IDataLength, bufferRate);
+
+                            var splittedReview = (Encoding.UTF8.GetString(bufferRate)).Split("*");
+                            Game reviewedGame = this._gamesLogic.GetById(Convert.ToInt32(splittedReview[0]));
+                            var newReview = new Review(userLogged, reviewedGame, Convert.ToInt32(splittedReview[1]), splittedReview[2]);
+                            _reviewLogic.Add(newReview);
+                            response = $"{userLogged.UserName} successfully reviewed {reviewedGame.Title}";
+                            Response(response, connectedSocket, header.ICommand);
                             break;
                         case CommandConstants.Message:
                             Console.WriteLine("Will receive message to display...");

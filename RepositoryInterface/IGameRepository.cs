@@ -12,5 +12,6 @@ namespace RepositoryInterface
         Game GetById(int gameId);
         void Delete(int gameId);
         List<Review> GetGameReviews(int gameId);
+        void AddReviewToGame(Review newReview);
     }
 }
