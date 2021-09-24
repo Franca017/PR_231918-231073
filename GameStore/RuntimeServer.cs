@@ -82,10 +82,9 @@ namespace GameStoreServer
                             gameId = Convert.ToInt32(gameIdString);
                             var reviewsList = _gamesLogic.GetGameReviews(gameId);
                             Response(reviewsList.Count.ToString(), connectedSocket, CommandConstants.GetReviews);
-                            for (int i = 0; i < reviewsList.Count; i++)
+                            foreach (var review in reviewsList)
                             {
-                                var review = reviewsList[i];
-                                string reviewToString = review.Rating + "*" + review.Comment;
+                                var reviewToString = review.Rating + "*" + review.Comment;
                                 Response(reviewToString, connectedSocket, header.ICommand);
                             }
                             break;
@@ -111,7 +110,7 @@ namespace GameStoreServer
                             Response(foundedGames.Count.ToString(), connectedSocket, CommandConstants.Search);
                             foreach (var game in foundedGames)
                             {
-                                string gameToString =
+                                var gameToString =
                                     $"{game.Id}*{game.Title}*{game.Genre}*{game.Rating}*{game.Sinopsis}*{game.Image}";
                                 Response(gameToString, connectedSocket, header.ICommand);
                             }
@@ -122,10 +121,19 @@ namespace GameStoreServer
                             Response(listPublished.Count.ToString(), connectedSocket, CommandConstants.ListPublishedGames);
                             foreach (var game in listPublished)
                             {
-                                string gameToString =
+                                var gameToString =
                                     $"{game.Id}*{game.Title}*{game.Genre}*{game.Rating}*{game.Sinopsis}*{game.Image}";
                                 Response(gameToString, connectedSocket, header.ICommand);
                             }
+                            break;
+                        case CommandConstants.ModifyGame:
+                            var bufferModify = new byte[header.IDataLength];
+                            ReceiveData(connectedSocket,header.IDataLength,bufferModify);
+                            var modifySplit = (Encoding.UTF8.GetString(bufferModify)).Split("*");
+                            var gameModifyId = Convert.ToInt32(modifySplit[0]);
+                            _gamesLogic.Modify(modifySplit);
+                            Response($"Your game with id {gameModifyId} was modified.", connectedSocket, header.ICommand);
+                            
                             break;
                         case CommandConstants.DeleteGame:
                             var bufferDelete = new byte[header.IDataLength];
@@ -141,7 +149,7 @@ namespace GameStoreServer
                             ReceiveData(connectedSocket, header.IDataLength, bufferRate);
 
                             var splittedReview = (Encoding.UTF8.GetString(bufferRate)).Split("*");
-                            Game reviewedGame = this._gamesLogic.GetById(Convert.ToInt32(splittedReview[0]));
+                            var reviewedGame = _gamesLogic.GetById(Convert.ToInt32(splittedReview[0]));
                             var newReview = new Review(userLogged, reviewedGame, Convert.ToInt32(splittedReview[1]), splittedReview[2]);
                             _reviewLogic.Add(newReview);
                             response = $"{userLogged.UserName} successfully reviewed {reviewedGame.Title}";

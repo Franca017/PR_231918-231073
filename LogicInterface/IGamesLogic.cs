@@ -13,5 +13,6 @@ namespace LogicInterface
         List<Game> GetPublishedGames(User userLogged);
         List<Review> GetGameReviews(int gameId);
         void AddReviewToGame(Review newReview);
+        void Modify(string[] modifySplit);
     }
 }
