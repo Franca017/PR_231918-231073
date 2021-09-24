@@ -70,7 +70,8 @@ namespace GameStoreServer
                             gameIdString = Encoding.UTF8.GetString(bufferPurchase);
                             gameId = Convert.ToInt32(gameIdString);
                             var purchased = _userLogic.PurchaseGame(userLogged, gameId);
-                            response = purchased ? $"Game {gameId} was purchased by {userLogged.UserName}" 
+                            response = purchased
+                                ? $"Game {gameId} was purchased by {userLogged.UserName}"
                                 : $"The game {gameId} is already purchased by {userLogged.UserName}";
 
                             Response(response, connectedSocket, header.ICommand);
@@ -87,6 +88,7 @@ namespace GameStoreServer
                                 var reviewToString = review.Rating + "*" + review.Comment;
                                 Response(reviewToString, connectedSocket, header.ICommand);
                             }
+
                             break;
                         case CommandConstants.Publish:
                             var bufferPublish = new byte[header.IDataLength];
@@ -98,7 +100,7 @@ namespace GameStoreServer
                                 Creator = userLogged
                             };
                             var newGameInDb = _gamesLogic.Add(newGame);
-                            
+
                             response = $"{newGameInDb.Title} was published to the store with id {newGameInDb.Id}";
                             Response(response, connectedSocket, header.ICommand);
                             break;
@@ -118,22 +120,25 @@ namespace GameStoreServer
                             break;
                         case CommandConstants.ListPublishedGames:
                             var listPublished = _gamesLogic.GetPublishedGames(userLogged);
-                            Response(listPublished.Count.ToString(), connectedSocket, CommandConstants.ListPublishedGames);
+                            Response(listPublished.Count.ToString(), connectedSocket,
+                                CommandConstants.ListPublishedGames);
                             foreach (var game in listPublished)
                             {
                                 var gameToString =
                                     $"{game.Id}*{game.Title}*{game.Genre}*{game.Rating}*{game.Sinopsis}*{game.Image}";
                                 Response(gameToString, connectedSocket, header.ICommand);
                             }
+
                             break;
                         case CommandConstants.ModifyGame:
                             var bufferModify = new byte[header.IDataLength];
-                            ReceiveData(connectedSocket,header.IDataLength,bufferModify);
+                            ReceiveData(connectedSocket, header.IDataLength, bufferModify);
                             var modifySplit = (Encoding.UTF8.GetString(bufferModify)).Split("*");
                             var gameModifyId = Convert.ToInt32(modifySplit[0]);
                             _gamesLogic.Modify(modifySplit);
-                            Response($"Your game with id {gameModifyId} was modified.", connectedSocket, header.ICommand);
-                            
+                            Response($"Your game with id {gameModifyId} was modified.", connectedSocket,
+                                header.ICommand);
+
                             break;
                         case CommandConstants.DeleteGame:
                             var bufferDelete = new byte[header.IDataLength];
@@ -150,7 +155,8 @@ namespace GameStoreServer
 
                             var splittedReview = (Encoding.UTF8.GetString(bufferRate)).Split("*");
                             var reviewedGame = _gamesLogic.GetById(Convert.ToInt32(splittedReview[0]));
-                            var newReview = new Review(userLogged, reviewedGame, Convert.ToInt32(splittedReview[1]), splittedReview[2]);
+                            var newReview = new Review(userLogged, reviewedGame, Convert.ToInt32(splittedReview[1]),
+                                splittedReview[2]);
                             _reviewLogic.Add(newReview);
                             response = $"{userLogged.UserName} successfully reviewed {reviewedGame.Title}";
                             Response(response, connectedSocket, header.ICommand);
@@ -163,9 +169,11 @@ namespace GameStoreServer
                             break;
                     }
                 }
-                catch (ClientDisconnected)
+                catch (ClientDisconnected c)
                 {
-                    Console.WriteLine($"{userLogged.UserName} disconnected");
+                    Console.WriteLine(userLogged != null
+                        ? $"{c.Message} {userLogged.UserName} disconnected"
+                        : $"{c.Message} Unlogged user disconnected");
                     Exit = true;
                 }
                 catch (Exception e)
