@@ -9,34 +9,34 @@ namespace Logic
 {
     public class GamesLogic : IGamesLogic
     {
-        private IGameRepository gamesRepository;
+        private readonly IGameRepository _gamesRepository;
 
         public GamesLogic(IServiceProvider serviceProvider)
         {
-            gamesRepository = serviceProvider.GetService<IGameRepository>();
+            _gamesRepository = serviceProvider.GetService<IGameRepository>();
             
         }
         
         public List<Game> GetAll()
         {
-            return gamesRepository.GetAll();
+            return _gamesRepository.GetAll();
         }
 
         public Game GetById(int gameId)
         {
-            return gamesRepository.GetById(gameId);
+            return _gamesRepository.GetById(gameId);
         }
 
         public Game Add(Game game)
         {
-            return gamesRepository.Add(game);
+            return _gamesRepository.Add(game);
         }
 
         public List<Game> GetSearchedGames(string keywords)
         {
             var allGames = GetAll();
             var ret = new List<Game>();
-            string lowerKeywords = keywords.ToLower();
+            var lowerKeywords = keywords.ToLower();
             var words = lowerKeywords.Split(" ");
             for (int i = 0; i < allGames.Count; i++)
             {
@@ -57,22 +57,30 @@ namespace Logic
 
         public void Delete(int gameId)
         {
-            gamesRepository.Delete(gameId);
+            _gamesRepository.Delete(gameId);
         }
 
         public List<Game> GetPublishedGames(User userLogged)
         {
-            return gamesRepository.GetPublishedGames(userLogged);
+            return _gamesRepository.GetPublishedGames(userLogged);
         }
 
         public List<Review> GetGameReviews(int gameId)
         {
-            return gamesRepository.GetGameReviews(gameId);
+            return _gamesRepository.GetGameReviews(gameId);
         }
 
         public void AddReviewToGame(Review newReview)
         {
-            this.gamesRepository.AddReviewToGame(newReview);
+            _gamesRepository.AddReviewToGame(newReview);
+        }
+
+        public void Modify(string[] modifySplit)
+        {
+            var gameToModify = GetById(Convert.ToInt32(modifySplit[0]));
+            if (!modifySplit[1].Equals("-")) gameToModify.Title = modifySplit[1];
+            if (!modifySplit[2].Equals("-")) gameToModify.Genre = modifySplit[2];
+            if (!modifySplit[3].Equals("-")) gameToModify.Sinopsis = modifySplit[3];
         }
     }
 }

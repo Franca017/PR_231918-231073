@@ -57,7 +57,7 @@ namespace GameStoreClient
 
                             break;
                         default:
-                            Console.WriteLine("Opcion invalida");
+                            Console.WriteLine("Invalid option");
                             break;
                     }
             }
@@ -107,10 +107,30 @@ namespace GameStoreClient
                             main = true;
                             break;
                         default:
-                            Console.WriteLine("Opcion invalida");
+                            Console.WriteLine("Invalid option");
                             break;
                     }
             }
+        }
+        
+        private void Publish(Socket socket)
+        {
+            Console.WriteLine("\n Publish a game");
+            var game = "";
+            var atributes = new List<string>
+            {
+                "Title", "Genre", "Sinopsis"
+            };
+            for (int i = 0; i < atributes.Count; i++)
+            {
+                Console.Write($"\n  Insert the {atributes[i]}:");
+                var insert = Console.ReadLine();
+                game += insert + "*";
+            }
+            Request(game,socket,CommandConstants.Publish);
+            var bufferResponse = Response(socket, CommandConstants.Publish);
+            
+            Console.WriteLine(Encoding.UTF8.GetString(bufferResponse));
         }
 
         private void ModifyGame(Socket socket, List<Game> gamesPublished)
@@ -127,30 +147,28 @@ namespace GameStoreClient
                 }
                 else
                 {
-                    var values = new List<string>()
+                    var gameModified = gameId+"*";
+                    var attributes = new List<string>
                     {
-                        "title",
-                        "genre",
-                        "sinopsis"
+                        "Title", "Genre", "Sinopsis"
                     };
-                    var valueCorrect = false;
-                    while (!valueCorrect)
+                    foreach (var attribute in attributes)
                     {
-                        Console.Write("Select the value to modify: ");
-                        var value = Console.ReadLine();
-                        if (values.Contains(value.ToLower()))
+                        Console.Write($"\n Insert the new {attribute} (in case of not modifying it, leave empty):");
+                        var insert = Console.ReadLine();
+                        if (insert.Equals(""))
                         {
-                            Console.Write($"Write the new {value}: ");
-                            var modification = Console.ReadLine();
-                            //Como enviar la modificacion y el id?
-                            Request(modification, socket, CommandConstants.ModifyGame);
-                            var bufferResponse = Response(socket, CommandConstants.ModifyGame);
-
-                            Console.WriteLine(Encoding.UTF8.GetString(bufferResponse));
-                            valueCorrect = true;
+                            gameModified += "-" + "*";
                         }
-                        
+                        else
+                        {
+                            gameModified += insert + "*";
+                        }
                     }
+                    Request(gameModified,socket,CommandConstants.ModifyGame);
+                    var bufferResponse = Response(socket, CommandConstants.ModifyGame);
+            
+                    Console.WriteLine(Encoding.UTF8.GetString(bufferResponse));
 
                     idCorrecto = true;
                 }
@@ -399,26 +417,6 @@ namespace GameStoreClient
                     idCorrecto = true;
                 }
             }
-        }
-
-        private void Publish(Socket socket)
-        {
-            Console.WriteLine("\n Publish a game");
-            var game = "";
-            var atributes = new List<string>
-            {
-                "Title", "Genre", "Sinopsis"
-            };
-            for (int i = 0; i < atributes.Count; i++)
-            {
-                Console.Write($"\n Ingrese el {atributes[i]}:");
-                var insert = Console.ReadLine();
-                game += insert + "*";
-            }
-            Request(game,socket,CommandConstants.Publish);
-            var bufferResponse = Response(socket, CommandConstants.Publish);
-            
-            Console.WriteLine(Encoding.UTF8.GetString(bufferResponse));
         }
 
         private byte[] Response(Socket socket, int command)
