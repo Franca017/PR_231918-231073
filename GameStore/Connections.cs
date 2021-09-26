@@ -34,8 +34,11 @@ namespace GameStoreServer
 
         private void StartRuntime(IServiceProvider serviceProvider, Socket clientConnected)
         {
-            var runtime = new Runtime(serviceProvider);
-            runtime.HandleConnection(clientConnected);
+            if (!_exit)
+            {
+                var runtime = new Runtime(serviceProvider);
+                runtime.HandleConnection(clientConnected);
+            }
         }
 
         public void HandleServer(Socket socketServer)
@@ -55,7 +58,6 @@ namespace GameStoreServer
                     // 1 - Cerrar el socket que esta escuchando conexiones nuevas
                     // 2 - Cerrar todas las conexiones abiertas desde los clientes
                     _exit = true;
-                    socketServer.Close(0);
                     foreach (var client in _clients)
                     {
                         client.Shutdown(SocketShutdown.Both);
@@ -64,6 +66,7 @@ namespace GameStoreServer
 
                     var fakeSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
                     fakeSocket.Connect("127.0.0.1", 20000);
+                    socketServer.Close(0);
                 }
                 else
                 {

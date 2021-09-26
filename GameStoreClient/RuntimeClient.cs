@@ -3,65 +3,74 @@ using System.Collections.Generic;
 using System.Net.Sockets;
 using System.Text;
 using Domain;
-using Logic;
+using Domain.Exceptions;
 using ProtocolLibrary;
 
 namespace GameStoreClient
 {
     public class Runtime
     {
-        private bool _exit = false;
-        private List<Game> gamesLoaded = new List<Game>();
+        private bool _exit;
+        private readonly List<Game> _gamesLoaded = new List<Game>();
 
         public void Execute(Socket socket)
         {
             Console.WriteLine("Bienvenido al Sistema Client");
             Console.Write("Ingrese su nombre de Usuario (en caso de no existir se le creara uno): ");
             var user = Console.ReadLine();
-            Request(user, socket, CommandConstants.Login);
-            var bufferResponse = Response(socket, CommandConstants.Login);
-            
-            Console.WriteLine(Encoding.UTF8.GetString(bufferResponse));
-
-            while (!_exit)
+            try
             {
-                Console.WriteLine("\n Options: ");
-                Console.WriteLine("list -> Visualiza la lista de juegos");
-                Console.WriteLine("publish -> Publicar un juego");
-                Console.WriteLine("publishedgames -> Visualiza la lista de juegos publicados");
-                Console.WriteLine("message -> envia un mensaje al server");
-                Console.WriteLine("exit -> abandonar el programa");
-                Console.Write("Ingrese su opcion: ");
-                var option = Console.ReadLine();
-                if (option != null)
-                    switch (option.ToLower())
+                Request(user, socket, CommandConstants.Login);
+                var bufferResponse = Response(socket, CommandConstants.Login);
+
+                Console.WriteLine(Encoding.UTF8.GetString(bufferResponse));
+
+                while (!_exit)
+                {
+                    Console.WriteLine("\n Options: ");
+                    Console.WriteLine("list -> Visualiza la lista de juegos");
+                    Console.WriteLine("publish -> Publicar un juego");
+                    Console.WriteLine("publishedgames -> Visualiza la lista de juegos publicados");
+                    Console.WriteLine("message -> envia un mensaje al server");
+                    Console.WriteLine("exit -> abandonar el programa");
+                    Console.Write("Ingrese su opcion: ");
+                    var option = Console.ReadLine();
+                    if (option != null)
                     {
-                        case "list":
-                            ListGames(socket);
-                            break;
-                        case "publish":
-                            Publish(socket);
-                            break;
-                        case "publishedgames":
-                            ListPublishedGames(socket);
-                            break;
-                        case "exit":
-                            socket.Shutdown(SocketShutdown.Both);
-                            socket.Close();
-                            _exit = true;
-                            break;
-                        case "message":
-                            Console.WriteLine("Ingrese el mensaje a enviar:");
-                            var message = Console.ReadLine();
-                            Request(message, socket, CommandConstants.Message);
+                        switch (option.ToLower())
+                        {
+                            case "list":
+                                ListGames(socket);
+                                break;
+                            case "publish":
+                                Publish(socket);
+                                break;
+                            case "publishedgames":
+                                ListPublishedGames(socket);
+                                break;
+                            case "exit":
+                                socket.Shutdown(SocketShutdown.Both);
+                                socket.Close();
+                                _exit = true;
+                                break;
+                            case "message":
+                                Console.WriteLine("Ingrese el mensaje a enviar:");
+                                var message = Console.ReadLine();
+                                Request(message, socket, CommandConstants.Message);
 
-                            break;
-                        default:
-                            Console.WriteLine("Invalid option");
-                            break;
+                                break;
+                            default:
+                                Console.WriteLine("Invalid option");
+                                break;
+                        }
                     }
+                }
             }
-
+            catch (ServerDisconnected s)
+            {
+                _exit = true;
+                Console.WriteLine(s.Message);
+            }
             Console.WriteLine("Exiting Application");
         }
 
@@ -73,14 +82,16 @@ namespace GameStoreClient
             var length = Convert.ToInt32(lengthString);
             var gamesPublished = new List<Game>();
             Console.WriteLine("\n Published games list: \n");
-            for (int i = 0; i < length; i++)
+            for (var i = 0; i < length; i++)
             {
                 bufferResponse = Response(socket, CommandConstants.ListPublishedGames);
                 var split = (Encoding.UTF8.GetString(bufferResponse)).Split("*");
-                var game = new Game(split[1], split[2], split[4]);
-                game.Id = Convert.ToInt32(split[0]);
-                game.Rating = Convert.ToInt32(split[3]);
-                game.Image = split[5];
+                var game = new Game(split[1], split[2], split[4])
+                {
+                    Id = Convert.ToInt32(split[0]),
+                    Rating = Convert.ToInt32(split[3]),
+                    Image = split[5]
+                };
                 gamesPublished.Add(game);
                 Console.WriteLine($"{game.Id}. {game.Title} - {game.Genre} - {game.Rating}\n");
             }
@@ -117,13 +128,13 @@ namespace GameStoreClient
         {
             Console.WriteLine("\n Publish a game");
             var game = "";
-            var atributes = new List<string>
+            var attributes = new List<string>
             {
                 "Title", "Genre", "Sinopsis"
             };
-            for (int i = 0; i < atributes.Count; i++)
+            foreach (var attribute in attributes)
             {
-                Console.Write($"\n  Insert the {atributes[i]}:");
+                Console.Write($"\n  Insert the {attribute}:");
                 var insert = Console.ReadLine();
                 game += insert + "*";
             }
@@ -156,7 +167,7 @@ namespace GameStoreClient
                     {
                         Console.Write($"\n Insert the new {attribute} (in case of not modifying it, leave empty):");
                         var insert = Console.ReadLine();
-                        if (insert.Equals(""))
+                        if (insert is "")
                         {
                             gameModified += "-" + "*";
                         }
@@ -204,17 +215,19 @@ namespace GameStoreClient
             var bufferResponse = Response(socket, CommandConstants.ListGames);
             var lengthString = Encoding.UTF8.GetString(bufferResponse);
             var length = Convert.ToInt32(lengthString);
-            gamesLoaded.Clear();
+            _gamesLoaded.Clear();
             Console.WriteLine("\n Games list: \n");
-            for (int i = 0; i < length; i++)
+            for (var i = 0; i < length; i++)
             {
                 bufferResponse = Response(socket, CommandConstants.ListGames);
                 var split = (Encoding.UTF8.GetString(bufferResponse)).Split("*");
-                var game = new Game(split[1], split[2], split[4]);
-                game.Id = Convert.ToInt32(split[0]);
-                game.Rating = Convert.ToInt32(split[3]);
-                game.Image = split[5];
-                gamesLoaded.Add(game);
+                var game = new Game(split[1], split[2], split[4])
+                {
+                    Id = Convert.ToInt32(split[0]),
+                    Rating = Convert.ToInt32(split[3]),
+                    Image = split[5]
+                };
+                _gamesLoaded.Add(game);
                 Console.WriteLine($"{game.Id}. {game.Title} - {game.Genre} - {game.Rating}\n");
             }
             
@@ -265,7 +278,7 @@ namespace GameStoreClient
             {
                 Console.Write("Insert the id of the game to rate and comment: ");
                 var gameId = Console.ReadLine();
-                var game = gamesLoaded.Find(e => e.Id.Equals(Convert.ToInt32(gameId)));
+                var game = _gamesLoaded.Find(e => e.Id.Equals(Convert.ToInt32(gameId)));
                 if (game == null)
                 {
                     Console.WriteLine("Id inexistente");
@@ -307,7 +320,7 @@ namespace GameStoreClient
             {
                 Console.Write("Insert the id of the game to get its reviews: ");
                 var gameId = Console.ReadLine();
-                var game = gamesLoaded.Find(e => e.Id.Equals(Convert.ToInt32(gameId)));
+                var game = _gamesLoaded.Find(e => e.Id.Equals(Convert.ToInt32(gameId)));
                 if (game == null)
                 {
                     Console.WriteLine("Id doesnt exist");
@@ -342,13 +355,13 @@ namespace GameStoreClient
 
         private void Search(Socket socket)
         {
-            var foundedGames = new List<Game>();
             Console.WriteLine("Insert some keywords to search a game: ");
-            string keywords = Console.ReadLine();
+            var keywords = Console.ReadLine();
             Request(keywords, socket, CommandConstants.Search);
             var bufferResponse = Response(socket, CommandConstants.Search);
             var length = Convert.ToInt32(Encoding.UTF8.GetString(bufferResponse));
-            foundedGames.Clear();
+            
+            var gamesFound = new List<Game>();
             Console.WriteLine("\n Search result: \n");
             if (length == 0)
             {
@@ -356,15 +369,17 @@ namespace GameStoreClient
             }
             else
             {
-                for (int i = 0; i < length; i++)
+                for (var i = 0; i < length; i++)
                 {
                     bufferResponse = Response(socket, CommandConstants.Search);
                     var split = (Encoding.UTF8.GetString(bufferResponse)).Split("*");
-                    var game = new Game(split[1], split[2], split[4]);
-                    game.Id = Convert.ToInt32(split[0]);
-                    game.Rating = Convert.ToInt32(split[3]);
-                    game.Image = split[5];
-                    foundedGames.Add(game);
+                    var game = new Game(split[1], split[2], split[4])
+                    {
+                        Id = Convert.ToInt32(split[0]),
+                        Rating = Convert.ToInt32(split[3]),
+                        Image = split[5]
+                    };
+                    gamesFound.Add(game);
                     Console.WriteLine($"{game.Id}. {game.Title} - {game.Genre} - {game.Rating}\n");
                 } 
             }
@@ -377,7 +392,7 @@ namespace GameStoreClient
             {
                 Console.Write("Insert the id of the game to purchase: ");
                 var gameId = Console.ReadLine();
-                var game = gamesLoaded.Find(e => e.Id.Equals(Convert.ToInt32(gameId)));
+                var game = _gamesLoaded.Find(e => e.Id.Equals(Convert.ToInt32(gameId)));
                 if (game == null)
                 {
                     Console.WriteLine("Id inexistente");
@@ -400,7 +415,7 @@ namespace GameStoreClient
             {
                 Console.Write("Insert the id of the game to select: ");
                 var id = Console.ReadLine();
-                var game = gamesLoaded.Find(e => e.Id.Equals(Convert.ToInt32(id)));
+                var game = _gamesLoaded.Find(e => e.Id.Equals(Convert.ToInt32(id)));
                 if (game == null)
                 {
                     Console.WriteLine("Id inexistente");
@@ -439,12 +454,16 @@ namespace GameStoreClient
                 {
                     Console.WriteLine(header.ICommand + " " + command);
                 }
+
+            }
+            catch (SocketException)
+            {
+                throw new ServerDisconnected();
             }
             catch (Exception e)
             {
                 Console.WriteLine($"---- -> Message {e.Message}..");
             }
-
             return bufferResponse;
         }
 
@@ -453,17 +472,24 @@ namespace GameStoreClient
             var header = new Header(HeaderConstants.Request, command, mensaje.Length);
             var data = header.GetRequest();
             var sentBytes = 0;
-            while (sentBytes < data.Length)
+            try
             {
-                sentBytes += socket.Send(data, sentBytes, data.Length - sentBytes, SocketFlags.None);
-            }
+                while (sentBytes < data.Length)
+                {
+                    sentBytes += socket.Send(data, sentBytes, data.Length - sentBytes, SocketFlags.None);
+                }
 
-            sentBytes = 0;
-            var bytesMessage = Encoding.UTF8.GetBytes(mensaje);
-            while (sentBytes < bytesMessage.Length)
+                sentBytes = 0;
+                var bytesMessage = Encoding.UTF8.GetBytes(mensaje);
+                while (sentBytes < bytesMessage.Length)
+                {
+                    sentBytes += socket.Send(bytesMessage, sentBytes, bytesMessage.Length - sentBytes,
+                        SocketFlags.None);
+                }
+            } 
+            catch (SocketException)
             {
-                sentBytes += socket.Send(bytesMessage, sentBytes, bytesMessage.Length - sentBytes,
-                    SocketFlags.None);
+                throw new ServerDisconnected();
             }
         }
         
@@ -472,29 +498,9 @@ namespace GameStoreClient
             var iRecv = 0;
             while (iRecv < length)
             {
-                try
-                {
-                    var localRecv = clientSocket.Receive(buffer, iRecv, length - iRecv, SocketFlags.None);
-                    if (localRecv == 0) // Si recieve retorna 0 -> la conexion se cerro desde el endpoint remoto
-                    {
-                        if (!_exit)
-                        {
-                            clientSocket.Shutdown(SocketShutdown.Both);
-                            clientSocket.Close();
-                        }
-                        else
-                        {
-                            throw new Exception("Server is closing");
-                        }
-                    }
-
-                    iRecv += localRecv;
-                }
-                catch (SocketException se)
-                {
-                    Console.WriteLine(se.Message);
-                    return;
-                }
+                var localRecv = clientSocket.Receive(buffer, iRecv, length - iRecv, SocketFlags.None);
+                    
+                iRecv += localRecv;
             }
         }
     }
