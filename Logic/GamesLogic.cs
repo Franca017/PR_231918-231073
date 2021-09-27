@@ -38,9 +38,9 @@ namespace Logic
             var ret = new List<Game>();
             var lowerKeywords = keywords.ToLower();
             var words = lowerKeywords.Split(" ");
-            for (int i = 0; i < allGames.Count; i++)
+            for (var i = 0; i < allGames.Count; i++)
             {
-                for (int j = 0; j < words.Length; j++)
+                for (var j = 0; j < words.Length; j++)
                 {
                     if (allGames[i].Title.ToLower().Contains(words[j]) || allGames[i].Genre.ToLower().Contains(words[j]))
                     {
@@ -65,22 +65,18 @@ namespace Logic
             return _gamesRepository.GetPublishedGames(userLogged);
         }
 
-        public List<Review> GetGameReviews(int gameId)
-        {
-            return _gamesRepository.GetGameReviews(gameId);
-        }
-
-        public void AddReviewToGame(Review newReview)
-        {
-            _gamesRepository.AddReviewToGame(newReview);
-        }
-
         public void Modify(string[] modifySplit)
         {
             var gameToModify = GetById(Convert.ToInt32(modifySplit[0]));
             if (!modifySplit[1].Equals("-")) gameToModify.Title = modifySplit[1];
             if (!modifySplit[2].Equals("-")) gameToModify.Genre = modifySplit[2];
             if (!modifySplit[3].Equals("-")) gameToModify.Sinopsis = modifySplit[3];
+        }
+
+        public void AdjustRating(int gameId, int newRating)
+        {
+            var game = GetById(gameId);
+            game.Rating = newRating;
         }
     }
 }

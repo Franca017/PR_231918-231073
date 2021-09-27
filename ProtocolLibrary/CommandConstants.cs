@@ -15,5 +15,6 @@ namespace ProtocolLibrary
         public const int DeleteGame = 9;
         public const int GetReviews = 10;
         public const int Rate = 11;
+        public const int DetailGame = 12;
     }
 }
