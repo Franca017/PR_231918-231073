@@ -7,8 +7,9 @@ namespace RepositoryInterface
 {
     public interface IReviewRepository
     {
-        IEnumerable<Review> GetAll();
+        List<Review> GetAll();
         void Add(Review review);
 
+        List<Review> GetByGame(int gameId);
     }
 }

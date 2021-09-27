@@ -10,23 +10,28 @@ namespace Repository
 {
     public class ReviewRepository : IReviewRepository
     {
-        private readonly List<Review> reviews;
+        private readonly List<Review> _reviews;
 
         public ReviewRepository()
         {
-            this.reviews = new List<Review>();
+            this._reviews = new List<Review>();
         }
 
         public void Add(Review review)
         {
-            var highestId = reviews.Any() ? reviews.Max(x => x.Id) : 0;
+            var highestId = _reviews.Any() ? _reviews.Max(x => x.Id) : 0;
             review.Id = highestId + 1;
-            reviews.Add(review);
+            _reviews.Add(review);
         }
 
-        public IEnumerable<Review> GetAll()
+        public List<Review> GetByGame(int gameId)
         {
-            throw new NotImplementedException();
+            return _reviews.FindAll(e => e.Game.Id.Equals(gameId));
+        }
+
+        public List<Review> GetAll()
+        {
+            return _reviews;
         }
     }
 }

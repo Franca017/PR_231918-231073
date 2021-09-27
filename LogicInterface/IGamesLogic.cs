@@ -11,8 +11,7 @@ namespace LogicInterface
         List<Game> GetSearchedGames(string keywords);
         void Delete(int gameId);
         List<Game> GetPublishedGames(User userLogged);
-        List<Review> GetGameReviews(int gameId);
-        void AddReviewToGame(Review newReview);
         void Modify(string[] modifySplit);
+        void AdjustRating(int gameId, int newRating);
     }
 }

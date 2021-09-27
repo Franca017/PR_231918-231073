@@ -39,18 +39,6 @@ namespace Repository
             return _games.FindAll(e => e.Creator.Id.Equals(userLogged.Id));
         }
 
-        public List<Review> GetGameReviews(int gameId)
-        {
-            var game = GetById(gameId);
-            return game.Reviews;
-        }
-
-        public void AddReviewToGame(Review newReview)
-        {
-            Game reviewedGame = GetById(newReview.Game.Id);
-            reviewedGame.Reviews.Add(newReview);
-        }
-
         public List<Game> GetAll()
         {
             return this._games;

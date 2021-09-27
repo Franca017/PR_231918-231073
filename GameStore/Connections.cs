@@ -38,6 +38,7 @@ namespace GameStoreServer
             {
                 var runtime = new Runtime(serviceProvider);
                 runtime.HandleConnection(clientConnected);
+                _clients.Remove(clientConnected);
             }
         }
 

@@ -227,8 +227,8 @@ namespace GameStoreClient
                     Rating = Convert.ToInt32(split[3]),
                     Image = split[5]
                 };
-                _gamesLoaded.Add(game);
                 Console.WriteLine($"{game.Id}. {game.Title} - {game.Genre} - {game.Rating}\n");
+                _gamesLoaded.Add(game);
             }
             
             var main = false;
@@ -246,7 +246,7 @@ namespace GameStoreClient
                 switch (option)
                 {
                     case "detail":
-                        DetailGame();
+                        DetailGame(socket);
                         break;
                     case "purchase":
                         Purchase(socket);
@@ -408,7 +408,7 @@ namespace GameStoreClient
             }
         }
 
-        private void DetailGame()
+        private void DetailGame(Socket socket)
         {
             var idCorrecto = false;
             while (!idCorrecto)
@@ -422,13 +422,14 @@ namespace GameStoreClient
                 }
                 else
                 {
-                    Console.WriteLine($" --- {game.Title} --- ");
-                    Console.Write($"{game.Genre} *{game.Rating}");
-                    for (int i = 0; i < game.Rating; i++)
-                    {
-                        Console.Write("*");
-                    }
-                    Console.WriteLine("\n"+game.Sinopsis);
+                    Request(id,socket,CommandConstants.DetailGame);
+                    var bufferResponse = Response(socket, CommandConstants.DetailGame);
+                    var split = (Encoding.UTF8.GetString(bufferResponse)).Split("*");
+                    
+                    Console.WriteLine($" --- {split[1]} --- ");
+                    Console.WriteLine($"{split[2]} *{split[3]}");
+                    
+                    Console.WriteLine(split[4]);
                     idCorrecto = true;
                 }
             }
