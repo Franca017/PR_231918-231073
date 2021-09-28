@@ -39,6 +39,11 @@ namespace Repository
             return _games.FindAll(e => e.Creator.Id.Equals(userLogged.Id));
         }
 
+        public List<Game> GetGamesOverRating(int minRating)
+        {
+            return _games.FindAll(e => e.Rating >= minRating);
+        }
+
         public List<Game> GetAll()
         {
             return this._games;

@@ -78,5 +78,10 @@ namespace Logic
             var game = GetById(gameId);
             game.Rating = newRating;
         }
+
+        public List<Game> GetGamesOverRating(int minRating)
+        {
+            return _gamesRepository.GetGamesOverRating(minRating);
+        }
     }
 }
