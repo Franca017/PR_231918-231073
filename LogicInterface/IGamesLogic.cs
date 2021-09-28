@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections;
+using System.Collections.Generic;
 using Domain;
 
 namespace LogicInterface
@@ -13,5 +14,6 @@ namespace LogicInterface
         List<Game> GetPublishedGames(User userLogged);
         void Modify(string[] modifySplit);
         void AdjustRating(int gameId, int newRating);
+        List<Game> GetGamesOverRating(int minRating);
     }
 }

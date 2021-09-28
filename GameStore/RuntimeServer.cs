@@ -61,6 +61,9 @@ namespace GameStoreServer
                         case CommandConstants.Search:
                             Search(header, connectedSocket);
                             break;
+                        case CommandConstants.FilterRating:
+                            FilterRating(header, connectedSocket);
+                            break;
                         case CommandConstants.ListPublishedGames:
                             ListPublishedGames(header, connectedSocket);
                             break;
@@ -86,6 +89,36 @@ namespace GameStoreServer
                 {
                     Console.WriteLine($"Server is closing, will not process more data -> Message {e.Message}..");    
                 }
+            }
+        }
+
+        private void FilterRating(Header header, Socket connectedSocket)
+        {
+            var bufferData = new byte[header.IDataLength];
+            ReceiveData(connectedSocket, header.IDataLength, bufferData);
+            var minRating = Convert.ToInt32(Encoding.UTF8.GetString(bufferData));
+            var gamesFound = _gamesLogic.GetGamesOverRating(minRating);
+            Response(gamesFound.Count.ToString(), connectedSocket, CommandConstants.FilterRating);
+            foreach (var game in gamesFound)
+            {
+                var gameToString =
+                    $"{game.Id}*{game.Title}*{game.Genre}*{game.Rating}*{game.Sinopsis}*{game.Image}";
+                Response(gameToString, connectedSocket, header.ICommand);
+            }
+        }
+        
+        private void Search(Header header, Socket connectedSocket)
+        {
+            var bufferData = new byte[header.IDataLength];
+            ReceiveData(connectedSocket, header.IDataLength, bufferData);
+            var keywords = Encoding.UTF8.GetString(bufferData);
+            var gamesFound = _gamesLogic.GetSearchedGames(keywords);
+            Response(gamesFound.Count.ToString(), connectedSocket, CommandConstants.Search);
+            foreach (var game in gamesFound)
+            {
+                var gameToString =
+                    $"{game.Id}*{game.Title}*{game.Genre}*{game.Rating}*{game.Sinopsis}*{game.Image}";
+                Response(gameToString, connectedSocket, header.ICommand);
             }
         }
 
@@ -133,21 +166,6 @@ namespace GameStoreServer
             Response(listPublished.Count.ToString(), connectedSocket,
                 CommandConstants.ListPublishedGames);
             foreach (var game in listPublished)
-            {
-                var gameToString =
-                    $"{game.Id}*{game.Title}*{game.Genre}*{game.Rating}*{game.Sinopsis}*{game.Image}";
-                Response(gameToString, connectedSocket, header.ICommand);
-            }
-        }
-
-        private void Search(Header header, Socket connectedSocket)
-        {
-            var bufferData = new byte[header.IDataLength];
-            ReceiveData(connectedSocket, header.IDataLength, bufferData);
-            var keywords = Encoding.UTF8.GetString(bufferData);
-            var foundedGames = _gamesLogic.GetSearchedGames(keywords);
-            Response(foundedGames.Count.ToString(), connectedSocket, CommandConstants.Search);
-            foreach (var game in foundedGames)
             {
                 var gameToString =
                     $"{game.Id}*{game.Title}*{game.Genre}*{game.Rating}*{game.Sinopsis}*{game.Image}";

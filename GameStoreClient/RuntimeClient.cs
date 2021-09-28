@@ -237,7 +237,8 @@ namespace GameStoreClient
                 Console.WriteLine("\n Options:");
                 Console.WriteLine("detail -> Get details of a game");
                 Console.WriteLine("purchase -> Purchase a game");
-                Console.WriteLine("search -> Search a game by its Title, Category, or Rating");
+                Console.WriteLine("search -> Search a game by its Title, Category");
+                Console.WriteLine("filterRating -> filter games by a minimum rating");
                 Console.WriteLine("reviews -> Get reviews of a game");
                 Console.WriteLine("rate -> Rate and comment a game");
                 Console.WriteLine("main <- Go to main menu");
@@ -254,6 +255,9 @@ namespace GameStoreClient
                     case "search":
                         Search(socket);
                         break;
+                    case "filterrating":
+                        SearchRating(socket);
+                        break;
                     case "reviews":
                         GetReviews(socket);
                         break;
@@ -268,6 +272,50 @@ namespace GameStoreClient
                         break;
                 }
             }
+        }
+        
+        private void SendParameters(Socket socket, string parameter, int command)
+        {
+            Request(parameter, socket, command);
+            var bufferResponse = Response(socket, command);
+            var length = Convert.ToInt32(Encoding.UTF8.GetString(bufferResponse));
+
+            _gamesLoaded.Clear();
+            Console.WriteLine("\n Search result: \n");
+            if (length == 0)
+            {
+                Console.WriteLine("0 games found with the indicated parameters");
+            }
+            else
+            {
+                for (var i = 0; i < length; i++)
+                {
+                    bufferResponse = Response(socket, command);
+                    var split = (Encoding.UTF8.GetString(bufferResponse)).Split("*");
+                    var game = new Game(split[1], split[2], split[4])
+                    {
+                        Id = Convert.ToInt32(split[0]),
+                        Rating = Convert.ToInt32(split[3]),
+                        Image = split[5]
+                    };
+                    _gamesLoaded.Add(game);
+                    Console.WriteLine($"{game.Id}. {game.Title} - {game.Genre} - {game.Rating}\n");
+                }
+            }
+        }
+
+        private void SearchRating(Socket socket)
+        {
+            Console.WriteLine("Insert a minimum rating to filter games: ");
+            var minimumRating = Console.ReadLine();
+            SendParameters(socket, minimumRating, CommandConstants.FilterRating);
+        }
+
+        private void Search(Socket socket)
+        {
+            Console.WriteLine("Insert some keywords to search a game: ");
+            var keywords = Console.ReadLine();
+            SendParameters(socket,keywords,CommandConstants.Search);
         }
 
         private void Rate(Socket socket)
@@ -285,7 +333,7 @@ namespace GameStoreClient
                 }
                 else
                 {
-                    string review = gameId + "*";
+                    var review = gameId + "*";
                     Console.WriteLine("Ingrese el rating en un rango del 1 al 5");
                     var ratingCorrecto = false;
                     while (!ratingCorrecto)
@@ -338,50 +386,18 @@ namespace GameStoreClient
                     }
                     else
                     {
-                        for (int i = 0; i < length; i++)
+                        for (var i = 0; i < length; i++)
                         {
                             bufferResponse = Response(socket, CommandConstants.GetReviews);
-                            string[] splittedReview = (Encoding.UTF8.GetString(bufferResponse)).Split("*");
-                            string rating = splittedReview[0];
-                            string comment = splittedReview[1];
+                            var splittedReview = (Encoding.UTF8.GetString(bufferResponse)).Split("*");
+                            var rating = splittedReview[0];
+                            var comment = splittedReview[1];
                             Console.WriteLine($"{i+1}: Rating: {rating}");
                             Console.WriteLine($"{comment}");
                         }
                     }
                     idCorrecto = true;
                 }
-            }
-        }
-
-        private void Search(Socket socket)
-        {
-            Console.WriteLine("Insert some keywords to search a game: ");
-            var keywords = Console.ReadLine();
-            Request(keywords, socket, CommandConstants.Search);
-            var bufferResponse = Response(socket, CommandConstants.Search);
-            var length = Convert.ToInt32(Encoding.UTF8.GetString(bufferResponse));
-            
-            var gamesFound = new List<Game>();
-            Console.WriteLine("\n Search result: \n");
-            if (length == 0)
-            {
-                Console.WriteLine("0 games founded with the indicated parameters");
-            }
-            else
-            {
-                for (var i = 0; i < length; i++)
-                {
-                    bufferResponse = Response(socket, CommandConstants.Search);
-                    var split = (Encoding.UTF8.GetString(bufferResponse)).Split("*");
-                    var game = new Game(split[1], split[2], split[4])
-                    {
-                        Id = Convert.ToInt32(split[0]),
-                        Rating = Convert.ToInt32(split[3]),
-                        Image = split[5]
-                    };
-                    gamesFound.Add(game);
-                    Console.WriteLine($"{game.Id}. {game.Title} - {game.Genre} - {game.Rating}\n");
-                } 
             }
         }
 
@@ -437,7 +453,7 @@ namespace GameStoreClient
 
         private byte[] Response(Socket socket, int command)
         {
-            byte[] bufferResponse = new byte[] { };
+            var bufferResponse = new byte[] { };
             var headerLength = HeaderConstants.Response.Length + HeaderConstants.CommandLength +
                                HeaderConstants.DataLength;
             var buffer = new byte[headerLength];

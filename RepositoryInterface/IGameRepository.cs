@@ -12,5 +12,6 @@ namespace RepositoryInterface
         Game GetById(int gameId);
         void Delete(int gameId);
         List<Game> GetPublishedGames(User userLogged);
+        List<Game> GetGamesOverRating(int minRating);
     }
 }
