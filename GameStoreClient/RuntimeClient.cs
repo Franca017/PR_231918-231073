@@ -440,12 +440,21 @@ namespace GameStoreClient
                 {
                     Request(id,socket,CommandConstants.DetailGame);
                     var bufferResponse = Response(socket, CommandConstants.DetailGame);
-                    var split = (Encoding.UTF8.GetString(bufferResponse)).Split("*");
-                    
-                    Console.WriteLine($" --- {split[1]} --- ");
-                    Console.WriteLine($"{split[2]} *{split[3]}");
-                    
-                    Console.WriteLine(split[4]);
+                    var responseString = Encoding.UTF8.GetString(bufferResponse);
+                    if (responseString.Contains("*"))
+                    {
+                        var split = (responseString).Split("*");
+
+                        Console.WriteLine($" --- {split[1]} --- ");
+                        Console.WriteLine($"{split[2]} *{split[3]}");
+
+                        Console.WriteLine(split[4]);
+                    }
+                    else
+                    {
+                        Console.WriteLine(responseString);
+                    }
+
                     idCorrecto = true;
                 }
             }
