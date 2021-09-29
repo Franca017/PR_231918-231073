@@ -8,45 +8,62 @@ namespace Repository
     public class GameRepository : IGameRepository
     {
         private readonly List<Game> _games;
-
+        private static readonly object Locker = new object();
         public GameRepository()
         {
             _games = new List<Game>();
-            
         }
 
         public Game Add(Game game)
         {
-            var highestId = _games.Any() ? _games.Max(x => x.Id) : 0;
-            game.Id = highestId + 1;
-            _games.Add(game);
-            return game;
+            lock (Locker)
+            {
+                var highestId = _games.Any() ? _games.Max(x => x.Id) : 0;
+                game.Id = highestId + 1;
+                _games.Add(game);
+                return game;
+            }
         }
 
         public Game GetById(int gameId)
         {
-            return this._games.First(g => g.Id == gameId);
+            lock (Locker)
+            {
+                return _games.First(g => g.Id == gameId);
+            }
         }
 
         public void Delete(int gameId)
         {
-            var game = GetById(gameId);
-            _games.Remove(game);
+            lock (Locker)
+            {
+                var game = _games.First(g => g.Id == gameId);
+                _games.Remove(game);
+            }
         }
 
         public List<Game> GetPublishedGames(User userLogged)
         {
-            return _games.FindAll(e => e.Creator.Id.Equals(userLogged.Id));
+            lock (Locker)
+            {
+                return _games.FindAll(e => e.Creator.Id.Equals(userLogged.Id));
+            }
         }
 
         public List<Game> GetGamesOverRating(int minRating)
         {
-            return _games.FindAll(e => e.Rating >= minRating);
+            lock (Locker)
+            {
+                return _games.FindAll(e => e.Rating >= minRating);
+            }
         }
 
         public List<Game> GetAll()
         {
-            return this._games;
+            lock (Locker)
+            {
+                return _games;
+            }
         }
     }
 }

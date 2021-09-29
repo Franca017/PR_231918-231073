@@ -11,27 +11,37 @@ namespace Repository
     public class ReviewRepository : IReviewRepository
     {
         private readonly List<Review> _reviews;
+        private static readonly object Locker = new object();
 
         public ReviewRepository()
         {
-            this._reviews = new List<Review>();
+            _reviews = new List<Review>();
         }
 
         public void Add(Review review)
         {
-            var highestId = _reviews.Any() ? _reviews.Max(x => x.Id) : 0;
-            review.Id = highestId + 1;
-            _reviews.Add(review);
+            lock (Locker)
+            {
+                var highestId = _reviews.Any() ? _reviews.Max(x => x.Id) : 0;
+                review.Id = highestId + 1;
+                _reviews.Add(review);
+            }
         }
 
         public List<Review> GetByGame(int gameId)
         {
-            return _reviews.FindAll(e => e.Game.Id.Equals(gameId));
+            lock (Locker)
+            {
+                return _reviews.FindAll(e => e.Game.Id.Equals(gameId));
+            }
         }
 
         public List<Review> GetAll()
         {
-            return _reviews;
+            lock (Locker)
+            {
+                return _reviews;
+            }
         }
     }
 }
