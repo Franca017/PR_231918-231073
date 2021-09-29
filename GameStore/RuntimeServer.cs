@@ -85,10 +85,6 @@ namespace GameStoreServer
                         : $"{c.Message} Unlogged user disconnected");
                     Exit = true;
                 }
-                catch (Exception e)
-                {
-                    Console.WriteLine($"Server is closing, will not process more data -> Message {e.Message}..");    
-                }
             }
         }
 
