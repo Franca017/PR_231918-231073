@@ -11,28 +11,30 @@ namespace Repository
     public class UserRepository : IUserRepository
     {
         private readonly List<User> _users;
+        private static readonly object Locker = new object();
 
         public UserRepository()
         {
-            this._users = new List<User>();
+            _users = new List<User>();
         }
 
         public User GetUser(string user)
         {
-            return this._users.Find(e => e.UserName.Equals(user));
+            lock (Locker)
+            {
+                return _users.Find(e => e.UserName.Equals(user));
+            }
         }
 
         public User Add(User user)
         {
-            var highestId = _users.Any() ? _users.Max(x => x.Id) : 0;
-            user.Id = highestId + 1;
-            _users.Add(user);
-            return user;
-        }
-
-        public List<User> GetAll()
-        {
-            throw new NotImplementedException();
+            lock (Locker)
+            {
+                var highestId = _users.Any() ? _users.Max(x => x.Id) : 0;
+                user.Id = highestId + 1;
+                _users.Add(user);
+                return user;
+            }
         }
     }
 }
