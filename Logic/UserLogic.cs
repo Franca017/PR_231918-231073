@@ -8,36 +8,41 @@ namespace Logic
 {
     public class UserLogic : IUserLogic
     {
-        private IUserRepository userRepository;
-        private IGamesLogic _gamesLogic;
+        private readonly IUserRepository _userRepository;
+        private readonly IGamesLogic _gamesLogic;
 
         public UserLogic(IServiceProvider serviceProvider)
         {
-            userRepository = serviceProvider.GetService<IUserRepository>();
+            _userRepository = serviceProvider.GetService<IUserRepository>();
             _gamesLogic = serviceProvider.GetService<IGamesLogic>();
         }
 
         public User Login(string userName)
         {
-            var user = userRepository.GetUser(userName.ToLower());
+            var user = _userRepository.GetUser(userName.ToLower());
             if (user == null)
             {
                 user = new User(userName.ToLower(), DateTime.Now);
-                user = userRepository.Add(user);
+                user = _userRepository.Add(user);
             }
 
             return user;
         }
 
-        public bool PurchaseGame(User userLogged, int gameId)
+        public string PurchaseGame(User userLogged, int gameId)
         {
             var game = _gamesLogic.GetById(gameId);
+            if (game == null)
+            {
+                return "The game has been deleted from the store.";
+            }
+
             if (!userLogged.PurchasedGames.Contains(game))
             {
                 userLogged.PurchasedGames.Add(game);
-                return true;
+                return $"Game {gameId} was purchased by {userLogged.UserName}";
             }
-            return false;
+            return $"The game {gameId} is already purchased by {userLogged.UserName}";
         }
     }
 }

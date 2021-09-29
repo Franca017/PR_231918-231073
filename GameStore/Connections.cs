@@ -36,10 +36,24 @@ namespace GameStoreServer
         {
             if (!_exit)
             {
-                var runtime = new Runtime(serviceProvider);
-                runtime.HandleConnection(clientConnected);
+                try
+                {
+                    var runtime = new Runtime(serviceProvider);
+                    runtime.HandleConnection(clientConnected);
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine($"Server is closing the connection, will not process more data -> Message {e.Message}..");
+                    CloseConnection(clientConnected);
+                }
                 _clients.Remove(clientConnected);
             }
+        }
+
+        private void CloseConnection(Socket client)
+        {
+            client.Shutdown(SocketShutdown.Both);
+            client.Close();
         }
 
         public void HandleServer(Socket socketServer)
@@ -61,8 +75,7 @@ namespace GameStoreServer
                     _exit = true;
                     foreach (var client in _clients)
                     {
-                        client.Shutdown(SocketShutdown.Both);
-                        client.Close();
+                        CloseConnection(client);
                     }
 
                     var fakeSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);

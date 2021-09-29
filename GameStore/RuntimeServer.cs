@@ -85,10 +85,6 @@ namespace GameStoreServer
                         : $"{c.Message} Unlogged user disconnected");
                     Exit = true;
                 }
-                catch (Exception e)
-                {
-                    Console.WriteLine($"Server is closing, will not process more data -> Message {e.Message}..");    
-                }
             }
         }
 
@@ -210,11 +206,8 @@ namespace GameStoreServer
             ReceiveData(connectedSocket, header.IDataLength, bufferData);
             var gameIdString = Encoding.UTF8.GetString(bufferData);
             var gameId = Convert.ToInt32(gameIdString);
-            var purchased = _userLogic.PurchaseGame(_userLogged, gameId);
-            var response = purchased
-                ? $"Game {gameId} was purchased by {_userLogged.UserName}"
-                : $"The game {gameId} is already purchased by {_userLogged.UserName}";
-
+            var response = _userLogic.PurchaseGame(_userLogged, gameId);
+            
             Response(response, connectedSocket, header.ICommand);
         }
 
@@ -226,9 +219,16 @@ namespace GameStoreServer
             var gameId = Convert.ToInt32(gameIdString);
 
             var detailedGame = _gamesLogic.GetById(gameId);
-            var gameToString =
-                $"{detailedGame.Id}*{detailedGame.Title}*{detailedGame.Genre}*{detailedGame.Rating}*{detailedGame.Sinopsis}*{detailedGame.Image}";
-            Response(gameToString, connectedSocket, header.ICommand);
+            if (detailedGame != null)
+            {
+                var gameToString =
+                    $"{detailedGame.Id}*{detailedGame.Title}*{detailedGame.Genre}*{detailedGame.Rating}*{detailedGame.Sinopsis}*{detailedGame.Image}";
+                Response(gameToString, connectedSocket, header.ICommand);
+            }
+            else
+            {
+                Response("The game selected has been deleted from the store.", connectedSocket, header.ICommand);
+            }
         }
 
         private void ListGames(Header header, Socket connectedSocket)
@@ -237,7 +237,7 @@ namespace GameStoreServer
             Response(list.Count.ToString(), connectedSocket, CommandConstants.ListGames);
             foreach (var game in list)
             {
-                string gameToString =
+                var gameToString =
                     $"{game.Id}*{game.Title}*{game.Genre}*{game.Rating}*{game.Sinopsis}*{game.Image}";
                 Response(gameToString, connectedSocket, header.ICommand);
             }
