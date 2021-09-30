@@ -57,12 +57,6 @@ namespace GameStoreClient
                                 socket.Close();
                                 _exit = true;
                                 break;
-                            case "message":
-                                Console.WriteLine("Ingrese el mensaje a enviar:");
-                                var message = Console.ReadLine();
-                                Request(message, socket, CommandConstants.Message);
-
-                                break;
                             default:
                                 Console.WriteLine("Invalid option");
                                 break;
@@ -349,11 +343,10 @@ namespace GameStoreClient
                 {
                     bufferResponse = Response(socket, command);
                     var split = (Encoding.UTF8.GetString(bufferResponse)).Split("*");
-                    var game = new Game(split[1], split[2], split[4])
+                    var game = new Game(split[1], split[2], split[4], split[5])
                     {
                         Id = Convert.ToInt32(split[0]),
-                        Rating = Convert.ToInt32(split[3]),
-                        Image = split[5]
+                        Rating = Convert.ToInt32(split[3])
                     };
                     _gamesLoaded.Add(game);
                     Console.WriteLine($"{game.Id}. {game.Title} - {game.Genre} - {game.Rating}\n");
