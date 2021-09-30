@@ -152,7 +152,7 @@ namespace GameStoreClient
 
                     var info = gameId + "*" + path;
                     Request(info,CommandConstants.ModifyImage);
-                    SendFile(path, _socket);
+                    SendFile(path);
                     Console.WriteLine("Sent");
                     var bufferResponse = Response(CommandConstants.ModifyImage);
                     Console.WriteLine(Encoding.UTF8.GetString(bufferResponse));
@@ -184,7 +184,7 @@ namespace GameStoreClient
             {
                 path = Console.ReadLine();
             }
-            SendFile(path, _socket);
+            SendFile(path);
             Console.WriteLine("Sent");
 
             var bufferResponse = Response(CommandConstants.Publish);
@@ -594,9 +594,9 @@ namespace GameStoreClient
             return bufferResponse;
         }
 
-        private void Request(string mensaje, int command)
+        private void Request(string message, int command)
         {
-            var header = new Header(HeaderConstants.Request, command, mensaje.Length);
+            var header = new Header(HeaderConstants.Request, command, message.Length);
             var data = header.GetRequest();
             var sentBytes = 0;
             try
@@ -607,7 +607,7 @@ namespace GameStoreClient
                 }
 
                 sentBytes = 0;
-                var bytesMessage = Encoding.UTF8.GetBytes(mensaje);
+                var bytesMessage = Encoding.UTF8.GetBytes(message);
                 while (sentBytes < bytesMessage.Length)
                 {
                     sentBytes += _socket.Send(bytesMessage, sentBytes, bytesMessage.Length - sentBytes,
@@ -631,15 +631,15 @@ namespace GameStoreClient
             }
         }
         
-        private void SendFile(string path, Socket socket)
+        private void SendFile(string path)
         {
             var fileName = _fileHandler.GetFileName(path); // nombre del archivo -> XXXX
             var fileSize = _fileHandler.GetFileSize(path); // tamaño del archivo -> YYYYYYYY
             var header = new Header().Create(fileName, fileSize);
-            socket.Send(header, header.Length, SocketFlags.None);
+            _socket.Send(header, header.Length, SocketFlags.None);
             
             var fileNameToBytes = Encoding.UTF8.GetBytes(fileName);
-            socket.Send(fileNameToBytes, fileNameToBytes.Length, SocketFlags.None);
+            _socket.Send(fileNameToBytes, fileNameToBytes.Length, SocketFlags.None);
             
             var parts = Header.GetParts(fileSize);
             Console.WriteLine("Will Send {0} parts",parts);
@@ -660,7 +660,7 @@ namespace GameStoreClient
                     data = _fileStreamHandler.Read(path, offset, HeaderConstants.MaxPacketSize);
                     offset += HeaderConstants.MaxPacketSize;
                 }
-                socket.Send(data, data.Length, SocketFlags.None);
+                _socket.Send(data, data.Length, SocketFlags.None);
                 currentPart++;
             }
         }
