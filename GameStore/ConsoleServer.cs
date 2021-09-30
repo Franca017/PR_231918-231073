@@ -6,10 +6,9 @@ namespace GameStoreServer
     {
         private static IServiceProvider _serviceProvider;
 
-
         static void Main(string[] args)
         {
-            Setup setup = new Setup();
+            var setup = new Setup();
             _serviceProvider = setup.BuildServiceProvider();
 
             setup.InitializeSocketServer(_serviceProvider);

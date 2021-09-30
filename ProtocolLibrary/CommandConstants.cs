@@ -1,5 +1,4 @@
-﻿using System;
-
+﻿
 namespace ProtocolLibrary
 {
     public class CommandConstants

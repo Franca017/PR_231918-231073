@@ -2,7 +2,6 @@
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
-using LogicInterface;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace GameStoreServer
@@ -23,7 +22,7 @@ namespace GameStoreServer
             var socketServer = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
             socketServer.Bind(new IPEndPoint(IPAddress.Parse("127.0.0.1"), 20000));
             socketServer.Listen(100);
-            Connections connections = new Connections();
+            var connections = new Connections();
 
             var threadServer = new Thread(() => connections.ListenConnections(socketServer, serviceProvider));
             threadServer.Start();

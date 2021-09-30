@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Net.Sockets;
 using System.Text;
 using Domain;
@@ -99,6 +100,16 @@ namespace GameStoreServer
                 }
             }
         }
+        
+        private void SendGames(Header header, Socket connectedSocket, List<Game> gamesFound)
+        {
+            foreach (var game in gamesFound)
+            {
+                var gameToString =
+                    $"{game.Id}*{game.Title}*{game.Genre}*{game.Rating}*{game.Sinopsis}*{game.Image}";
+                Response(gameToString, connectedSocket, header.ICommand);
+            }
+        }
 
         private void FilterRating(Header header, Socket connectedSocket)
         {
@@ -107,14 +118,10 @@ namespace GameStoreServer
             var minRating = Convert.ToInt32(Encoding.UTF8.GetString(bufferData));
             var gamesFound = _gamesLogic.GetGamesOverRating(minRating);
             Response(gamesFound.Count.ToString(), connectedSocket, CommandConstants.FilterRating);
-            foreach (var game in gamesFound)
-            {
-                var gameToString =
-                    $"{game.Id}*{game.Title}*{game.Genre}*{game.Rating}*{game.Sinopsis}*{game.Image}";
-                Response(gameToString, connectedSocket, header.ICommand);
-            }
+            
+            SendGames(header, connectedSocket, gamesFound);
         }
-        
+
         private void Search(Header header, Socket connectedSocket)
         {
             var bufferData = new byte[header.IDataLength];
@@ -122,15 +129,10 @@ namespace GameStoreServer
             var keywords = Encoding.UTF8.GetString(bufferData);
             var gamesFound = _gamesLogic.GetSearchedGames(keywords);
             Response(gamesFound.Count.ToString(), connectedSocket, CommandConstants.Search);
-            foreach (var game in gamesFound)
-            {
-                var gameToString =
-                    $"{game.Id}*{game.Title}*{game.Genre}*{game.Rating}*{game.Sinopsis}*{game.Image}";
-                Response(gameToString, connectedSocket, header.ICommand);
-            }
+            
+            SendGames(header,connectedSocket,gamesFound);
         }
 
-        // --
         private void Download(Header header, Socket connectedSocket)
         {
             var bufferData = new byte[header.IDataLength];
@@ -138,11 +140,10 @@ namespace GameStoreServer
             var gameIdString = Encoding.UTF8.GetString(bufferData);
             var gameId = Convert.ToInt32(gameIdString);
             Response($"The image of the game with id {gameId} is going to be sent", connectedSocket, header.ICommand);
-            Game game = _gamesLogic.GetById(gameId);
-            string path = game.Image;
+            var game = _gamesLogic.GetById(gameId);
+            var path = game.Image;
             SendFile(path, connectedSocket);
         }
-        // --
 
         private void Rate(Header header, Socket connectedSocket)
         {
@@ -190,7 +191,6 @@ namespace GameStoreServer
             Console.WriteLine("File received");
             var modifySplit = (Encoding.UTF8.GetString(bufferData)).Split("*");
             var gameModifyId = Convert.ToInt32(modifySplit[0]);
-            var newPath = modifySplit[1];
             _gamesLogic.ModifyImage(modifySplit);
             Response($"Your game with id {gameModifyId} was modified.", connectedSocket,
                 header.ICommand);
@@ -201,12 +201,8 @@ namespace GameStoreServer
             var listPublished = _gamesLogic.GetPublishedGames(_userLogged);
             Response(listPublished.Count.ToString(), connectedSocket,
                 CommandConstants.ListPublishedGames);
-            foreach (var game in listPublished)
-            {
-                var gameToString =
-                    $"{game.Id}*{game.Title}*{game.Genre}*{game.Rating}*{game.Sinopsis}*{game.Image}";
-                Response(gameToString, connectedSocket, header.ICommand);
-            }
+            
+            SendGames(header,connectedSocket,listPublished);
         }
 
         private void Publish(Header header, Socket connectedSocket)
@@ -276,12 +272,8 @@ namespace GameStoreServer
         {
             var list = _gamesLogic.GetAll();
             Response(list.Count.ToString(), connectedSocket, CommandConstants.ListGames);
-            foreach (var game in list)
-            {
-                var gameToString =
-                    $"{game.Id}*{game.Title}*{game.Genre}*{game.Rating}*{game.Sinopsis}*{game.Image}";
-                Response(gameToString, connectedSocket, header.ICommand);
-            }
+            
+            SendGames(header,connectedSocket,list);
         }
 
         private void Login(Header header, Socket connectedSocket)
@@ -349,7 +341,7 @@ namespace GameStoreServer
             }
         }
 
-        public void ReceiveFile(Socket socket)
+        private void ReceiveFile(Socket socket)
         {
             var fileHeader = new byte[Header.GetLength()];
             ReceiveData(socket, Header.GetLength(), fileHeader);
@@ -360,7 +352,7 @@ namespace GameStoreServer
             ReceiveData(socket, fileNameSize, bufferName);
             var fileName = Encoding.UTF8.GetString(bufferName);
             
-            long parts = Header.GetParts(fileSize);
+            var parts = Header.GetParts(fileSize);
             long offset = 0;
             long currentPart = 1;
 
@@ -391,7 +383,6 @@ namespace GameStoreServer
             }
         }
         
-        // --
         private void SendFile(string path, Socket socket)
         {
             var fileName = _fileHandler.GetFileName(path); // nombre del archivo -> XXXX
@@ -402,7 +393,7 @@ namespace GameStoreServer
             var fileNameToBytes = Encoding.UTF8.GetBytes(fileName);
             socket.Send(fileNameToBytes, fileNameToBytes.Length, SocketFlags.None);
             
-            long parts = Header.GetParts(fileSize);
+            var parts = Header.GetParts(fileSize);
             Console.WriteLine("Will Send {0} parts",parts);
             long offset = 0;
             long currentPart = 1;
@@ -425,6 +416,5 @@ namespace GameStoreServer
                 currentPart++;
             }
         }
-        // --
     }
 }
