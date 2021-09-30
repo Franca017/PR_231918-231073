@@ -1,7 +1,5 @@
-﻿using System;
-using Logic;
+﻿using Logic;
 using LogicInterface;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using ProtocolLibrary.FileHandler;
 using ProtocolLibrary.FileHandler.Interfaces;
@@ -12,25 +10,25 @@ namespace Factory
 {
     public class ServiceFactory
     {
-        private readonly IServiceCollection services;
+        private readonly IServiceCollection _services;
 
         public ServiceFactory(IServiceCollection services)
         {
-            this.services = services;
+            this._services = services;
         }
 
         public void ConfigureServices()
         {
-            services.AddSingleton<IGamesLogic, GamesLogic>();
-            services.AddSingleton<IUserLogic, UserLogic>();
-            services.AddSingleton<IReviewLogic, ReviewLogic>();
+            _services.AddSingleton<IGamesLogic, GamesLogic>();
+            _services.AddSingleton<IUserLogic, UserLogic>();
+            _services.AddSingleton<IReviewLogic, ReviewLogic>();
 
-            services.AddSingleton<IGameRepository, GameRepository>();
-            services.AddSingleton<IUserRepository, UserRepository>();
-            services.AddSingleton<IReviewRepository, ReviewRepository>();
+            _services.AddSingleton<IGameRepository, GameRepository>();
+            _services.AddSingleton<IUserRepository, UserRepository>();
+            _services.AddSingleton<IReviewRepository, ReviewRepository>();
 
-            services.AddSingleton<IFileHandler, FileHandler>();
-            services.AddSingleton<IFileStreamHandler, FileStreamHandler>();
+            _services.AddSingleton<IFileHandler, FileHandler>();
+            _services.AddSingleton<IFileStreamHandler, FileStreamHandler>();
         }
     }
 }
