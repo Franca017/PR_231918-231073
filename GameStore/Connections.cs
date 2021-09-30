@@ -7,8 +7,8 @@ namespace GameStoreServer
 {
     public class Connections
     {
-        private static bool _exit = false;
-        private List<Socket> _clients = new List<Socket>();
+        private bool _exit;
+        private readonly List<Socket> _clients = new List<Socket>();
 
         public void ListenConnections(Socket socketServer, IServiceProvider serviceProvider)
         {
@@ -67,7 +67,7 @@ namespace GameStoreServer
 
                 var userInput = Console.ReadLine();
 
-                if (userInput.ToLower().Equals("exit"))
+                if (userInput != null && userInput.ToLower().Equals("exit"))
                 {
                     // Cosas a hacer al cerrar el server
                     // 1 - Cerrar el socket que esta escuchando conexiones nuevas

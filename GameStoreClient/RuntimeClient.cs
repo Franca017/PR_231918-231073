@@ -382,7 +382,7 @@ namespace GameStoreClient
                 }
                 else
                 {
-                    Request(gameId.ToString(),socket,CommandConstants.Download);
+                    Request(game.Id.ToString(),socket,CommandConstants.Download);
                     var bufferResponse = Response(socket, CommandConstants.Download);
                     Console.WriteLine(Encoding.UTF8.GetString(bufferResponse));
                     
@@ -605,7 +605,6 @@ namespace GameStoreClient
             }
         }
         
-        // --
         private void SendFile(string path, Socket socket)
         {
             var fileName = _fileHandler.GetFileName(path); // nombre del archivo -> XXXX
@@ -616,7 +615,7 @@ namespace GameStoreClient
             var fileNameToBytes = Encoding.UTF8.GetBytes(fileName);
             socket.Send(fileNameToBytes, fileNameToBytes.Length, SocketFlags.None);
             
-            long parts = Header.GetParts(fileSize);
+            var parts = Header.GetParts(fileSize);
             Console.WriteLine("Will Send {0} parts",parts);
             long offset = 0;
             long currentPart = 1;
@@ -639,9 +638,8 @@ namespace GameStoreClient
                 currentPart++;
             }
         }
-        // --
-        
-        public void ReceiveFile(Socket socket)
+
+        private void ReceiveFile(Socket socket)
         {
             var fileHeader = new byte[Header.GetLength()];
             ReceiveData(socket, Header.GetLength(), fileHeader);
@@ -652,7 +650,7 @@ namespace GameStoreClient
             ReceiveData(socket, fileNameSize, bufferName);
             var fileName = Encoding.UTF8.GetString(bufferName);
             
-            long parts = Header.GetParts(fileSize);
+            var parts = Header.GetParts(fileSize);
             long offset = 0;
             long currentPart = 1;
 

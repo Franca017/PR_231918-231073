@@ -9,7 +9,7 @@ namespace ProtocolLibrary
         private byte[] _command;
         private byte[] _dataLength;
 
-        private String _sDirection;
+        private string _sDirection;
         private int _iCommand;
         private int _iDataLength;
 
