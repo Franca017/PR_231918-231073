@@ -13,13 +13,13 @@ namespace Domain
         public string Image { get; set; }
         public User Creator { get; set; }
 
-        public Game(string title, string genre, string sinopsis)
+        public Game(string title, string genre, string sinopsis, string path)
         {
             this.Title = title;
             this.Genre = genre;
             this.Sinopsis = sinopsis;
             this.Rating = 0;
-            this.Image = "";
+            this.Image = path;
         }
     }
 }

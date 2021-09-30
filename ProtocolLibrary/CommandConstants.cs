@@ -16,5 +16,7 @@ namespace ProtocolLibrary
         public const int GetReviews = 10;
         public const int Rate = 11;
         public const int DetailGame = 12;
+        public const int Download = 13;
+        public const int ModifyImage = 14;
     }
 }

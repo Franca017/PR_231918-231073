@@ -40,3 +40,5 @@ C:\Users\Matias\Desktop\PR_231918-231073\ServiceFactory\obj\Debug\netcoreapp3.1\
 C:\Users\Matias\Desktop\PR_231918-231073\ServiceFactory\obj\Debug\netcoreapp3.1\Factory.dll
 C:\Users\Matias\Desktop\PR_231918-231073\ServiceFactory\obj\Debug\netcoreapp3.1\Factory.pdb
 C:\Users\Matias\Desktop\PR_231918-231073\ServiceFactory\obj\Debug\netcoreapp3.1\Factory.csproj.AssemblyReference.cache
+C:\Users\Matias\Desktop\PR_231918-231073\ServiceFactory\bin\Debug\netcoreapp3.1\ProtocolLibrary.dll
+C:\Users\Matias\Desktop\PR_231918-231073\ServiceFactory\bin\Debug\netcoreapp3.1\ProtocolLibrary.pdb

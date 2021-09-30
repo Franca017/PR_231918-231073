@@ -13,5 +13,6 @@ namespace LogicInterface
         List<Game> GetPublishedGames(User userLogged);
         void Modify(string[] modifySplit);
         void AdjustRating(int gameId, int newRating);
+        void ModifyImage(string[] modifySplit);
     }
 }

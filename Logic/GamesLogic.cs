@@ -78,5 +78,11 @@ namespace Logic
             var game = GetById(gameId);
             game.Rating = newRating;
         }
+
+        public void ModifyImage(string[] modifySplit)
+        {
+            var gameToModify = GetById(Convert.ToInt32(modifySplit[0]));
+            gameToModify.Image = modifySplit[1];
+        }
     }
 }
