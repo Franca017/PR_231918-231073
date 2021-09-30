@@ -1,4 +1,5 @@
-﻿using Domain;
+﻿using System.Collections.Generic;
+using Domain;
 
 namespace RepositoryInterface
 {
@@ -7,5 +8,6 @@ namespace RepositoryInterface
         User GetUser(string user);
         User Add(User user);
 
+        List<Game> GetPurchasedGames(int userLoggedId);
     }
 }

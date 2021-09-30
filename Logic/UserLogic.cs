@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Domain;
 using LogicInterface;
 using Microsoft.Extensions.DependencyInjection;
@@ -43,6 +44,12 @@ namespace Logic
                 return $"Game {gameId} was purchased by {userLogged.UserName}";
             }
             return $"The game {gameId} is already purchased by {userLogged.UserName}";
+        }
+
+        public List<Game> GetPurchasedGames(int userLoggedId)
+        {
+            List<Game> purchasedGames = _userRepository.GetPurchasedGames(userLoggedId);
+            return purchasedGames;
         }
     }
 }

@@ -33,5 +33,13 @@ namespace Repository
                 return user;
             }
         }
+
+        public List<Game> GetPurchasedGames(int userLoggedId)
+        {
+            lock (Locker)
+            {
+                return _users.Find(e => e.Id == userLoggedId).PurchasedGames;
+            }
+        }
     }
 }

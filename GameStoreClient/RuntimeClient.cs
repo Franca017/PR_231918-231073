@@ -19,8 +19,8 @@ namespace GameStoreClient
         
         public void Execute(Socket socket)
         {
-            Console.WriteLine("Bienvenido al Sistema Client");
-            Console.Write("Ingrese su nombre de Usuario (en caso de no existir se le creara uno): ");
+            Console.WriteLine("Welcome to the client system");
+            Console.Write("Enter you username (in case it doesnt exists one will be created): ");
             var user = Console.ReadLine();
             try
             {
@@ -32,12 +32,12 @@ namespace GameStoreClient
                 while (!_exit)
                 {
                     Console.WriteLine("\n Options: ");
-                    Console.WriteLine("list -> Visualiza la lista de juegos");
-                    Console.WriteLine("publish -> Publicar un juego");
-                    Console.WriteLine("publishedgames -> Visualiza la lista de juegos publicados");
-                    Console.WriteLine("message -> envia un mensaje al server");
-                    Console.WriteLine("exit -> abandonar el programa");
-                    Console.Write("Ingrese su opcion: ");
+                    Console.WriteLine("list -> Visualize games list");
+                    Console.WriteLine("publish -> Publish a game");
+                    Console.WriteLine("publishedgames -> Visualize your published games list");
+                    Console.WriteLine("message -> Send a message to the server");
+                    Console.WriteLine("exit -> Quit the program");
+                    Console.Write("Type your option: ");
                     var option = Console.ReadLine();
                     if (option != null)
                     {
@@ -128,15 +128,15 @@ namespace GameStoreClient
 
         private void ModifyImage(Socket socket, List<Game> gamesPublished)
         {
-            var idCorrecto = false;
-            while (!idCorrecto)
+            var correctId = false;
+            while (!correctId)
             {
                 Console.Write("Insert the id of the game to modify its image: ");
                 var gameId = Console.ReadLine();
                 var game = gamesPublished.Find(e => e.Id.Equals(Convert.ToInt32(gameId)));
                 if (game == null)
                 {
-                    Console.WriteLine("Id inexistente");
+                    Console.WriteLine("Did not found any game with the selected id");
                 }
                 else
                 {
@@ -151,10 +151,10 @@ namespace GameStoreClient
                     var info = gameId + "*" + path;
                     Request(info,socket,CommandConstants.ModifyImage);
                     SendFile(path, socket);
-                    Console.WriteLine("Enviado");
+                    Console.WriteLine("Sent");
                     var bufferResponse = Response(socket, CommandConstants.ModifyImage);
                     Console.WriteLine(Encoding.UTF8.GetString(bufferResponse));
-                    idCorrecto = true;
+                    correctId = true;
                 }
             }
         }
@@ -174,7 +174,7 @@ namespace GameStoreClient
                 game += insert + "*";
             }
             Request(game,socket,CommandConstants.Publish);
-            // --
+            
             var splittedGame = game.Split("*");
             var path = splittedGame[3];
             IFileHandler fileHandler = new FileHandler();
@@ -183,25 +183,24 @@ namespace GameStoreClient
                 path = Console.ReadLine();
             }
             SendFile(path, socket);
-            Console.WriteLine("Enviado");
-            // --
+            Console.WriteLine("Sent");
+
             var bufferResponse = Response(socket, CommandConstants.Publish);
-            
             Console.WriteLine(Encoding.UTF8.GetString(bufferResponse));
         }
 
         
         private void ModifyGame(Socket socket, List<Game> gamesPublished)
         {
-            var idCorrecto = false;
-            while (!idCorrecto)
+            var correctId = false;
+            while (!correctId)
             {
                 Console.Write("Insert the id of the game to modify: ");
                 var gameId = Console.ReadLine();
                 var game = gamesPublished.Find(e => e.Id.Equals(Convert.ToInt32(gameId)));
                 if (game == null)
                 {
-                    Console.WriteLine("Id inexistente");
+                    Console.WriteLine("Did not found any game with the selected id");
                 }
                 else
                 {
@@ -225,25 +224,24 @@ namespace GameStoreClient
                     }
                     Request(gameModified,socket,CommandConstants.ModifyGame);
                     var bufferResponse = Response(socket, CommandConstants.ModifyGame);
-            
                     Console.WriteLine(Encoding.UTF8.GetString(bufferResponse));
 
-                    idCorrecto = true;
+                    correctId = true;
                 }
             }
         }
 
         private void DeleteGame(Socket socket, List<Game> gamesPublished)
         {
-            var idCorrecto = false;
-            while (!idCorrecto)
+            var correctId = false;
+            while (!correctId)
             {
                 Console.Write("Insert the id of the game to delete: ");
                 var gameId = Console.ReadLine();
                 var game = gamesPublished.Find(e => e.Id.Equals(Convert.ToInt32(gameId)));
                 if (game == null)
                 {
-                    Console.WriteLine("Id inexistente");
+                    Console.WriteLine("Did not found any game with the selected id");
                 }
                 else
                 {
@@ -251,7 +249,7 @@ namespace GameStoreClient
                     var bufferResponse = Response(socket, CommandConstants.DeleteGame);
             
                     Console.WriteLine(Encoding.UTF8.GetString(bufferResponse));
-                    idCorrecto = true;
+                    correctId = true;
                 }
             }
         }
@@ -284,8 +282,9 @@ namespace GameStoreClient
                 Console.WriteLine("\n Options:");
                 Console.WriteLine("detail -> Get details of a game");
                 Console.WriteLine("purchase -> Purchase a game");
+                Console.WriteLine("purchasedgames -> List the games already purchased by the user");
                 Console.WriteLine("search -> Search a game by its Title, Category");
-                Console.WriteLine("filterRating -> filter games by a minimum rating");
+                Console.WriteLine("filterrating -> Filter games by a minimum rating");
                 Console.WriteLine("reviews -> Get reviews of a game");
                 Console.WriteLine("rate -> Rate and comment a game");
                 Console.WriteLine("download -> Download the image of a game");
@@ -299,6 +298,9 @@ namespace GameStoreClient
                         break;
                     case "purchase":
                         Purchase(socket);
+                        break;
+                    case "purchasedgames":
+                        GetPurchasedGames(socket);
                         break;
                     case "search":
                         Search(socket);
@@ -319,12 +321,34 @@ namespace GameStoreClient
                         main = true;
                         break;
                     default:
-                        Console.WriteLine("Opcion invalida");
+                        Console.WriteLine("Invalid option");
                         break;
                 }
             }
         }
-        
+
+        private void GetPurchasedGames(Socket socket)
+        {
+            Request("", socket, CommandConstants.ListPurchasedGames);
+            var bufferResponse = Response(socket, CommandConstants.ListPurchasedGames);
+            var lengthString = Encoding.UTF8.GetString(bufferResponse);
+            var length = Convert.ToInt32(lengthString);
+            var gamesPurchased = new List<Game>();
+            Console.WriteLine("\n Purchased games list: \n");
+            for (var i = 0; i < length; i++)
+            {
+                bufferResponse = Response(socket, CommandConstants.ListPurchasedGames);
+                var split = (Encoding.UTF8.GetString(bufferResponse)).Split("*");
+                var game = new Game(split[1], split[2], split[4], split[5])
+                {
+                    Id = Convert.ToInt32(split[0]),
+                    Rating = Convert.ToInt32(split[3])
+                };
+                gamesPurchased.Add(game);
+                Console.WriteLine($"{game.Id}: {game.Title} - {game.Genre} - {game.Rating}\n");
+            }
+        }
+
         private void SendParameters(Socket socket, string parameter, int command)
         {
             Request(parameter, socket, command);
@@ -370,15 +394,15 @@ namespace GameStoreClient
 
         private void Download(Socket socket)
         {
-            var idCorrecto = false;
-            while (!idCorrecto)
+            var correctId = false;
+            while (!correctId)
             {
                 Console.Write("Insert the id of the game to download its image: ");
                 var gameId = Console.ReadLine();
                 var game = _gamesLoaded.Find(e => e.Id.Equals(Convert.ToInt32(gameId)));
                 if (game == null)
                 {
-                    Console.WriteLine("Id inexistente");
+                    Console.WriteLine("Did not found any game with the selected id");
                 }
                 else
                 {
@@ -388,7 +412,7 @@ namespace GameStoreClient
                     
                     ReceiveFile(socket);
                     Console.WriteLine("File received");
-                    idCorrecto = true;
+                    correctId = true;
                 }
             }
         }
@@ -396,57 +420,57 @@ namespace GameStoreClient
         private void Rate(Socket socket)
         {
             Console.WriteLine("\n Rate and comment a game");
-            var idCorrecto = false;
-            while (!idCorrecto)
+            var correctId = false;
+            while (!correctId)
             {
                 Console.Write("Insert the id of the game to rate and comment: ");
                 var gameId = Console.ReadLine();
                 var game = _gamesLoaded.Find(e => e.Id.Equals(Convert.ToInt32(gameId)));
                 if (game == null)
                 {
-                    Console.WriteLine("Id inexistente");
+                    Console.WriteLine("Did not found any game with the selected id");
                 }
                 else
                 {
                     var review = gameId + "*";
-                    Console.WriteLine("Ingrese el rating en un rango del 1 al 5");
-                    var ratingCorrecto = false;
-                    while (!ratingCorrecto)
+                    Console.WriteLine("Type the rating in a 1 to 5 range");
+                    var correctRating = false;
+                    while (!correctRating)
                     {
                         var insert = Console.ReadLine();
                         int rating = Convert.ToInt32(insert);
                         if (rating < 1 || rating > 5)
                         {
-                            Console.WriteLine("Rating incorrecto, ingrese nuevamente. Debe estar entre 1 y 5");
+                            Console.WriteLine("Incorrect rating, try again. It must be in the 1 to 5 range");
                         }
                         else
                         {
                             review += insert + "*";
-                            ratingCorrecto = true;
+                            correctRating = true;
                         }
                     }
-                    Console.WriteLine("Ingrese el comentario");
+                    Console.WriteLine("Type your comment");
                     var comment = Console.ReadLine();
                     review += comment;
                     Request(review,socket,CommandConstants.Rate);
                     var bufferResponse = Response(socket, CommandConstants.Rate);
                     Console.WriteLine(Encoding.UTF8.GetString(bufferResponse));
-                    idCorrecto = true;
+                    correctId = true;
                 }
             }
         }
 
         private void GetReviews(Socket socket)
         {
-            var idCorrecto = false;
-            while (!idCorrecto)
+            var correctId = false;
+            while (!correctId)
             {
                 Console.Write("Insert the id of the game to get its reviews: ");
                 var gameId = Console.ReadLine();
                 var game = _gamesLoaded.Find(e => e.Id.Equals(Convert.ToInt32(gameId)));
                 if (game == null)
                 {
-                    Console.WriteLine("Id doesnt exist");
+                    Console.WriteLine("Did not found any game with the selected id");
                 }
                 else
                 {
@@ -471,22 +495,22 @@ namespace GameStoreClient
                             Console.WriteLine($"{comment}");
                         }
                     }
-                    idCorrecto = true;
+                    correctId = true;
                 }
             }
         }
 
         private void Purchase(Socket socket)
         {
-            var idCorrecto = false;
-            while (!idCorrecto)
+            var correctId = false;
+            while (!correctId)
             {
                 Console.Write("Insert the id of the game to purchase: ");
                 var gameId = Console.ReadLine();
                 var game = _gamesLoaded.Find(e => e.Id.Equals(Convert.ToInt32(gameId)));
                 if (game == null)
                 {
-                    Console.WriteLine("Id inexistente");
+                    Console.WriteLine("Did not found any game with the selected id");
                 }
                 else
                 {
@@ -494,22 +518,22 @@ namespace GameStoreClient
                     var bufferResponse = Response(socket, CommandConstants.Purchase);
             
                     Console.WriteLine(Encoding.UTF8.GetString(bufferResponse));
-                    idCorrecto = true;
+                    correctId = true;
                 }
             }
         }
 
         private void DetailGame(Socket socket)
         {
-            var idCorrecto = false;
-            while (!idCorrecto)
+            var correctId = false;
+            while (!correctId)
             {
                 Console.Write("Insert the id of the game to select: ");
                 var id = Console.ReadLine();
                 var game = _gamesLoaded.Find(e => e.Id.Equals(Convert.ToInt32(id)));
                 if (game == null)
                 {
-                    Console.WriteLine("Id inexistente");
+                    Console.WriteLine("Did not found any game with the selected id");
                 }
                 else
                 {
@@ -522,15 +546,15 @@ namespace GameStoreClient
 
                         Console.WriteLine($" --- {split[1]} --- ");
                         Console.WriteLine($"{split[2]} *{split[3]}");
-                    Console.WriteLine(split[4]);
-                    Console.WriteLine($"Image file name: {split[5]}");
+                        Console.WriteLine(split[4]);
+                        Console.WriteLine($"Image file name: {split[5]}");
                     }
                     else
                     {
                         Console.WriteLine(responseString);
                     }
 
-                    idCorrecto = true;
+                    correctId = true;
                 }
             }
         }

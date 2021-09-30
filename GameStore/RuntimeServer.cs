@@ -89,6 +89,9 @@ namespace GameStoreServer
                         case CommandConstants.ModifyImage:
                             ModifyImage(header, connectedSocket);
                             break;
+                        case CommandConstants.ListPurchasedGames:
+                            GetPurchasedGames(header, connectedSocket);
+                            break;
                     }
                 }
                 catch (ClientDisconnected c)
@@ -100,7 +103,16 @@ namespace GameStoreServer
                 }
             }
         }
-        
+
+        private void GetPurchasedGames(Header header, Socket connectedSocket)
+        {
+            var purchasedGames = _userLogic.GetPurchasedGames(_userLogged.Id);
+            Response(purchasedGames.Count.ToString(), connectedSocket,
+                CommandConstants.ListPurchasedGames);
+            
+            SendGames(header,connectedSocket,purchasedGames);
+        }
+
         private void SendGames(Header header, Socket connectedSocket, List<Game> gamesFound)
         {
             foreach (var game in gamesFound)
@@ -281,11 +293,11 @@ namespace GameStoreServer
             var bufferData = new byte[header.IDataLength];
             ReceiveData(connectedSocket, header.IDataLength, bufferData);
             var user = Encoding.UTF8.GetString(bufferData);
-            Console.WriteLine("Usuario: " + Encoding.UTF8.GetString(bufferData));
+            Console.WriteLine("User: " + Encoding.UTF8.GetString(bufferData));
             var userInDb = _userLogic.Login(user);
             _userLogged = userInDb;
             var response =
-                $"Se inicio sesion en el usuario {userInDb.UserName} (creado el {userInDb.DateCreated.Day}/{userInDb.DateCreated.Month}).";
+                $"Log in of the user: {userInDb.UserName} (created at {userInDb.DateCreated.Day}/{userInDb.DateCreated.Month}).";
             Response(response, connectedSocket, header.ICommand);
         }
 
@@ -385,8 +397,8 @@ namespace GameStoreServer
         
         private void SendFile(string path, Socket socket)
         {
-            var fileName = _fileHandler.GetFileName(path); // nombre del archivo -> XXXX
-            var fileSize = _fileHandler.GetFileSize(path); // tamaño del archivo -> YYYYYYYY
+            var fileName = _fileHandler.GetFileName(path);
+            var fileSize = _fileHandler.GetFileSize(path);
             var header = new Header().Create(fileName, fileSize);
             socket.Send(header, header.Length, SocketFlags.None);
             
