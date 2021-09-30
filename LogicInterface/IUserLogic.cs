@@ -1,4 +1,5 @@
-﻿using Domain;
+﻿using System.Collections.Generic;
+using Domain;
 
 namespace LogicInterface
 {
@@ -6,5 +7,6 @@ namespace LogicInterface
     {
         User Login(string userName);
         string PurchaseGame(User userLogged, int gameId);
+        List<Game> GetPurchasedGames(int userLoggedId);
     }
 }
