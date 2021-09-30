@@ -12,6 +12,7 @@
           "LogicInterface": "1.0.0",
           "Microsoft.EntityFrameworkCore.SqlServer": "5.0.9",
           "Microsoft.Extensions.DependencyInjection.Abstractions": "5.0.0",
+          "ProtocolLibrary": "1.0.0",
           "Repository": "1.0.0",
           "RepositoryInterface": "1.0.0"
         },
@@ -1166,6 +1167,11 @@
           "LogicInterface.dll": {}
         }
       },
+      "ProtocolLibrary/1.0.0": {
+        "runtime": {
+          "ProtocolLibrary.dll": {}
+        }
+      },
       "Repository/1.0.0": {
         "dependencies": {
           "Microsoft.EntityFrameworkCore": "5.0.9",
@@ -1914,6 +1920,11 @@
       "sha512": ""
     },
     "LogicInterface/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "ProtocolLibrary/1.0.0": {
       "type": "project",
       "serviceable": false,
       "sha512": ""

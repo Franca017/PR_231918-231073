@@ -6,16 +6,20 @@ using Domain.Exceptions;
 using LogicInterface;
 using Microsoft.Extensions.DependencyInjection;
 using ProtocolLibrary;
+using ProtocolLibrary.FileHandler;
+using ProtocolLibrary.FileHandler.Interfaces;
 
 namespace GameStoreServer
 {
     public class Runtime
     {
         private bool Exit { get; set; }
-        
+
         private readonly IGamesLogic _gamesLogic;
         private readonly IUserLogic _userLogic;
         private readonly IReviewLogic _reviewLogic;
+        private readonly IFileStreamHandler _fileStreamHandler;
+        private readonly IFileHandler _fileHandler;
 
         private User _userLogged;
 
@@ -24,6 +28,8 @@ namespace GameStoreServer
             _gamesLogic = serviceProvider.GetService<IGamesLogic>();
             _userLogic = serviceProvider.GetService<IUserLogic>();
             _reviewLogic = serviceProvider.GetService<IReviewLogic>();
+            _fileStreamHandler = new FileStreamHandler();
+            _fileHandler = new FileHandler();
         }
 
         public void HandleConnection(Socket connectedSocket)
@@ -76,6 +82,12 @@ namespace GameStoreServer
                         case CommandConstants.Rate:
                             Rate(header, connectedSocket);
                             break;
+                        case CommandConstants.Download:
+                            Download(header, connectedSocket);
+                            break;
+                        case CommandConstants.ModifyImage:
+                            ModifyImage(header, connectedSocket);
+                            break;
                     }
                 }
                 catch (ClientDisconnected c)
@@ -118,6 +130,20 @@ namespace GameStoreServer
             }
         }
 
+        // --
+        private void Download(Header header, Socket connectedSocket)
+        {
+            var bufferData = new byte[header.IDataLength];
+            ReceiveData(connectedSocket, header.IDataLength, bufferData);
+            var gameIdString = Encoding.UTF8.GetString(bufferData);
+            var gameId = Convert.ToInt32(gameIdString);
+            Response($"The image of the game with id {gameId} is going to be sent", connectedSocket, header.ICommand);
+            Game game = _gamesLogic.GetById(gameId);
+            string path = game.Image;
+            SendFile(path, connectedSocket);
+        }
+        // --
+
         private void Rate(Header header, Socket connectedSocket)
         {
             var bufferData = new byte[header.IDataLength];
@@ -155,6 +181,20 @@ namespace GameStoreServer
             Response($"Your game with id {gameModifyId} was modified.", connectedSocket,
                 header.ICommand);
         }
+        
+        private void ModifyImage(Header header, Socket connectedSocket)
+        {
+            var bufferData = new byte[header.IDataLength];
+            ReceiveData(connectedSocket, header.IDataLength, bufferData);
+            ReceiveFile(connectedSocket);
+            Console.WriteLine("File received");
+            var modifySplit = (Encoding.UTF8.GetString(bufferData)).Split("*");
+            var gameModifyId = Convert.ToInt32(modifySplit[0]);
+            var newPath = modifySplit[1];
+            _gamesLogic.ModifyImage(modifySplit);
+            Response($"Your game with id {gameModifyId} was modified.", connectedSocket,
+                header.ICommand);
+        }
 
         private void ListPublishedGames(Header header, Socket connectedSocket)
         {
@@ -173,9 +213,10 @@ namespace GameStoreServer
         {
             var bufferPublish = new byte[header.IDataLength];
             ReceiveData(connectedSocket, header.IDataLength, bufferPublish);
-
+            ReceiveFile(connectedSocket);
+            Console.WriteLine("File received");
             var split = (Encoding.UTF8.GetString(bufferPublish)).Split("*");
-            var newGame = new Game(split[0], split[1], split[2])
+            var newGame = new Game(split[0], split[1], split[2], split[3])
             {
                 Creator = _userLogged
             };
@@ -275,7 +316,8 @@ namespace GameStoreServer
                     SocketFlags.None);
             }
         }
-        private void ReceiveData(Socket clientSocket,  int length, byte[] buffer)
+
+        private void ReceiveData(Socket clientSocket, int length, byte[] buffer)
         {
             var iRecv = 0;
             while (iRecv < length)
@@ -306,5 +348,83 @@ namespace GameStoreServer
                 }
             }
         }
+
+        public void ReceiveFile(Socket socket)
+        {
+            var fileHeader = new byte[Header.GetLength()];
+            ReceiveData(socket, Header.GetLength(), fileHeader);
+            var fileNameSize = BitConverter.ToInt32(fileHeader, 0);
+            var fileSize = BitConverter.ToInt64(fileHeader, HeaderConstants.FixedFileNameLength);
+            
+            var bufferName = new byte[fileNameSize];
+            ReceiveData(socket, fileNameSize, bufferName);
+            var fileName = Encoding.UTF8.GetString(bufferName);
+            
+            long parts = Header.GetParts(fileSize);
+            long offset = 0;
+            long currentPart = 1;
+
+            Console.WriteLine(
+                $"Will receive file {fileName} with size {fileSize} that will be received in {parts} segments");
+            while (fileSize > offset)
+            {
+                byte[] data;
+                if (currentPart == parts)
+                {
+                    var lastPartSize = (int) (fileSize - offset);
+                    Console.WriteLine($"Will receive segment number {currentPart} with size {lastPartSize}");
+                    data = new byte[lastPartSize];
+                    ReceiveData(socket, lastPartSize, data);
+                    offset += lastPartSize;
+                }
+                else
+                {
+                    Console.WriteLine(
+                        $"Will receive segment number {currentPart} with size {HeaderConstants.MaxPacketSize}");
+                    data = new byte[HeaderConstants.MaxPacketSize];
+                    ReceiveData(socket, HeaderConstants.MaxPacketSize, data);
+                    offset += HeaderConstants.MaxPacketSize;
+                }
+
+                _fileStreamHandler.Write(fileName, data);
+                currentPart++;
+            }
+        }
+        
+        // --
+        private void SendFile(string path, Socket socket)
+        {
+            var fileName = _fileHandler.GetFileName(path); // nombre del archivo -> XXXX
+            var fileSize = _fileHandler.GetFileSize(path); // tamaño del archivo -> YYYYYYYY
+            var header = new Header().Create(fileName, fileSize);
+            socket.Send(header, header.Length, SocketFlags.None);
+            
+            var fileNameToBytes = Encoding.UTF8.GetBytes(fileName);
+            socket.Send(fileNameToBytes, fileNameToBytes.Length, SocketFlags.None);
+            
+            long parts = Header.GetParts(fileSize);
+            Console.WriteLine("Will Send {0} parts",parts);
+            long offset = 0;
+            long currentPart = 1;
+
+            while (fileSize > offset)
+            {
+                byte[] data;
+                if (currentPart == parts)
+                {
+                    var lastPartSize = (int)(fileSize - offset);
+                    data = _fileStreamHandler.Read(path, offset, lastPartSize);
+                    offset += lastPartSize;
+                }
+                else
+                {
+                    data = _fileStreamHandler.Read(path, offset, HeaderConstants.MaxPacketSize);
+                    offset += HeaderConstants.MaxPacketSize;
+                }
+                socket.Send(data, data.Length, SocketFlags.None);
+                currentPart++;
+            }
+        }
+        // --
     }
 }

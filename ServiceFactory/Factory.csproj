@@ -12,6 +12,7 @@
   <ItemGroup>
     <ProjectReference Include="..\LogicInterface\LogicInterface.csproj" />
     <ProjectReference Include="..\Logic\Logic.csproj" />
+    <ProjectReference Include="..\ProtocolLibrary\ProtocolLibrary.csproj" />
     <ProjectReference Include="..\RepositoryInterface\RepositoryInterface.csproj" />
     <ProjectReference Include="..\Repository\Repository.csproj" />
   </ItemGroup>

@@ -83,5 +83,11 @@ namespace Logic
         {
             return _gamesRepository.GetGamesOverRating(minRating);
         }
+
+        public void ModifyImage(string[] modifySplit)
+        {
+            var gameToModify = GetById(Convert.ToInt32(modifySplit[0]));
+            gameToModify.Image = modifySplit[1];
+        }
     }
 }

@@ -5,6 +5,8 @@ using System.Text;
 using Domain;
 using Domain.Exceptions;
 using ProtocolLibrary;
+using ProtocolLibrary.FileHandler;
+using ProtocolLibrary.FileHandler.Interfaces;
 
 namespace GameStoreClient
 {
@@ -12,7 +14,9 @@ namespace GameStoreClient
     {
         private bool _exit;
         private readonly List<Game> _gamesLoaded = new List<Game>();
-
+        private readonly IFileStreamHandler _fileStreamHandler = new FileStreamHandler();
+        private readonly IFileHandler _fileHandler = new FileHandler();
+        
         public void Execute(Socket socket)
         {
             Console.WriteLine("Bienvenido al Sistema Client");
@@ -86,7 +90,7 @@ namespace GameStoreClient
             {
                 bufferResponse = Response(socket, CommandConstants.ListPublishedGames);
                 var split = (Encoding.UTF8.GetString(bufferResponse)).Split("*");
-                var game = new Game(split[1], split[2], split[4])
+                var game = new Game(split[1], split[2], split[4], split[5])
                 {
                     Id = Convert.ToInt32(split[0]),
                     Rating = Convert.ToInt32(split[3]),
@@ -101,7 +105,8 @@ namespace GameStoreClient
             {
                 Console.WriteLine("\n Options:");
                 Console.WriteLine("modify -> Modify an existing game");
-                Console.WriteLine("delete -> Get details of a game");
+                Console.WriteLine("modifyimage -> Modify an existing game image");
+                Console.WriteLine("delete -> Delete a game");
                 Console.WriteLine("main <- Go to main menu");
                 Console.Write("Option: ");
                 var option = Console.ReadLine();
@@ -110,6 +115,9 @@ namespace GameStoreClient
                     {
                         case "modify":
                             ModifyGame(socket, gamesPublished);
+                            break;
+                        case "modifyimage":
+                            ModifyImage(socket, gamesPublished);
                             break;
                         case "delete":
                             DeleteGame(socket, gamesPublished);
@@ -123,14 +131,47 @@ namespace GameStoreClient
                     }
             }
         }
-        
+
+        private void ModifyImage(Socket socket, List<Game> gamesPublished)
+        {
+            var idCorrecto = false;
+            while (!idCorrecto)
+            {
+                Console.Write("Insert the id of the game to modify its image: ");
+                var gameId = Console.ReadLine();
+                var game = gamesPublished.Find(e => e.Id.Equals(Convert.ToInt32(gameId)));
+                if (game == null)
+                {
+                    Console.WriteLine("Id inexistente");
+                }
+                else
+                {
+                    Console.WriteLine("Insert the path of the new file:");
+                    var path = String.Empty;
+                    IFileHandler fileHandler = new FileHandler();
+                    while(path != null && path.Equals(string.Empty) && !fileHandler.FileExists(path))
+                    {
+                        path = Console.ReadLine();
+                    }
+
+                    var info = gameId + "*" + path;
+                    Request(info,socket,CommandConstants.ModifyImage);
+                    SendFile(path, socket);
+                    Console.WriteLine("Enviado");
+                    var bufferResponse = Response(socket, CommandConstants.ModifyImage);
+                    Console.WriteLine(Encoding.UTF8.GetString(bufferResponse));
+                    idCorrecto = true;
+                }
+            }
+        }
+
         private void Publish(Socket socket)
         {
             Console.WriteLine("\n Publish a game");
             var game = "";
             var attributes = new List<string>
             {
-                "Title", "Genre", "Sinopsis"
+                "Title", "Genre", "Sinopsis", "Path of the image"
             };
             foreach (var attribute in attributes)
             {
@@ -139,11 +180,23 @@ namespace GameStoreClient
                 game += insert + "*";
             }
             Request(game,socket,CommandConstants.Publish);
+            // --
+            var splittedGame = game.Split("*");
+            var path = splittedGame[3];
+            IFileHandler fileHandler = new FileHandler();
+            while(path != null && path.Equals(string.Empty) && !fileHandler.FileExists(path))
+            {
+                path = Console.ReadLine();
+            }
+            SendFile(path, socket);
+            Console.WriteLine("Enviado");
+            // --
             var bufferResponse = Response(socket, CommandConstants.Publish);
             
             Console.WriteLine(Encoding.UTF8.GetString(bufferResponse));
         }
 
+        
         private void ModifyGame(Socket socket, List<Game> gamesPublished)
         {
             var idCorrecto = false;
@@ -221,7 +274,7 @@ namespace GameStoreClient
             {
                 bufferResponse = Response(socket, CommandConstants.ListGames);
                 var split = (Encoding.UTF8.GetString(bufferResponse)).Split("*");
-                var game = new Game(split[1], split[2], split[4])
+                var game = new Game(split[1], split[2], split[4], split[5])
                 {
                     Id = Convert.ToInt32(split[0]),
                     Rating = Convert.ToInt32(split[3]),
@@ -241,6 +294,7 @@ namespace GameStoreClient
                 Console.WriteLine("filterRating -> filter games by a minimum rating");
                 Console.WriteLine("reviews -> Get reviews of a game");
                 Console.WriteLine("rate -> Rate and comment a game");
+                Console.WriteLine("download -> Download the image of a game");
                 Console.WriteLine("main <- Go to main menu");
                 Console.Write("Option: ");
                 var option = Console.ReadLine();
@@ -263,6 +317,9 @@ namespace GameStoreClient
                         break;
                     case "rate":
                         Rate(socket);
+                        break;
+                    case "download":
+                        Download(socket);
                         break;
                     case "main":
                         main = true;
@@ -316,6 +373,31 @@ namespace GameStoreClient
             Console.WriteLine("Insert some keywords to search a game: ");
             var keywords = Console.ReadLine();
             SendParameters(socket,keywords,CommandConstants.Search);
+        }
+
+        private void Download(Socket socket)
+        {
+            var idCorrecto = false;
+            while (!idCorrecto)
+            {
+                Console.Write("Insert the id of the game to download its image: ");
+                var gameId = Console.ReadLine();
+                var game = _gamesLoaded.Find(e => e.Id.Equals(Convert.ToInt32(gameId)));
+                if (game == null)
+                {
+                    Console.WriteLine("Id inexistente");
+                }
+                else
+                {
+                    Request(gameId.ToString(),socket,CommandConstants.Download);
+                    var bufferResponse = Response(socket, CommandConstants.Download);
+                    Console.WriteLine(Encoding.UTF8.GetString(bufferResponse));
+                    
+                    ReceiveFile(socket);
+                    Console.WriteLine("File received");
+                    idCorrecto = true;
+                }
+            }
         }
 
         private void Rate(Socket socket)
@@ -447,8 +529,8 @@ namespace GameStoreClient
 
                         Console.WriteLine($" --- {split[1]} --- ");
                         Console.WriteLine($"{split[2]} *{split[3]}");
-
-                        Console.WriteLine(split[4]);
+                    Console.WriteLine(split[4]);
+                    Console.WriteLine($"Image file name: {split[5]}");
                     }
                     else
                     {
@@ -529,5 +611,84 @@ namespace GameStoreClient
                 iRecv += localRecv;
             }
         }
+        
+        // --
+        private void SendFile(string path, Socket socket)
+        {
+            var fileName = _fileHandler.GetFileName(path); // nombre del archivo -> XXXX
+            var fileSize = _fileHandler.GetFileSize(path); // tamaño del archivo -> YYYYYYYY
+            var header = new Header().Create(fileName, fileSize);
+            socket.Send(header, header.Length, SocketFlags.None);
+            
+            var fileNameToBytes = Encoding.UTF8.GetBytes(fileName);
+            socket.Send(fileNameToBytes, fileNameToBytes.Length, SocketFlags.None);
+            
+            long parts = Header.GetParts(fileSize);
+            Console.WriteLine("Will Send {0} parts",parts);
+            long offset = 0;
+            long currentPart = 1;
+
+            while (fileSize > offset)
+            {
+                byte[] data;
+                if (currentPart == parts)
+                {
+                    var lastPartSize = (int)(fileSize - offset);
+                    data = _fileStreamHandler.Read(path, offset, lastPartSize);
+                    offset += lastPartSize;
+                }
+                else
+                {
+                    data = _fileStreamHandler.Read(path, offset, HeaderConstants.MaxPacketSize);
+                    offset += HeaderConstants.MaxPacketSize;
+                }
+                socket.Send(data, data.Length, SocketFlags.None);
+                currentPart++;
+            }
+        }
+        // --
+        
+        public void ReceiveFile(Socket socket)
+        {
+            var fileHeader = new byte[Header.GetLength()];
+            ReceiveData(socket, Header.GetLength(), fileHeader);
+            var fileNameSize = BitConverter.ToInt32(fileHeader, 0);
+            var fileSize = BitConverter.ToInt64(fileHeader, HeaderConstants.FixedFileNameLength);
+            
+            var bufferName = new byte[fileNameSize];
+            ReceiveData(socket, fileNameSize, bufferName);
+            var fileName = Encoding.UTF8.GetString(bufferName);
+            
+            long parts = Header.GetParts(fileSize);
+            long offset = 0;
+            long currentPart = 1;
+
+            Console.WriteLine(
+                $"Will receive file {fileName} with size {fileSize} that will be received in {parts} segments");
+            while (fileSize > offset)
+            {
+                byte[] data;
+                if (currentPart == parts)
+                {
+                    var lastPartSize = (int) (fileSize - offset);
+                    Console.WriteLine($"Will receive segment number {currentPart} with size {lastPartSize}");
+                    data = new byte[lastPartSize];
+                    ReceiveData(socket, lastPartSize, data);
+                    offset += lastPartSize;
+                }
+                else
+                {
+                    Console.WriteLine(
+                        $"Will receive segment number {currentPart} with size {HeaderConstants.MaxPacketSize}");
+                    data = new byte[HeaderConstants.MaxPacketSize];
+                    ReceiveData(socket, HeaderConstants.MaxPacketSize, data);
+                    offset += HeaderConstants.MaxPacketSize;
+                }
+
+                _fileStreamHandler.Write(fileName, data);
+                currentPart++;
+            }
+        }
+
     }
 }

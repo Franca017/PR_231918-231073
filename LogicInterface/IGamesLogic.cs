@@ -15,5 +15,6 @@ namespace LogicInterface
         void Modify(string[] modifySplit);
         void AdjustRating(int gameId, int newRating);
         List<Game> GetGamesOverRating(int minRating);
+        void ModifyImage(string[] modifySplit);
     }
 }
