@@ -37,7 +37,6 @@ namespace GameStoreClient
                     Console.WriteLine("list -> Visualize games list");
                     Console.WriteLine("publish -> Publish a game");
                     Console.WriteLine("publishedgames -> Visualize your published games list");
-                    Console.WriteLine("message -> Send a message to the server");
                     Console.WriteLine("exit -> Quit the program");
                     Console.Write("Type your option: ");
                     var option = Console.ReadLine();
