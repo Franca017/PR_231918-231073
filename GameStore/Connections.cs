@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Net.Sockets;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace GameStoreServer
 {
@@ -10,17 +11,15 @@ namespace GameStoreServer
         private bool _exit;
         private readonly List<Socket> _clients = new List<Socket>();
 
-        public void ListenConnections(Socket socketServer, IServiceProvider serviceProvider)
+        public async void ListenConnections(TcpListener tcpListener, IServiceProvider serviceProvider)
         {
             while (!_exit)
             {
                 try
                 {
-                    var clientConnected = socketServer.Accept();
-                    _clients.Add(clientConnected);
-                    Console.WriteLine("Accepted new connection...");
-                    var threadcClient = new Thread(() => StartRuntime(serviceProvider, clientConnected));
-                    threadcClient.Start();
+                    var tcpClientSocket = await tcpListener.AcceptTcpClientAsync().ConfigureAwait(false);
+                    var task = Task.Run(async () => await StartRuntime(serviceProvider, tcpClientSocket).ConfigureAwait(false));
+                    
                 }
                 catch (Exception e)
                 {
@@ -32,7 +31,7 @@ namespace GameStoreServer
             Console.WriteLine("Exiting....");
         }
 
-        private void StartRuntime(IServiceProvider serviceProvider, Socket clientConnected)
+        private Task StartRuntime(IServiceProvider serviceProvider, TcpClient clientConnected)
         {
             if (!_exit)
             {
@@ -44,10 +43,12 @@ namespace GameStoreServer
                 catch (Exception e)
                 {
                     Console.WriteLine($"Server is closing the connection, will not process more data -> Message {e.Message}..");
-                    CloseConnection(clientConnected);
+                    //CloseConnection(clientConnected);
                 }
-                _clients.Remove(clientConnected);
+                //_clients.Remove(clientConnected);
             }
+
+            return null; //CHEQUEAR
         }
 
         private void CloseConnection(Socket client)
@@ -56,7 +57,7 @@ namespace GameStoreServer
             client.Close();
         }
 
-        public void HandleServer(Socket socketServer)
+        public void HandleServer()
         {
             Console.WriteLine("Bienvenido al Sistema Server");
             while (!_exit)
@@ -73,14 +74,14 @@ namespace GameStoreServer
                     // 1 - Cerrar el socket que esta escuchando conexiones nuevas
                     // 2 - Cerrar todas las conexiones abiertas desde los clientes
                     _exit = true;
-                    foreach (var client in _clients)
+                    /*foreach (var client in _clients)
                     {
                         CloseConnection(client);
                     }
 
                     var fakeSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
                     fakeSocket.Connect("127.0.0.1", 20000);
-                    socketServer.Close(0);
+                    socketServer.Close(0);*/
                 }
                 else
                 {

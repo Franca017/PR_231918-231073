@@ -16,7 +16,7 @@ namespace GameStoreServer
     {
         private bool Exit { get; set; }
 
-        private Socket _connectedSocket;
+        private TcpClient _connectedSocket;
 
         private readonly IGamesLogic _gamesLogic;
         private readonly IUserLogic _userLogic;
@@ -35,76 +35,76 @@ namespace GameStoreServer
             _fileHandler = new FileHandler();
         }
 
-        public void HandleConnection(Socket connectedSocket)
+        public void HandleConnection(TcpClient tcpClientSocket)
         {
-            this._connectedSocket = connectedSocket;
-            while (!Exit)
-            {
-                var headerLength = HeaderConstants.Request.Length + HeaderConstants.CommandLength +
-                                   HeaderConstants.DataLength;
-                var buffer = new byte[headerLength];
-                try
+            this._connectedSocket = tcpClientSocket;
+                while (!Exit)
                 {
-                    ReceiveData(headerLength, buffer);
-                    var header = new Header();
-                    header.DecodeData(buffer);
-                    switch (header.ICommand)
+                    var headerLength = HeaderConstants.Request.Length + HeaderConstants.CommandLength +
+                                       HeaderConstants.DataLength;
+                    var buffer = new byte[headerLength];
+                    try
                     {
-                        case CommandConstants.Login:
-                            Login(header);
-                            break;
-                        case CommandConstants.ListGames:
-                            ListGames(header);
-                            break;
-                        case CommandConstants.DetailGame:
-                            DetailGame(header);
-                            break;
-                        case CommandConstants.Purchase:
-                            Purchase(header);
-                            break;
-                        case CommandConstants.GetReviews:
-                            GetReviews(header);
-                            break;
-                        case CommandConstants.Publish:
-                            Publish(header);
-                            break;
-                        case CommandConstants.Search:
-                            Search(header);
-                            break;
-                        case CommandConstants.FilterRating:
-                            FilterRating(header);
-                            break;
-                        case CommandConstants.ListPublishedGames:
-                            ListPublishedGames(header);
-                            break;
-                        case CommandConstants.ModifyGame:
-                            ModifyGame(header);
-                            break;
-                        case CommandConstants.DeleteGame:
-                            DeleteGame(header);
-                            break;
-                        case CommandConstants.Rate:
-                            Rate(header);
-                            break;
-                        case CommandConstants.Download:
-                            Download(header);
-                            break;
-                        case CommandConstants.ModifyImage:
-                            ModifyImage(header);
-                            break;
-                        case CommandConstants.ListPurchasedGames:
-                            GetPurchasedGames(header);
-                            break;
+                        ReceiveData(headerLength, buffer);
+                        var header = new Header();
+                        header.DecodeData(buffer);
+                        switch (header.ICommand)
+                        {
+                            case CommandConstants.Login:
+                                Login(header);
+                                break;
+                            case CommandConstants.ListGames:
+                                ListGames(header);
+                                break;
+                            case CommandConstants.DetailGame:
+                                DetailGame(header);
+                                break;
+                            case CommandConstants.Purchase:
+                                Purchase(header);
+                                break;
+                            case CommandConstants.GetReviews:
+                                GetReviews(header);
+                                break;
+                            case CommandConstants.Publish:
+                                Publish(header);
+                                break;
+                            case CommandConstants.Search:
+                                Search(header);
+                                break;
+                            case CommandConstants.FilterRating:
+                                FilterRating(header);
+                                break;
+                            case CommandConstants.ListPublishedGames:
+                                ListPublishedGames(header);
+                                break;
+                            case CommandConstants.ModifyGame:
+                                ModifyGame(header);
+                                break;
+                            case CommandConstants.DeleteGame:
+                                DeleteGame(header);
+                                break;
+                            case CommandConstants.Rate:
+                                Rate(header);
+                                break;
+                            case CommandConstants.Download:
+                                Download(header);
+                                break;
+                            case CommandConstants.ModifyImage:
+                                ModifyImage(header);
+                                break;
+                            case CommandConstants.ListPurchasedGames:
+                                GetPurchasedGames(header);
+                                break;
+                        }
+                    }
+                    catch (ClientDisconnected c)
+                    {
+                        Console.WriteLine(_userLogged != null
+                            ? $"{c.Message} {_userLogged.UserName} disconnected"
+                            : $"{c.Message} Unlogged user disconnected");
+                        Exit = true;
                     }
                 }
-                catch (ClientDisconnected c)
-                {
-                    Console.WriteLine(_userLogged != null
-                        ? $"{c.Message} {_userLogged.UserName} disconnected"
-                        : $"{c.Message} Unlogged user disconnected");
-                    Exit = true;
-                }
-            }
         }
 
         private void GetPurchasedGames(Header header)
@@ -301,53 +301,55 @@ namespace GameStoreServer
         }
 
 
-        private void Response(string mensaje, int command)
+        private async void Response(string mensaje, int command)
         {
-            var header = new Header(HeaderConstants.Response, command, mensaje.Length);
-            var data = header.GetRequest();
-            var sentBytes = 0;
-            while (sentBytes < data.Length)
+            var headerLength = HeaderConstants.Request.Length + HeaderConstants.CommandLength +
+                               HeaderConstants.DataLength;
+            await using (var networkStream = _connectedSocket.GetStream())
             {
-                sentBytes += _connectedSocket.Send(data, sentBytes, data.Length - sentBytes, SocketFlags.None);
-            }
-
-            sentBytes = 0;
-            var bytesMessage = Encoding.UTF8.GetBytes(mensaje);
-            while (sentBytes < bytesMessage.Length)
-            {
-                sentBytes += _connectedSocket.Send(bytesMessage, sentBytes, bytesMessage.Length - sentBytes,
-                    SocketFlags.None);
+                var header = new Header(HeaderConstants.Response, command, mensaje.Length);
+                var data = header.GetRequest();
+                var dataLength = BitConverter.GetBytes(data.Length);
+                await networkStream.WriteAsync(dataLength, 0, headerLength).ConfigureAwait(false);
+                await networkStream.WriteAsync(data, 0, data.Length).ConfigureAwait(false);
             }
         }
 
-        private void ReceiveData(int length, byte[] buffer)
+        private async void ReceiveData(int length, byte[] buffer)
         {
-            var iRecv = 0;
-            while (iRecv < length)
-            {
-                try
-                {
-                    var localRecv = _connectedSocket.Receive(buffer, iRecv, length - iRecv, SocketFlags.None);
-                    if (localRecv == 0) // Si recieve retorna 0 -> la conexion se cerro desde el endpoint remoto
-                    {
-                        if (!Exit)
-                        {
-                            _connectedSocket.Shutdown(SocketShutdown.Both);
-                            _connectedSocket.Close();
-                            throw new ClientDisconnected();
-                        }
-                        else
-                        {
-                            throw new Exception("Server is closing");
-                        }
-                    }
 
-                    iRecv += localRecv;
-                }
-                catch (SocketException se)
+            using (var networkStream = _connectedSocket.GetStream())
+            {
+                var iRecv = 0;
+                while (iRecv < length)
                 {
-                    Console.WriteLine(se.Message);
-                    throw new ClientDisconnected();
+                    try
+                    {
+                        var received = await networkStream
+                            .ReadAsync(buffer, iRecv, length - iRecv)
+                            .ConfigureAwait(false);
+
+                        if (received == 0) // Si recieve retorna 0 -> la conexion se cerro desde el endpoint remoto
+                        {
+                            if (!Exit)
+                            {
+                                //_connectedSocket.Shutdown(SocketShutdown.Both);
+                                //_connectedSocket.Close();
+                                throw new ClientDisconnected();
+                            }
+                            else
+                            {
+                                throw new Exception("Server is closing");
+                            }
+                        }
+
+                        iRecv += received;
+                    }
+                    catch (SocketException se)
+                    {
+                        Console.WriteLine(se.Message);
+                        throw new ClientDisconnected();
+                    }
                 }
             }
         }
@@ -399,10 +401,10 @@ namespace GameStoreServer
             var fileName = _fileHandler.GetFileName(path);
             var fileSize = _fileHandler.GetFileSize(path);
             var header = new Header().Create(fileName, fileSize);
-            _connectedSocket.Send(header, header.Length, SocketFlags.None);
+            //_connectedSocket.Send(header, header.Length, SocketFlags.None);
             
             var fileNameToBytes = Encoding.UTF8.GetBytes(fileName);
-            _connectedSocket.Send(fileNameToBytes, fileNameToBytes.Length, SocketFlags.None);
+            //_connectedSocket.Send(fileNameToBytes, fileNameToBytes.Length, SocketFlags.None);
             
             var parts = Header.GetParts(fileSize);
             Console.WriteLine("Will Send {0} parts",parts);
@@ -423,7 +425,7 @@ namespace GameStoreServer
                     data = _fileStreamHandler.Read(path, offset, HeaderConstants.MaxPacketSize);
                     offset += HeaderConstants.MaxPacketSize;
                 }
-                _connectedSocket.Send(data, data.Length, SocketFlags.None);
+                //_connectedSocket.Send(data, data.Length, SocketFlags.None);
                 currentPart++;
             }
         }

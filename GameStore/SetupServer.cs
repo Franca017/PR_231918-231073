@@ -4,11 +4,13 @@ using System.Net.Sockets;
 using System.Threading;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using ProtocolLibrary;
 
 namespace GameStoreServer
 {
     public class Setup
     {
+        static readonly ISettingsManager SettingsManager = new SettingsManager();
         private string IpConfig { get; set; }
         private int Port { get; set; }
 
@@ -45,15 +47,17 @@ namespace GameStoreServer
         
         public void InitializeSocketServer(IServiceProvider serviceProvider)
         {
-            var socketServer = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-            socketServer.Bind(new IPEndPoint(IPAddress.Parse(IpConfig), Port));
-            socketServer.Listen(100);
+            var ipEndPoint = new IPEndPoint(
+                IPAddress.Parse(SettingsManager.ReadSetting(ServerConfig.ServerIpConfigKey)),
+                int.Parse(SettingsManager.ReadSetting(ServerConfig.SeverPortConfigKey)));
+            var tcpListener = new TcpListener(ipEndPoint);
+            tcpListener.Start(100);
             var connections = new Connections();
 
-            var threadServer = new Thread(() => connections.ListenConnections(socketServer, serviceProvider));
+            var threadServer = new Thread(() => connections.ListenConnections(tcpListener, serviceProvider));
             threadServer.Start();
             
-            connections.HandleServer(socketServer);
+            connections.HandleServer();
         }
     }
 }
