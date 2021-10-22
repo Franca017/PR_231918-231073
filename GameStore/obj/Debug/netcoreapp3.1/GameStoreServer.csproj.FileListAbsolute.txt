@@ -55,12 +55,8 @@ C:\Users\Matias\Desktop\PR_231918-231073\GameStore\bin\Debug\netcoreapp3.1\runti
 C:\Users\Matias\Desktop\PR_231918-231073\GameStore\bin\Debug\netcoreapp3.1\runtimes\win-x64\native\Microsoft.Data.SqlClient.SNI.pdb
 C:\Users\Matias\Desktop\PR_231918-231073\GameStore\bin\Debug\netcoreapp3.1\runtimes\win-x86\native\Microsoft.Data.SqlClient.SNI.dll
 C:\Users\Matias\Desktop\PR_231918-231073\GameStore\bin\Debug\netcoreapp3.1\runtimes\win-x86\native\Microsoft.Data.SqlClient.SNI.pdb
-C:\Users\Matias\Desktop\PR_231918-231073\GameStore\bin\Debug\netcoreapp3.1\runtimes\win\lib\netcoreapp3.0\Microsoft.Win32.SystemEvents.dll
-C:\Users\Matias\Desktop\PR_231918-231073\GameStore\bin\Debug\netcoreapp3.1\runtimes\unix\lib\netcoreapp3.0\System.Drawing.Common.dll
-C:\Users\Matias\Desktop\PR_231918-231073\GameStore\bin\Debug\netcoreapp3.1\runtimes\win\lib\netcoreapp3.0\System.Drawing.Common.dll
 C:\Users\Matias\Desktop\PR_231918-231073\GameStore\bin\Debug\netcoreapp3.1\runtimes\win\lib\netstandard2.0\System.Runtime.Caching.dll
 C:\Users\Matias\Desktop\PR_231918-231073\GameStore\bin\Debug\netcoreapp3.1\runtimes\win\lib\netstandard2.0\System.Security.Cryptography.ProtectedData.dll
-C:\Users\Matias\Desktop\PR_231918-231073\GameStore\bin\Debug\netcoreapp3.1\runtimes\win\lib\netcoreapp3.0\System.Windows.Extensions.dll
 C:\Users\Matias\Desktop\PR_231918-231073\GameStore\bin\Debug\netcoreapp3.1\Domain.dll
 C:\Users\Matias\Desktop\PR_231918-231073\GameStore\bin\Debug\netcoreapp3.1\Factory.dll
 C:\Users\Matias\Desktop\PR_231918-231073\GameStore\bin\Debug\netcoreapp3.1\Logic.dll
@@ -166,3 +162,12 @@ C:\Users\franc\Desktop\PR_231918-231073\GameStore\obj\Debug\netcoreapp3.1\GameSt
 C:\Users\franc\Desktop\PR_231918-231073\GameStore\obj\Debug\netcoreapp3.1\GameStoreServer.dll
 C:\Users\franc\Desktop\PR_231918-231073\GameStore\obj\Debug\netcoreapp3.1\GameStoreServer.pdb
 C:\Users\franc\Desktop\PR_231918-231073\GameStore\obj\Debug\netcoreapp3.1\GameStoreServer.genruntimeconfig.cache
+C:\Users\Matias\Desktop\PR_231918-231073\GameStore\bin\Debug\netcoreapp3.1\System.Security.AccessControl.dll
+C:\Users\Matias\Desktop\PR_231918-231073\GameStore\bin\Debug\netcoreapp3.1\System.Security.Principal.Windows.dll
+C:\Users\Matias\Desktop\PR_231918-231073\GameStore\bin\Debug\netcoreapp3.1\runtimes\win\lib\netcoreapp3.1\Microsoft.Win32.SystemEvents.dll
+C:\Users\Matias\Desktop\PR_231918-231073\GameStore\bin\Debug\netcoreapp3.1\runtimes\unix\lib\netcoreapp3.1\System.Drawing.Common.dll
+C:\Users\Matias\Desktop\PR_231918-231073\GameStore\bin\Debug\netcoreapp3.1\runtimes\win\lib\netcoreapp3.1\System.Drawing.Common.dll
+C:\Users\Matias\Desktop\PR_231918-231073\GameStore\bin\Debug\netcoreapp3.1\runtimes\win\lib\netstandard2.0\System.Security.AccessControl.dll
+C:\Users\Matias\Desktop\PR_231918-231073\GameStore\bin\Debug\netcoreapp3.1\runtimes\unix\lib\netcoreapp2.1\System.Security.Principal.Windows.dll
+C:\Users\Matias\Desktop\PR_231918-231073\GameStore\bin\Debug\netcoreapp3.1\runtimes\win\lib\netcoreapp2.1\System.Security.Principal.Windows.dll
+C:\Users\Matias\Desktop\PR_231918-231073\GameStore\bin\Debug\netcoreapp3.1\runtimes\win\lib\netcoreapp3.1\System.Windows.Extensions.dll

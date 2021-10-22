@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Net.Sockets;
 using System.Text;
+using System.Threading.Tasks;
 using Domain;
 using Domain.Exceptions;
 using ProtocolLibrary;
@@ -16,11 +17,11 @@ namespace GameStoreClient
         private readonly List<Game> _gamesLoaded = new List<Game>();
         private readonly IFileStreamHandler _fileStreamHandler = new FileStreamHandler();
         private readonly IFileHandler _fileHandler = new FileHandler();
-        private Socket _socket;
+        private TcpClient _client;
         
-        public void Execute(Socket connectedSocket)
+        public void Execute(TcpClient connectedClient)
         {
-            _socket = connectedSocket;
+            _client = connectedClient;
             Console.WriteLine("Welcome to the client system");
             Console.Write("Enter you username (in case it doesnt exists one will be created): ");
             var user = Console.ReadLine();
@@ -54,8 +55,8 @@ namespace GameStoreClient
                                 ListPublishedGames();
                                 break;
                             case "exit":
-                                _socket.Shutdown(SocketShutdown.Both);
-                                _socket.Close();
+                                //_client.Shutdown(SocketShutdown.Both);
+                                _client.Close();
                                 _exit = true;
                                 break;
                             default:
@@ -593,40 +594,32 @@ namespace GameStoreClient
             return bufferResponse;
         }
 
-        private void Request(string message, int command)
+        private async Task Request(string message, int command)
         {
-            var header = new Header(HeaderConstants.Request, command, message.Length);
-            var data = header.GetRequest();
-            var sentBytes = 0;
-            try
+            var headerLength = HeaderConstants.Request.Length + HeaderConstants.CommandLength +
+                               HeaderConstants.DataLength;
+            await using (var networkStream = _client.GetStream())
             {
-                while (sentBytes < data.Length)
-                {
-                    sentBytes += _socket.Send(data, sentBytes, data.Length - sentBytes, SocketFlags.None);
-                }
-
-                sentBytes = 0;
-                var bytesMessage = Encoding.UTF8.GetBytes(message);
-                while (sentBytes < bytesMessage.Length)
-                {
-                    sentBytes += _socket.Send(bytesMessage, sentBytes, bytesMessage.Length - sentBytes,
-                        SocketFlags.None);
-                }
-            } 
-            catch (SocketException)
-            {
-                throw new ServerDisconnected();
+                var header = new Header(HeaderConstants.Response, command, message.Length);
+                var data = header.GetRequest();
+                var dataLength = BitConverter.GetBytes(data.Length);
+                await networkStream.WriteAsync(dataLength, 0, headerLength).ConfigureAwait(false);
+                await networkStream.WriteAsync(data, 0, data.Length).ConfigureAwait(false);
             }
         }
         
-        private void ReceiveData(int length, byte[] buffer)
+        private async Task ReceiveData(int length, byte[] buffer)
         {
-            var iRecv = 0;
-            while (iRecv < length)
+            using (var networkStream = _client.GetStream())
             {
-                var localRecv = _socket.Receive(buffer, iRecv, length - iRecv, SocketFlags.None);
-                    
-                iRecv += localRecv;
+                var iRecv = 0;
+                while (iRecv < length)
+                {
+                    var received = await networkStream
+                        .ReadAsync(buffer, iRecv, length - iRecv)
+                        .ConfigureAwait(false);
+                    iRecv += received;
+                }
             }
         }
         
@@ -635,10 +628,10 @@ namespace GameStoreClient
             var fileName = _fileHandler.GetFileName(path); // nombre del archivo -> XXXX
             var fileSize = _fileHandler.GetFileSize(path); // tamaño del archivo -> YYYYYYYY
             var header = new Header().Create(fileName, fileSize);
-            _socket.Send(header, header.Length, SocketFlags.None);
+            //_client.Send(header, header.Length, SocketFlags.None);
             
             var fileNameToBytes = Encoding.UTF8.GetBytes(fileName);
-            _socket.Send(fileNameToBytes, fileNameToBytes.Length, SocketFlags.None);
+            //_client.Send(fileNameToBytes, fileNameToBytes.Length, SocketFlags.None);
             
             var parts = Header.GetParts(fileSize);
             Console.WriteLine("Will Send {0} parts",parts);
@@ -659,7 +652,7 @@ namespace GameStoreClient
                     data = _fileStreamHandler.Read(path, offset, HeaderConstants.MaxPacketSize);
                     offset += HeaderConstants.MaxPacketSize;
                 }
-                _socket.Send(data, data.Length, SocketFlags.None);
+                //_client.Send(data, data.Length, SocketFlags.None);
                 currentPart++;
             }
         }

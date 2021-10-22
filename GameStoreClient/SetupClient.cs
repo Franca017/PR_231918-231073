@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Net;
 using System.Net.Sockets;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
+using ProtocolLibrary;
 
 namespace GameStoreClient
 {
@@ -9,6 +11,7 @@ namespace GameStoreClient
     {
         private string IpConfig { get; set; }
         private int Port { get; set; }
+        static readonly ISettingsManager SettingsMgr = new SettingsManager();
 
         public Setup()
         {
@@ -32,12 +35,18 @@ namespace GameStoreClient
             }
         }
         
-        public Socket InitializeSocketServer()
+        public async Task<TcpClient> InitializeSocketServer()
         {
-            var socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-            socket.Bind(new IPEndPoint(IPAddress.Parse(IpConfig), 0));
-            socket.Connect(IpConfig, Port);
-            return socket;
+            var clientIpEndPoint = new IPEndPoint(
+                IPAddress.Parse("127.0.0.7"),
+                45000);
+            var tcpClient = new TcpClient(clientIpEndPoint);
+            Console.WriteLine("Trying to connect to server");
+
+            await tcpClient.ConnectAsync(
+                IPAddress.Parse(IpConfig),
+                Port).ConfigureAwait(false);
+            return tcpClient;
         }
     }
 }

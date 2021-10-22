@@ -1,14 +1,16 @@
 ﻿
+using System.Threading.Tasks;
+
 namespace GameStoreClient
 {
     class ConsoleClient
     {
-        static void Main(string[] args)
+        static async Task Main(string[] args)
         {
             var setup = new Setup();
             var runtime = new Runtime();
 
-            var socket = setup.InitializeSocketServer();
+            var socket = await setup.InitializeSocketServer();
             
             runtime.Execute(socket);
         }
