@@ -74,9 +74,9 @@ namespace GameStoreClient
             Console.WriteLine("Exiting Application");
         }
 
-        private void ListPublishedGames()
+        private async void ListPublishedGames()
         {
-            Request("", CommandConstants.ListPublishedGames);
+            await Request("", CommandConstants.ListPublishedGames);
             var bufferResponse = Response(CommandConstants.ListPublishedGames);
             var lengthString = Encoding.UTF8.GetString(bufferResponse);
             var length = Convert.ToInt32(lengthString);
@@ -256,9 +256,9 @@ namespace GameStoreClient
             }
         }
 
-        private void ListGames()
+        private async void ListGames()
         {
-            Request("", CommandConstants.ListGames);
+            await Request("", CommandConstants.ListGames);
             var bufferResponse = Response(CommandConstants.ListGames);
             var lengthString = Encoding.UTF8.GetString(bufferResponse);
             var length = Convert.ToInt32(lengthString);
@@ -600,7 +600,7 @@ namespace GameStoreClient
                                HeaderConstants.DataLength;
             await using (var networkStream = _client.GetStream())
             {
-                var header = new Header(HeaderConstants.Response, command, message.Length);
+                var header = new Header(HeaderConstants.Request, command, message.Length);
                 var data = header.GetRequest();
                 var dataLength = BitConverter.GetBytes(data.Length);
                 await networkStream.WriteAsync(dataLength, 0, headerLength).ConfigureAwait(false);

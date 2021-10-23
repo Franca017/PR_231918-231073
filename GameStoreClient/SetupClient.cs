@@ -37,9 +37,7 @@ namespace GameStoreClient
         
         public async Task<TcpClient> InitializeSocketServer()
         {
-            var clientIpEndPoint = new IPEndPoint(
-                IPAddress.Parse("127.0.0.7"),
-                45000);
+            var clientIpEndPoint = new IPEndPoint(IPAddress.Loopback,0);
             var tcpClient = new TcpClient(clientIpEndPoint);
             Console.WriteLine("Trying to connect to server");
 

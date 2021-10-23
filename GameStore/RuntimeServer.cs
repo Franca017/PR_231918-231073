@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Net.Sockets;
 using System.Text;
+using System.Threading.Tasks;
 using Domain;
 using Domain.Exceptions;
 using LogicInterface;
@@ -35,7 +36,7 @@ namespace GameStoreServer
             _fileHandler = new FileHandler();
         }
 
-        public void HandleConnection(TcpClient tcpClientSocket)
+        public async void HandleConnection(TcpClient tcpClientSocket)
         {
             this._connectedSocket = tcpClientSocket;
                 while (!Exit)
@@ -45,7 +46,7 @@ namespace GameStoreServer
                     var buffer = new byte[headerLength];
                     try
                     {
-                        ReceiveData(headerLength, buffer);
+                        await ReceiveData(headerLength, buffer);
                         var header = new Header();
                         header.DecodeData(buffer);
                         switch (header.ICommand)
@@ -315,7 +316,7 @@ namespace GameStoreServer
             }
         }
 
-        private async void ReceiveData(int length, byte[] buffer)
+        private async Task ReceiveData(int length, byte[] buffer)
         {
 
             using (var networkStream = _connectedSocket.GetStream())

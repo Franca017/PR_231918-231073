@@ -58,6 +58,7 @@ namespace GameStoreServer
             var threadServer = new Thread(() => connections.ListenConnections(tcpListener, serviceProvider));
             threadServer.Start();
             
+            Console.WriteLine($"IpConfig: {IpConfig} - Port: {Port}");
             connections.HandleServer();
         }
     }
