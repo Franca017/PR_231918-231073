@@ -12,7 +12,7 @@ namespace GameStoreClient
 
             var socket = await setup.InitializeSocketServer();
             
-            runtime.Execute(socket);
+            await runtime.Execute(socket);
         }
     }
 }

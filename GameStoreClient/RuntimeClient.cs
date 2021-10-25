@@ -20,7 +20,7 @@ namespace GameStoreClient
         private TcpClient _client;
         private NetworkStream _networkStream;
         
-        public async void Execute(TcpClient connectedClient)
+        public async Task Execute(TcpClient connectedClient)
         {
             _client = connectedClient;
             _networkStream = connectedClient.GetStream();
@@ -31,8 +31,11 @@ namespace GameStoreClient
             try
             {
                 await Request(user, CommandConstants.Login);
+                while (!_networkStream.CanRead)
+                {
+                    await Task.Delay(1000);
+                }
                 var bufferResponse = await Response(CommandConstants.Login);
-
                 Console.WriteLine(Encoding.UTF8.GetString(bufferResponse));
 
                 while (!_exit)
@@ -49,13 +52,13 @@ namespace GameStoreClient
                         switch (option.ToLower())
                         {
                             case "list":
-                                ListGames();
+                                await ListGames();
                                 break;
                             case "publish":
-                                Publish();
+                                await Publish();
                                 break;
                             case "publishedgames":
-                                ListPublishedGames();
+                                await ListPublishedGames();
                                 break;
                             case "exit":
                                 _networkStream.Close();
@@ -77,7 +80,7 @@ namespace GameStoreClient
             Console.WriteLine("Exiting Application");
         }
 
-        private async void ListPublishedGames()
+        private async Task ListPublishedGames()
         {
             await Request("", CommandConstants.ListPublishedGames);
             var bufferResponse = await Response(CommandConstants.ListPublishedGames);
@@ -113,13 +116,13 @@ namespace GameStoreClient
                     switch (option.ToLower())
                     {
                         case "modify":
-                            ModifyGame(gamesPublished);
+                            await ModifyGame(gamesPublished);
                             break;
                         case "modifyimage":
-                            ModifyImage(gamesPublished);
+                            await ModifyImage(gamesPublished);
                             break;
                         case "delete":
-                            DeleteGame(gamesPublished);
+                            await DeleteGame(gamesPublished);
                             break;
                         case "main":
                             main = true;
@@ -131,7 +134,7 @@ namespace GameStoreClient
             }
         }
 
-        private async void ModifyImage(List<Game> gamesPublished)
+        private async Task ModifyImage(List<Game> gamesPublished)
         {
             var correctId = false;
             while (!correctId)
@@ -164,7 +167,7 @@ namespace GameStoreClient
             }
         }
 
-        private async void Publish()
+        private async Task Publish()
         {
             Console.WriteLine("\n Publish a game");
             var game = "";
@@ -195,7 +198,7 @@ namespace GameStoreClient
         }
 
         
-        private async void ModifyGame(List<Game> gamesPublished)
+        private async Task ModifyGame(List<Game> gamesPublished)
         {
             var correctId = false;
             while (!correctId)
@@ -236,7 +239,7 @@ namespace GameStoreClient
             }
         }
 
-        private async void DeleteGame(List<Game> gamesPublished)
+        private async Task DeleteGame(List<Game> gamesPublished)
         {
             var correctId = false;
             while (!correctId)
@@ -259,7 +262,7 @@ namespace GameStoreClient
             }
         }
 
-        private async void ListGames()
+        private async Task ListGames()
         {
             await Request("", CommandConstants.ListGames);
             var bufferResponse = await Response(CommandConstants.ListGames);
@@ -299,28 +302,28 @@ namespace GameStoreClient
                 switch (option)
                 {
                     case "detail":
-                        DetailGame();
+                        await DetailGame();
                         break;
                     case "purchase":
-                        Purchase();
+                        await Purchase();
                         break;
                     case "purchasedgames":
-                        GetPurchasedGames();
+                        await GetPurchasedGames();
                         break;
                     case "search":
-                        Search();
+                        await Search();
                         break;
                     case "filterrating":
-                        SearchRating();
+                        await SearchRating();
                         break;
                     case "reviews":
-                        GetReviews();
+                        await GetReviews();
                         break;
                     case "rate":
-                        Rate();
+                        await Rate();
                         break;
                     case "download":
-                        Download();
+                        await Download();
                         break;
                     case "main":
                         main = true;
@@ -332,7 +335,7 @@ namespace GameStoreClient
             }
         }
 
-        private async void GetPurchasedGames()
+        private async Task GetPurchasedGames()
         {
             await Request("", CommandConstants.ListPurchasedGames);
             var bufferResponse = await Response(CommandConstants.ListPurchasedGames);
@@ -354,7 +357,7 @@ namespace GameStoreClient
             }
         }
 
-        private async void SendParameters(string parameter, int command)
+        private async Task SendParameters(string parameter, int command)
         {
             await Request(parameter, command);
             var bufferResponse = await Response(command);
@@ -383,21 +386,21 @@ namespace GameStoreClient
             }
         }
 
-        private void SearchRating()
+        private async Task SearchRating()
         {
             Console.WriteLine("Insert a minimum rating to filter games: ");
             var minimumRating = Console.ReadLine();
-            SendParameters(minimumRating, CommandConstants.FilterRating);
+            await SendParameters(minimumRating, CommandConstants.FilterRating);
         }
 
-        private void Search()
+        private async Task Search()
         {
             Console.WriteLine("Insert some keywords to search a game: ");
             var keywords = Console.ReadLine();
-            SendParameters(keywords,CommandConstants.Search);
+            await SendParameters(keywords,CommandConstants.Search);
         }
 
-        private async void Download()
+        private async Task Download()
         {
             var correctId = false;
             while (!correctId)
@@ -422,7 +425,7 @@ namespace GameStoreClient
             }
         }
 
-        private async void Rate()
+        private async Task Rate()
         {
             Console.WriteLine("\n Rate and comment a game");
             var correctId = false;
@@ -465,7 +468,7 @@ namespace GameStoreClient
             }
         }
 
-        private async void GetReviews()
+        private async Task GetReviews()
         {
             var correctId = false;
             while (!correctId)
@@ -505,7 +508,7 @@ namespace GameStoreClient
             }
         }
 
-        private async void Purchase()
+        private async Task Purchase()
         {
             var correctId = false;
             while (!correctId)
@@ -528,7 +531,7 @@ namespace GameStoreClient
             }
         }
 
-        private async void DetailGame()
+        private async Task DetailGame()
         {
             var correctId = false;
             while (!correctId)
