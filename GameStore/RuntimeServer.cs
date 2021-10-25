@@ -17,7 +17,8 @@ namespace GameStoreServer
     {
         private bool Exit { get; set; }
 
-        private TcpClient _connectedSocket;
+        private readonly TcpClient _connectedSocket;
+        private readonly NetworkStream _networkStream;
 
         private readonly IGamesLogic _gamesLogic;
         private readonly IUserLogic _userLogic;
@@ -27,18 +28,19 @@ namespace GameStoreServer
 
         private User _userLogged;
 
-        public Runtime(IServiceProvider serviceProvider)
+        public Runtime(IServiceProvider serviceProvider, TcpClient clientConnected)
         {
             _gamesLogic = serviceProvider.GetService<IGamesLogic>();
             _userLogic = serviceProvider.GetService<IUserLogic>();
             _reviewLogic = serviceProvider.GetService<IReviewLogic>();
             _fileStreamHandler = new FileStreamHandler();
             _fileHandler = new FileHandler();
+            _connectedSocket = clientConnected;
+            _networkStream = clientConnected.GetStream();
         }
 
-        public async void HandleConnection(TcpClient tcpClientSocket)
+        public async void HandleConnection()
         {
-            this._connectedSocket = tcpClientSocket;
                 while (!Exit)
                 {
                     var headerLength = HeaderConstants.Request.Length + HeaderConstants.CommandLength +
@@ -307,61 +309,54 @@ namespace GameStoreServer
             var header = new Header(HeaderConstants.Request, command, mensaje.Length);
             var data = header.GetRequest();
             var bytesMessage = Encoding.UTF8.GetBytes(mensaje);
-            await using (var networkStream = _connectedSocket.GetStream())
-            {
-                await networkStream.WriteAsync(data, 0, data.Length).ConfigureAwait(false);
-                await networkStream.WriteAsync(bytesMessage, 0, bytesMessage.Length).ConfigureAwait(false);
-            }
+            await _networkStream.WriteAsync(data, 0, data.Length).ConfigureAwait(false);
+            await _networkStream.WriteAsync(bytesMessage, 0, bytesMessage.Length).ConfigureAwait(false);
         }
 
         private async Task ReceiveData(int length, byte[] buffer)
         {
-
-            using (var networkStream = _connectedSocket.GetStream())
+            var iRecv = 0;
+            while (iRecv < length)
             {
-                var iRecv = 0;
-                while (iRecv < length)
+                try
                 {
-                    try
-                    {
-                        var received = await networkStream
-                            .ReadAsync(buffer, iRecv, length - iRecv)
-                            .ConfigureAwait(false);
+                    var received = await _networkStream
+                        .ReadAsync(buffer, iRecv, length - iRecv)
+                        .ConfigureAwait(false);
 
-                        if (received == 0) // Si recieve retorna 0 -> la conexion se cerro desde el endpoint remoto
+                    if (received == 0) // Si recieve retorna 0 -> la conexion se cerro desde el endpoint remoto
+                    {
+                        if (!Exit)
                         {
-                            if (!Exit)
-                            {
-                                //_connectedSocket.Shutdown(SocketShutdown.Both);
-                                //_connectedSocket.Close();
-                                throw new ClientDisconnected();
-                            }
-                            else
-                            {
-                                throw new Exception("Server is closing");
-                            }
+                            //_connectedSocket.Shutdown(SocketShutdown.Both);
+                            //_connectedSocket.Close();
+                            throw new ClientDisconnected();
                         }
+                        else
+                        {
+                            throw new Exception("Server is closing");
+                        }
+                    }
 
-                        iRecv += received;
-                    }
-                    catch (SocketException se)
-                    {
-                        Console.WriteLine(se.Message);
-                        throw new ClientDisconnected();
-                    }
+                    iRecv += received;
+                }
+                catch (SocketException se)
+                {
+                    Console.WriteLine(se.Message);
+                    throw new ClientDisconnected();
                 }
             }
         }
 
-        private void ReceiveFile()
+        private async void ReceiveFile()
         {
             var fileHeader = new byte[Header.GetLength()];
-            ReceiveData(Header.GetLength(), fileHeader);
+            await ReceiveData(Header.GetLength(), fileHeader);
             var fileNameSize = BitConverter.ToInt32(fileHeader, 0);
             var fileSize = BitConverter.ToInt64(fileHeader, HeaderConstants.FixedFileNameLength);
             
             var bufferName = new byte[fileNameSize];
-            ReceiveData(fileNameSize, bufferName);
+            await ReceiveData(fileNameSize, bufferName);
             var fileName = Encoding.UTF8.GetString(bufferName);
             
             var parts = Header.GetParts(fileSize);
@@ -378,7 +373,7 @@ namespace GameStoreServer
                     var lastPartSize = (int) (fileSize - offset);
                     Console.WriteLine($"Will receive segment number {currentPart} with size {lastPartSize}");
                     data = new byte[lastPartSize];
-                    ReceiveData(lastPartSize, data);
+                    await ReceiveData(lastPartSize, data);
                     offset += lastPartSize;
                 }
                 else
@@ -386,7 +381,7 @@ namespace GameStoreServer
                     Console.WriteLine(
                         $"Will receive segment number {currentPart} with size {HeaderConstants.MaxPacketSize}");
                     data = new byte[HeaderConstants.MaxPacketSize];
-                    ReceiveData(HeaderConstants.MaxPacketSize, data);
+                    await ReceiveData(HeaderConstants.MaxPacketSize, data);
                     offset += HeaderConstants.MaxPacketSize;
                 }
 

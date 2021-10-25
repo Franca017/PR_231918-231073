@@ -18,10 +18,13 @@ namespace GameStoreClient
         private readonly IFileStreamHandler _fileStreamHandler = new FileStreamHandler();
         private readonly IFileHandler _fileHandler = new FileHandler();
         private TcpClient _client;
+        private NetworkStream _networkStream;
         
         public async void Execute(TcpClient connectedClient)
         {
             _client = connectedClient;
+            _networkStream = connectedClient.GetStream();
+            
             Console.WriteLine("Welcome to the client system");
             Console.Write("Enter you username (in case it doesnt exists one will be created): ");
             var user = Console.ReadLine();
@@ -55,7 +58,7 @@ namespace GameStoreClient
                                 ListPublishedGames();
                                 break;
                             case "exit":
-                                //_client.Shutdown(SocketShutdown.Both);
+                                _networkStream.Close();
                                 _client.Close();
                                 _exit = true;
                                 break;
@@ -599,25 +602,19 @@ namespace GameStoreClient
             var header = new Header(HeaderConstants.Request, command, message.Length);
             var data = header.GetRequest();
             var bytesMessage = Encoding.UTF8.GetBytes(message);
-            await using (var networkStream = _client.GetStream())
-            {
-                await networkStream.WriteAsync(data, 0, data.Length).ConfigureAwait(false);
-                await networkStream.WriteAsync(bytesMessage, 0, bytesMessage.Length).ConfigureAwait(false);
-            }
+            await _networkStream.WriteAsync(data, 0, data.Length).ConfigureAwait(false);
+            await _networkStream.WriteAsync(bytesMessage, 0, bytesMessage.Length).ConfigureAwait(false);
         }
         
         private async Task ReceiveData(int length, byte[] buffer)
         {
-            using (var networkStream = _client.GetStream())
+            var iRecv = 0;
+            while (iRecv < length)
             {
-                var iRecv = 0;
-                while (iRecv < length)
-                {
-                    var received = await networkStream
-                        .ReadAsync(buffer, iRecv, length - iRecv)
-                        .ConfigureAwait(false);
-                    iRecv += received;
-                }
+                var received = await _networkStream
+                    .ReadAsync(buffer, iRecv, length - iRecv)
+                    .ConfigureAwait(false);
+                iRecv += received;
             }
         }
         
@@ -655,15 +652,15 @@ namespace GameStoreClient
             }
         }
 
-        private void ReceiveFile()
+        private async void ReceiveFile()
         {
             var fileHeader = new byte[Header.GetLength()];
-            ReceiveData(Header.GetLength(), fileHeader);
+            await ReceiveData(Header.GetLength(), fileHeader);
             var fileNameSize = BitConverter.ToInt32(fileHeader, 0);
             var fileSize = BitConverter.ToInt64(fileHeader, HeaderConstants.FixedFileNameLength);
             
             var bufferName = new byte[fileNameSize];
-            ReceiveData(fileNameSize, bufferName);
+            await ReceiveData(fileNameSize, bufferName);
             var fileName = Encoding.UTF8.GetString(bufferName);
             
             var parts = Header.GetParts(fileSize);
@@ -680,7 +677,7 @@ namespace GameStoreClient
                     var lastPartSize = (int) (fileSize - offset);
                     Console.WriteLine($"Will receive segment number {currentPart} with size {lastPartSize}");
                     data = new byte[lastPartSize];
-                    ReceiveData(lastPartSize, data);
+                    await ReceiveData(lastPartSize, data);
                     offset += lastPartSize;
                 }
                 else
@@ -688,7 +685,7 @@ namespace GameStoreClient
                     Console.WriteLine(
                         $"Will receive segment number {currentPart} with size {HeaderConstants.MaxPacketSize}");
                     data = new byte[HeaderConstants.MaxPacketSize];
-                    ReceiveData(HeaderConstants.MaxPacketSize, data);
+                    await ReceiveData(HeaderConstants.MaxPacketSize, data);
                     offset += HeaderConstants.MaxPacketSize;
                 }
 
