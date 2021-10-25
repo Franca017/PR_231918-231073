@@ -52,7 +52,7 @@ namespace GameStoreServer
                         switch (header.ICommand)
                         {
                             case CommandConstants.Login:
-                                Login(header);
+                                await Login(header);
                                 break;
                             case CommandConstants.ListGames:
                                 ListGames(header);
@@ -126,10 +126,10 @@ namespace GameStoreServer
             }
         }
 
-        private void FilterRating(Header header)
+        private async void FilterRating(Header header)
         {
             var bufferData = new byte[header.IDataLength];
-            ReceiveData(header.IDataLength, bufferData);
+            await ReceiveData(header.IDataLength, bufferData);
             var minRating = Convert.ToInt32(Encoding.UTF8.GetString(bufferData));
             var gamesFound = _gamesLogic.GetGamesOverRating(minRating);
             Response(gamesFound.Count.ToString(), CommandConstants.FilterRating);
@@ -137,10 +137,10 @@ namespace GameStoreServer
             SendGames(header, gamesFound);
         }
 
-        private void Search(Header header)
+        private async void Search(Header header)
         {
             var bufferData = new byte[header.IDataLength];
-            ReceiveData(header.IDataLength, bufferData);
+            await ReceiveData(header.IDataLength, bufferData);
             var keywords = Encoding.UTF8.GetString(bufferData);
             var gamesFound = _gamesLogic.GetSearchedGames(keywords);
             Response(gamesFound.Count.ToString(), CommandConstants.Search);
@@ -148,10 +148,10 @@ namespace GameStoreServer
             SendGames(header,gamesFound);
         }
 
-        private void Download(Header header)
+        private async void Download(Header header)
         {
             var bufferData = new byte[header.IDataLength];
-            ReceiveData(header.IDataLength, bufferData);
+            await ReceiveData(header.IDataLength, bufferData);
             var gameIdString = Encoding.UTF8.GetString(bufferData);
             var gameId = Convert.ToInt32(gameIdString);
             Response($"The image of the game with id {gameId} is going to be sent", header.ICommand);
@@ -160,10 +160,10 @@ namespace GameStoreServer
             SendFile(path);
         }
 
-        private void Rate(Header header)
+        private async void Rate(Header header)
         {
             var bufferData = new byte[header.IDataLength];
-            ReceiveData(header.IDataLength, bufferData);
+            await ReceiveData(header.IDataLength, bufferData);
 
             var splittedReview = (Encoding.UTF8.GetString(bufferData)).Split("*");
             var gameId = Convert.ToInt32(splittedReview[0]);
@@ -176,10 +176,10 @@ namespace GameStoreServer
             Response(response, header.ICommand);
         }
 
-        private void DeleteGame(Header header)
+        private async void DeleteGame(Header header)
         {
             var bufferData = new byte[header.IDataLength];
-            ReceiveData(header.IDataLength, bufferData);
+            await ReceiveData(header.IDataLength, bufferData);
             var gameIdString = Encoding.UTF8.GetString(bufferData);
 
             var gameId = Convert.ToInt32(gameIdString);
@@ -187,20 +187,20 @@ namespace GameStoreServer
             Response($"Your game with id {gameId} was deleted.", header.ICommand);
         }
 
-        private void ModifyGame(Header header)
+        private async void ModifyGame(Header header)
         {
             var bufferData = new byte[header.IDataLength];
-            ReceiveData(header.IDataLength, bufferData);
+            await ReceiveData(header.IDataLength, bufferData);
             var modifySplit = (Encoding.UTF8.GetString(bufferData)).Split("*");
             var gameModifyId = Convert.ToInt32(modifySplit[0]);
             _gamesLogic.Modify(modifySplit);
             Response($"Your game with id {gameModifyId} was modified.",header.ICommand);
         }
         
-        private void ModifyImage(Header header)
+        private async void ModifyImage(Header header)
         {
             var bufferData = new byte[header.IDataLength];
-            ReceiveData(header.IDataLength, bufferData);
+            await ReceiveData(header.IDataLength, bufferData);
             ReceiveFile();
             Console.WriteLine("File received");
             var modifySplit = (Encoding.UTF8.GetString(bufferData)).Split("*");
@@ -217,10 +217,10 @@ namespace GameStoreServer
             SendGames(header,listPublished);
         }
 
-        private void Publish(Header header)
+        private async void Publish(Header header)
         {
             var bufferPublish = new byte[header.IDataLength];
-            ReceiveData(header.IDataLength, bufferPublish);
+            await ReceiveData(header.IDataLength, bufferPublish);
             ReceiveFile();
             Console.WriteLine("File received");
             var split = (Encoding.UTF8.GetString(bufferPublish)).Split("*");
@@ -234,10 +234,10 @@ namespace GameStoreServer
             Response(response, header.ICommand);
         }
 
-        private void GetReviews(Header header)
+        private async void GetReviews(Header header)
         {
             var bufferData = new byte[header.IDataLength];
-            ReceiveData(header.IDataLength, bufferData);
+            await ReceiveData(header.IDataLength, bufferData);
             var gameIdString = Encoding.UTF8.GetString(bufferData);
             var gameId = Convert.ToInt32(gameIdString);
             var reviewsList = _reviewLogic.GetGameReviews(gameId);
@@ -249,10 +249,10 @@ namespace GameStoreServer
             }
         }
 
-        private void Purchase(Header header)
+        private async void Purchase(Header header)
         {
             var bufferData = new byte[header.IDataLength];
-            ReceiveData(header.IDataLength, bufferData);
+            await ReceiveData(header.IDataLength, bufferData);
             var gameIdString = Encoding.UTF8.GetString(bufferData);
             var gameId = Convert.ToInt32(gameIdString);
             var response = _userLogic.PurchaseGame(_userLogged, gameId);
@@ -260,10 +260,10 @@ namespace GameStoreServer
             Response(response, header.ICommand);
         }
 
-        private void DetailGame(Header header)
+        private async void DetailGame(Header header)
         {
             var bufferData = new byte[header.IDataLength];
-            ReceiveData(header.IDataLength, bufferData);
+            await ReceiveData(header.IDataLength, bufferData);
             var gameIdString = Encoding.UTF8.GetString(bufferData);
             var gameId = Convert.ToInt32(gameIdString);
 
@@ -288,10 +288,10 @@ namespace GameStoreServer
             SendGames(header,list);
         }
 
-        private void Login(Header header)
+        private async Task Login(Header header)
         {
             var bufferData = new byte[header.IDataLength];
-            ReceiveData(header.IDataLength, bufferData);
+            await ReceiveData(header.IDataLength, bufferData);
             var user = Encoding.UTF8.GetString(bufferData);
             Console.WriteLine("User: " + Encoding.UTF8.GetString(bufferData));
             var userInDb = _userLogic.Login(user);
@@ -304,15 +304,13 @@ namespace GameStoreServer
 
         private async void Response(string mensaje, int command)
         {
-            var headerLength = HeaderConstants.Request.Length + HeaderConstants.CommandLength +
-                               HeaderConstants.DataLength;
+            var header = new Header(HeaderConstants.Request, command, mensaje.Length);
+            var data = header.GetRequest();
+            var bytesMessage = Encoding.UTF8.GetBytes(mensaje);
             await using (var networkStream = _connectedSocket.GetStream())
             {
-                var header = new Header(HeaderConstants.Response, command, mensaje.Length);
-                var data = header.GetRequest();
-                var dataLength = BitConverter.GetBytes(data.Length);
-                await networkStream.WriteAsync(dataLength, 0, headerLength).ConfigureAwait(false);
                 await networkStream.WriteAsync(data, 0, data.Length).ConfigureAwait(false);
+                await networkStream.WriteAsync(bytesMessage, 0, bytesMessage.Length).ConfigureAwait(false);
             }
         }
 

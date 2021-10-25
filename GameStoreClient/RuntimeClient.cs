@@ -19,7 +19,7 @@ namespace GameStoreClient
         private readonly IFileHandler _fileHandler = new FileHandler();
         private TcpClient _client;
         
-        public void Execute(TcpClient connectedClient)
+        public async void Execute(TcpClient connectedClient)
         {
             _client = connectedClient;
             Console.WriteLine("Welcome to the client system");
@@ -27,8 +27,8 @@ namespace GameStoreClient
             var user = Console.ReadLine();
             try
             {
-                Request(user, CommandConstants.Login);
-                var bufferResponse = Response(CommandConstants.Login);
+                await Request(user, CommandConstants.Login);
+                var bufferResponse = await Response(CommandConstants.Login);
 
                 Console.WriteLine(Encoding.UTF8.GetString(bufferResponse));
 
@@ -77,14 +77,14 @@ namespace GameStoreClient
         private async void ListPublishedGames()
         {
             await Request("", CommandConstants.ListPublishedGames);
-            var bufferResponse = Response(CommandConstants.ListPublishedGames);
+            var bufferResponse = await Response(CommandConstants.ListPublishedGames);
             var lengthString = Encoding.UTF8.GetString(bufferResponse);
             var length = Convert.ToInt32(lengthString);
             var gamesPublished = new List<Game>();
             Console.WriteLine("\n Published games list: \n");
             for (var i = 0; i < length; i++)
             {
-                bufferResponse = Response(CommandConstants.ListPublishedGames);
+                bufferResponse = await Response(CommandConstants.ListPublishedGames);
                 var split = (Encoding.UTF8.GetString(bufferResponse)).Split("*");
                 var game = new Game(split[1], split[2], split[4], split[5])
                 {
@@ -128,7 +128,7 @@ namespace GameStoreClient
             }
         }
 
-        private void ModifyImage(List<Game> gamesPublished)
+        private async void ModifyImage(List<Game> gamesPublished)
         {
             var correctId = false;
             while (!correctId)
@@ -151,17 +151,17 @@ namespace GameStoreClient
                     }
 
                     var info = gameId + "*" + path;
-                    Request(info,CommandConstants.ModifyImage);
+                    await Request(info,CommandConstants.ModifyImage);
                     SendFile(path);
                     Console.WriteLine("Sent");
-                    var bufferResponse = Response(CommandConstants.ModifyImage);
+                    var bufferResponse = await Response(CommandConstants.ModifyImage);
                     Console.WriteLine(Encoding.UTF8.GetString(bufferResponse));
                     correctId = true;
                 }
             }
         }
 
-        private void Publish()
+        private async void Publish()
         {
             Console.WriteLine("\n Publish a game");
             var game = "";
@@ -175,7 +175,7 @@ namespace GameStoreClient
                 var insert = Console.ReadLine();
                 game += insert + "*";
             }
-            Request(game,CommandConstants.Publish);
+            await Request(game,CommandConstants.Publish);
             
             var splittedGame = game.Split("*");
             var path = splittedGame[3];
@@ -187,12 +187,12 @@ namespace GameStoreClient
             SendFile(path);
             Console.WriteLine("Sent");
 
-            var bufferResponse = Response(CommandConstants.Publish);
+            var bufferResponse = await Response(CommandConstants.Publish);
             Console.WriteLine(Encoding.UTF8.GetString(bufferResponse));
         }
 
         
-        private void ModifyGame(List<Game> gamesPublished)
+        private async void ModifyGame(List<Game> gamesPublished)
         {
             var correctId = false;
             while (!correctId)
@@ -224,8 +224,8 @@ namespace GameStoreClient
                             gameModified += insert + "*";
                         }
                     }
-                    Request(gameModified,CommandConstants.ModifyGame);
-                    var bufferResponse = Response(CommandConstants.ModifyGame);
+                    await Request(gameModified,CommandConstants.ModifyGame);
+                    var bufferResponse = await Response(CommandConstants.ModifyGame);
                     Console.WriteLine(Encoding.UTF8.GetString(bufferResponse));
 
                     correctId = true;
@@ -233,7 +233,7 @@ namespace GameStoreClient
             }
         }
 
-        private void DeleteGame(List<Game> gamesPublished)
+        private async void DeleteGame(List<Game> gamesPublished)
         {
             var correctId = false;
             while (!correctId)
@@ -247,8 +247,8 @@ namespace GameStoreClient
                 }
                 else
                 {
-                    Request(gameId, CommandConstants.DeleteGame);
-                    var bufferResponse = Response(CommandConstants.DeleteGame);
+                    await Request(gameId, CommandConstants.DeleteGame);
+                    var bufferResponse = await Response(CommandConstants.DeleteGame);
             
                     Console.WriteLine(Encoding.UTF8.GetString(bufferResponse));
                     correctId = true;
@@ -259,14 +259,14 @@ namespace GameStoreClient
         private async void ListGames()
         {
             await Request("", CommandConstants.ListGames);
-            var bufferResponse = Response(CommandConstants.ListGames);
+            var bufferResponse = await Response(CommandConstants.ListGames);
             var lengthString = Encoding.UTF8.GetString(bufferResponse);
             var length = Convert.ToInt32(lengthString);
             _gamesLoaded.Clear();
             Console.WriteLine("\n Games list: \n");
             for (var i = 0; i < length; i++)
             {
-                bufferResponse = Response(CommandConstants.ListGames);
+                bufferResponse = await Response(CommandConstants.ListGames);
                 var split = (Encoding.UTF8.GetString(bufferResponse)).Split("*");
                 var game = new Game(split[1], split[2], split[4], split[5])
                 {
@@ -329,17 +329,17 @@ namespace GameStoreClient
             }
         }
 
-        private void GetPurchasedGames()
+        private async void GetPurchasedGames()
         {
-            Request("", CommandConstants.ListPurchasedGames);
-            var bufferResponse = Response(CommandConstants.ListPurchasedGames);
+            await Request("", CommandConstants.ListPurchasedGames);
+            var bufferResponse = await Response(CommandConstants.ListPurchasedGames);
             var lengthString = Encoding.UTF8.GetString(bufferResponse);
             var length = Convert.ToInt32(lengthString);
             var gamesPurchased = new List<Game>();
             Console.WriteLine("\n Purchased games list: \n");
             for (var i = 0; i < length; i++)
             {
-                bufferResponse = Response(CommandConstants.ListPurchasedGames);
+                bufferResponse = await Response(CommandConstants.ListPurchasedGames);
                 var split = (Encoding.UTF8.GetString(bufferResponse)).Split("*");
                 var game = new Game(split[1], split[2], split[4], split[5])
                 {
@@ -351,10 +351,10 @@ namespace GameStoreClient
             }
         }
 
-        private void SendParameters(string parameter, int command)
+        private async void SendParameters(string parameter, int command)
         {
-            Request(parameter, command);
-            var bufferResponse = Response(command);
+            await Request(parameter, command);
+            var bufferResponse = await Response(command);
             var length = Convert.ToInt32(Encoding.UTF8.GetString(bufferResponse));
 
             _gamesLoaded.Clear();
@@ -367,7 +367,7 @@ namespace GameStoreClient
             {
                 for (var i = 0; i < length; i++)
                 {
-                    bufferResponse = Response(command);
+                    bufferResponse = await Response(command);
                     var split = (Encoding.UTF8.GetString(bufferResponse)).Split("*");
                     var game = new Game(split[1], split[2], split[4], split[5])
                     {
@@ -394,7 +394,7 @@ namespace GameStoreClient
             SendParameters(keywords,CommandConstants.Search);
         }
 
-        private void Download()
+        private async void Download()
         {
             var correctId = false;
             while (!correctId)
@@ -408,8 +408,8 @@ namespace GameStoreClient
                 }
                 else
                 {
-                    Request(game.Id.ToString(),CommandConstants.Download);
-                    var bufferResponse = Response(CommandConstants.Download);
+                    await Request(game.Id.ToString(),CommandConstants.Download);
+                    var bufferResponse = await Response(CommandConstants.Download);
                     Console.WriteLine(Encoding.UTF8.GetString(bufferResponse));
                     
                     ReceiveFile();
@@ -419,7 +419,7 @@ namespace GameStoreClient
             }
         }
 
-        private void Rate()
+        private async void Rate()
         {
             Console.WriteLine("\n Rate and comment a game");
             var correctId = false;
@@ -454,15 +454,15 @@ namespace GameStoreClient
                     Console.WriteLine("Type your comment");
                     var comment = Console.ReadLine();
                     review += comment;
-                    Request(review,CommandConstants.Rate);
-                    var bufferResponse = Response(CommandConstants.Rate);
+                    await Request(review,CommandConstants.Rate);
+                    var bufferResponse = await Response(CommandConstants.Rate);
                     Console.WriteLine(Encoding.UTF8.GetString(bufferResponse));
                     correctId = true;
                 }
             }
         }
 
-        private void GetReviews()
+        private async void GetReviews()
         {
             var correctId = false;
             while (!correctId)
@@ -476,8 +476,8 @@ namespace GameStoreClient
                 }
                 else
                 {
-                    Request(gameId, CommandConstants.GetReviews);
-                    var bufferResponse = Response(CommandConstants.GetReviews);
+                    await Request(gameId, CommandConstants.GetReviews);
+                    var bufferResponse = await Response(CommandConstants.GetReviews);
                     var lengthString = Encoding.UTF8.GetString(bufferResponse);
                     var length = Convert.ToInt32(lengthString);
                     Console.WriteLine("\n Game reviews: \n");
@@ -489,7 +489,7 @@ namespace GameStoreClient
                     {
                         for (var i = 0; i < length; i++)
                         {
-                            bufferResponse = Response(CommandConstants.GetReviews);
+                            bufferResponse = await Response(CommandConstants.GetReviews);
                             var splittedReview = (Encoding.UTF8.GetString(bufferResponse)).Split("*");
                             var rating = splittedReview[0];
                             var comment = splittedReview[1];
@@ -502,7 +502,7 @@ namespace GameStoreClient
             }
         }
 
-        private void Purchase()
+        private async void Purchase()
         {
             var correctId = false;
             while (!correctId)
@@ -516,8 +516,8 @@ namespace GameStoreClient
                 }
                 else
                 {
-                    Request(gameId, CommandConstants.Purchase);
-                    var bufferResponse = Response(CommandConstants.Purchase);
+                    await Request(gameId, CommandConstants.Purchase);
+                    var bufferResponse = await Response(CommandConstants.Purchase);
             
                     Console.WriteLine(Encoding.UTF8.GetString(bufferResponse));
                     correctId = true;
@@ -525,7 +525,7 @@ namespace GameStoreClient
             }
         }
 
-        private void DetailGame()
+        private async void DetailGame()
         {
             var correctId = false;
             while (!correctId)
@@ -539,8 +539,8 @@ namespace GameStoreClient
                 }
                 else
                 {
-                    Request(id,CommandConstants.DetailGame);
-                    var bufferResponse = Response(CommandConstants.DetailGame);
+                    await Request(id,CommandConstants.DetailGame);
+                    var bufferResponse = await Response(CommandConstants.DetailGame);
                     var responseString = Encoding.UTF8.GetString(bufferResponse);
                     if (responseString.Contains("*"))
                     {
@@ -561,7 +561,7 @@ namespace GameStoreClient
             }
         }
 
-        private byte[] Response(int command)
+        private async Task<byte[]> Response(int command)
         {
             var bufferResponse = new byte[] { };
             var headerLength = HeaderConstants.Response.Length + HeaderConstants.CommandLength +
@@ -569,13 +569,13 @@ namespace GameStoreClient
             var buffer = new byte[headerLength];
             try
             {
-                ReceiveData(headerLength, buffer);
+                await ReceiveData(headerLength, buffer);
                 var header = new Header();
                 header.DecodeData(buffer);
                 if (header.ICommand.Equals(command))
                 {
                     bufferResponse = new byte[header.IDataLength];
-                    ReceiveData(header.IDataLength, bufferResponse);
+                    await ReceiveData(header.IDataLength, bufferResponse);
                 }
                 else
                 {
@@ -596,15 +596,13 @@ namespace GameStoreClient
 
         private async Task Request(string message, int command)
         {
-            var headerLength = HeaderConstants.Request.Length + HeaderConstants.CommandLength +
-                               HeaderConstants.DataLength;
+            var header = new Header(HeaderConstants.Request, command, message.Length);
+            var data = header.GetRequest();
+            var bytesMessage = Encoding.UTF8.GetBytes(message);
             await using (var networkStream = _client.GetStream())
             {
-                var header = new Header(HeaderConstants.Request, command, message.Length);
-                var data = header.GetRequest();
-                var dataLength = BitConverter.GetBytes(data.Length);
-                await networkStream.WriteAsync(dataLength, 0, headerLength).ConfigureAwait(false);
                 await networkStream.WriteAsync(data, 0, data.Length).ConfigureAwait(false);
+                await networkStream.WriteAsync(bytesMessage, 0, bytesMessage.Length).ConfigureAwait(false);
             }
         }
         
