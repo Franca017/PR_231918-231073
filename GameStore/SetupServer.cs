@@ -48,8 +48,8 @@ namespace GameStoreServer
         public void InitializeSocketServer(IServiceProvider serviceProvider)
         {
             var ipEndPoint = new IPEndPoint(
-                IPAddress.Parse(SettingsManager.ReadSetting(ServerConfig.ServerIpConfigKey)),
-                int.Parse(SettingsManager.ReadSetting(ServerConfig.SeverPortConfigKey)));
+                IPAddress.Parse(IpConfig),
+                Port);
             var tcpListener = new TcpListener(ipEndPoint);
             tcpListener.Start(100);
             var connections = new Connections();
@@ -57,6 +57,7 @@ namespace GameStoreServer
             var threadServer = new Thread(() => connections.ListenConnections(tcpListener, serviceProvider));
             threadServer.Start();
             
+            Console.WriteLine($"IpConfig: {IpConfig} - Port: {Port}");
             connections.HandleServer();
         }
     }

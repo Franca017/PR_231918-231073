@@ -37,8 +37,8 @@ namespace GameStoreServer
             {
                 try
                 {
-                    var runtime = new Runtime(serviceProvider);
-                    runtime.HandleConnection(clientConnected);
+                    var runtime = new Runtime(serviceProvider,clientConnected);
+                    runtime.HandleConnection();
                 }
                 catch (Exception e)
                 {
