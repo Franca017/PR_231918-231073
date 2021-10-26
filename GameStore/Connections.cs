@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Net.Sockets;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace GameStoreServer
@@ -9,9 +7,8 @@ namespace GameStoreServer
     public class Connections
     {
         private bool _exit;
-        private readonly List<Socket> _clients = new List<Socket>();
 
-        public async void ListenConnections(TcpListener tcpListener, IServiceProvider serviceProvider)
+        public async Task ListenConnections(TcpListener tcpListener, IServiceProvider serviceProvider)
         {
             while (!_exit)
             {
@@ -43,12 +40,10 @@ namespace GameStoreServer
                 catch (Exception e)
                 {
                     Console.WriteLine($"Server is closing the connection, will not process more data -> Message {e.Message}..");
-                    //CloseConnection(clientConnected);
                 }
-                //_clients.Remove(clientConnected);
             }
 
-            return null; //CHEQUEAR
+            return null;
         }
 
         private void CloseConnection(Socket client)

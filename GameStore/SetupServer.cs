@@ -2,6 +2,7 @@
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using ProtocolLibrary;
@@ -54,9 +55,8 @@ namespace GameStoreServer
             tcpListener.Start(100);
             var connections = new Connections();
 
-            var threadServer = new Thread(() => connections.ListenConnections(tcpListener, serviceProvider));
-            threadServer.Start();
-            
+            var task = Task.Run(async () => await connections.ListenConnections(tcpListener, serviceProvider)).ConfigureAwait(false);
+
             Console.WriteLine($"IpConfig: {IpConfig} - Port: {Port}");
             connections.HandleServer();
         }
