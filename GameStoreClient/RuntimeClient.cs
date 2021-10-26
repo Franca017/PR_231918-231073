@@ -31,10 +31,6 @@ namespace GameStoreClient
             try
             {
                 await Request(user, CommandConstants.Login);
-                while (!_networkStream.CanRead)
-                {
-                    await Task.Delay(1000);
-                }
                 var bufferResponse = await Response(CommandConstants.Login);
                 Console.WriteLine(Encoding.UTF8.GetString(bufferResponse));
 
