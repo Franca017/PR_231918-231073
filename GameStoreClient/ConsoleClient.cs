@@ -10,9 +10,9 @@ namespace GameStoreClient
             var setup = new Setup();
             var runtime = new Runtime();
 
-            var socket = await setup.InitializeSocketServer();
+            var socket = await setup.InitializeSocketServerAsync();
             
-            await runtime.Execute(socket);
+            await runtime.ExecuteAsync(socket);
         }
     }
 }

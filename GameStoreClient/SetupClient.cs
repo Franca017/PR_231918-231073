@@ -3,7 +3,6 @@ using System.Net;
 using System.Net.Sockets;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
-using ProtocolLibrary;
 
 namespace GameStoreClient
 {
@@ -11,7 +10,6 @@ namespace GameStoreClient
     {
         private string IpConfig { get; set; }
         private int Port { get; set; }
-        static readonly ISettingsManager SettingsMgr = new SettingsManager();
 
         public Setup()
         {
@@ -35,7 +33,7 @@ namespace GameStoreClient
             }
         }
         
-        public async Task<TcpClient> InitializeSocketServer()
+        public async Task<TcpClient> InitializeSocketServerAsync()
         {
             var clientIpEndPoint = new IPEndPoint(IPAddress.Loopback,0);
             var tcpClient = new TcpClient(clientIpEndPoint);
