@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
@@ -153,12 +154,21 @@ namespace GameStoreClient
                     }
 
                     var info = gameId + "*" + path;
-                    await RequestAsync(info,CommandConstants.ModifyImage);
-                    await SendFileAsync(path);
-                    Console.WriteLine("Sent");
-                    var bufferResponse = await ResponseAsync(CommandConstants.ModifyImage);
-                    Console.WriteLine(Encoding.UTF8.GetString(bufferResponse));
-                    correctId = true;
+                    try
+                    {
+                        var fileName = _fileHandler.GetFileName(path);
+                        var fileSize = _fileHandler.GetFileSize(path);
+                        await RequestAsync(info, CommandConstants.ModifyImage);
+                        await SendFileAsync(path, fileName, fileSize);
+                        Console.WriteLine("Sent");
+                        var bufferResponse = await ResponseAsync(CommandConstants.ModifyImage);
+                        Console.WriteLine(Encoding.UTF8.GetString(bufferResponse));
+                        correctId = true;
+                    }
+                    catch (Exception)
+                    {
+                        Console.WriteLine("La modificacion ha fallado.");
+                    }
                 }
             }
         }
@@ -177,7 +187,6 @@ namespace GameStoreClient
                 var insert = Console.ReadLine();
                 game += insert + "*";
             }
-            await RequestAsync(game,CommandConstants.Publish);
             
             var splittedGame = game.Split("*");
             var path = splittedGame[3];
@@ -186,11 +195,22 @@ namespace GameStoreClient
             {
                 path = Console.ReadLine();
             }
-            await SendFileAsync(path);
-            Console.WriteLine("Sent");
 
-            var bufferResponse = await ResponseAsync(CommandConstants.Publish);
-            Console.WriteLine(Encoding.UTF8.GetString(bufferResponse));
+            try
+            {
+                var fileName = _fileHandler.GetFileName(path);
+                var fileSize = _fileHandler.GetFileSize(path);
+                await RequestAsync(game,CommandConstants.Publish);
+                await SendFileAsync(path,fileName,fileSize);
+                Console.WriteLine("Sent");
+
+                var bufferResponse = await ResponseAsync(CommandConstants.Publish);
+                Console.WriteLine(Encoding.UTF8.GetString(bufferResponse));
+            }
+            catch (Exception)
+            {
+                Console.WriteLine("La publicacion ha fallado.");
+            }
         }
 
         
@@ -585,7 +605,7 @@ namespace GameStoreClient
                 }
 
             }
-            catch (SocketException)
+            catch (IOException)
             {
                 throw new ServerDisconnected();
             }
@@ -601,8 +621,15 @@ namespace GameStoreClient
             var header = new Header(HeaderConstants.Request, command, message.Length);
             var data = header.GetRequest();
             var bytesMessage = Encoding.UTF8.GetBytes(message);
-            await _networkStream.WriteAsync(data, 0, data.Length).ConfigureAwait(false);
-            await _networkStream.WriteAsync(bytesMessage, 0, bytesMessage.Length).ConfigureAwait(false);
+            try
+            {
+                await _networkStream.WriteAsync(data, 0, data.Length).ConfigureAwait(false);
+                await _networkStream.WriteAsync(bytesMessage, 0, bytesMessage.Length).ConfigureAwait(false);
+            }
+            catch (IOException)
+            {
+                throw new ServerDisconnected();
+            }
         }
         
         private async Task ReceiveDataAsync(int length, byte[] buffer)
@@ -617,10 +644,8 @@ namespace GameStoreClient
             }
         }
         
-        private async Task SendFileAsync(string path)
+        private async Task SendFileAsync(string path, string fileName, long fileSize)
         {
-            var fileName = _fileHandler.GetFileName(path); // nombre del archivo -> XXXX
-            var fileSize = _fileHandler.GetFileSize(path); // tamaño del archivo -> YYYYYYYY
             var header = new Header().Create(fileName, fileSize);
             await _networkStream.WriteAsync(header, 0, header.Length);
             

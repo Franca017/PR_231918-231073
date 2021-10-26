@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
@@ -340,7 +341,7 @@ namespace GameStoreServer
 
                     iRecv += received;
                 }
-                catch (SocketException se)
+                catch (IOException se)
                 {
                     Console.WriteLine(se.Message);
                     throw new ClientDisconnected();
