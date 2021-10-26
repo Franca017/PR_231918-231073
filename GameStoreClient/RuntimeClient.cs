@@ -158,7 +158,7 @@ namespace GameStoreClient
 
                     var info = gameId + "*" + path;
                     await Request(info,CommandConstants.ModifyImage);
-                    SendFile(path);
+                    await SendFile(path);
                     Console.WriteLine("Sent");
                     var bufferResponse = await Response(CommandConstants.ModifyImage);
                     Console.WriteLine(Encoding.UTF8.GetString(bufferResponse));
@@ -190,7 +190,7 @@ namespace GameStoreClient
             {
                 path = Console.ReadLine();
             }
-            SendFile(path);
+            await SendFile(path);
             Console.WriteLine("Sent");
 
             var bufferResponse = await Response(CommandConstants.Publish);
@@ -418,7 +418,7 @@ namespace GameStoreClient
                     var bufferResponse = await Response(CommandConstants.Download);
                     Console.WriteLine(Encoding.UTF8.GetString(bufferResponse));
                     
-                    ReceiveFile();
+                    await ReceiveFile();
                     Console.WriteLine("File received");
                     correctId = true;
                 }
@@ -621,15 +621,17 @@ namespace GameStoreClient
             }
         }
         
-        private void SendFile(string path)
+        private async Task SendFile(string path)
         {
             var fileName = _fileHandler.GetFileName(path); // nombre del archivo -> XXXX
             var fileSize = _fileHandler.GetFileSize(path); // tamaño del archivo -> YYYYYYYY
             var header = new Header().Create(fileName, fileSize);
             //_client.Send(header, header.Length, SocketFlags.None);
+            await _networkStream.WriteAsync(header, 0, header.Length);
             
             var fileNameToBytes = Encoding.UTF8.GetBytes(fileName);
             //_client.Send(fileNameToBytes, fileNameToBytes.Length, SocketFlags.None);
+            await _networkStream.WriteAsync(fileNameToBytes, 0, fileNameToBytes.Length);
             
             var parts = Header.GetParts(fileSize);
             Console.WriteLine("Will Send {0} parts",parts);
@@ -651,11 +653,12 @@ namespace GameStoreClient
                     offset += HeaderConstants.MaxPacketSize;
                 }
                 //_client.Send(data, data.Length, SocketFlags.None);
+                await _networkStream.WriteAsync(data, 0, data.Length);
                 currentPart++;
             }
         }
 
-        private async void ReceiveFile()
+        private async Task ReceiveFile()
         {
             var fileHeader = new byte[Header.GetLength()];
             await ReceiveData(Header.GetLength(), fileHeader);
