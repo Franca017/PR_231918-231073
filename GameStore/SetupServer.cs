@@ -1,17 +1,14 @@
 ﻿using System;
 using System.Net;
 using System.Net.Sockets;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using ProtocolLibrary;
 
 namespace GameStoreServer
 {
     public class Setup
     {
-        static readonly ISettingsManager SettingsManager = new SettingsManager();
         private string IpConfig { get; set; }
         private int Port { get; set; }
 
@@ -55,7 +52,7 @@ namespace GameStoreServer
             tcpListener.Start(100);
             var connections = new Connections();
 
-            var task = Task.Run(async () => await connections.ListenConnections(tcpListener, serviceProvider)).ConfigureAwait(false);
+            var task = Task.Run(async () => await connections.ListenConnectionsAsync(tcpListener, serviceProvider)).ConfigureAwait(false);
 
             Console.WriteLine($"IpConfig: {IpConfig} - Port: {Port}");
             connections.HandleServer();
