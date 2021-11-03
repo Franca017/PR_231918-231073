@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Net;
 using System.Net.Sockets;
-using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -45,15 +45,17 @@ namespace GameStoreServer
         
         public void InitializeSocketServer(IServiceProvider serviceProvider)
         {
-            var socketServer = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-            socketServer.Bind(new IPEndPoint(IPAddress.Parse(IpConfig), Port));
-            socketServer.Listen(100);
+            var ipEndPoint = new IPEndPoint(
+                IPAddress.Parse(IpConfig),
+                Port);
+            var tcpListener = new TcpListener(ipEndPoint);
+            tcpListener.Start(100);
             var connections = new Connections();
 
-            var threadServer = new Thread(() => connections.ListenConnections(socketServer, serviceProvider));
-            threadServer.Start();
-            
-            connections.HandleServer(socketServer);
+            var task = Task.Run(async () => await connections.ListenConnectionsAsync(tcpListener, serviceProvider)).ConfigureAwait(false);
+
+            Console.WriteLine($"IpConfig: {IpConfig} - Port: {Port}");
+            connections.HandleServer();
         }
     }
 }

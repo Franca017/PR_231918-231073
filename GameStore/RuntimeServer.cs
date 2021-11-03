@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Net.Sockets;
 using System.Text;
+using System.Threading.Tasks;
 using Domain;
 using Domain.Exceptions;
 using LogicInterface;
@@ -16,7 +18,8 @@ namespace GameStoreServer
     {
         private bool Exit { get; set; }
 
-        private Socket _connectedSocket;
+        private readonly TcpClient _connectedClient;
+        private readonly NetworkStream _networkStream;
 
         private readonly IGamesLogic _gamesLogic;
         private readonly IUserLogic _userLogic;
@@ -26,143 +29,144 @@ namespace GameStoreServer
 
         private User _userLogged;
 
-        public Runtime(IServiceProvider serviceProvider)
+        public Runtime(IServiceProvider serviceProvider, TcpClient clientConnected)
         {
             _gamesLogic = serviceProvider.GetService<IGamesLogic>();
             _userLogic = serviceProvider.GetService<IUserLogic>();
             _reviewLogic = serviceProvider.GetService<IReviewLogic>();
             _fileStreamHandler = new FileStreamHandler();
             _fileHandler = new FileHandler();
+            _connectedClient = clientConnected;
+            _networkStream = clientConnected.GetStream();
         }
 
-        public void HandleConnection(Socket connectedSocket)
+        public async void HandleConnectionAsync()
         {
-            this._connectedSocket = connectedSocket;
-            while (!Exit)
-            {
-                var headerLength = HeaderConstants.Request.Length + HeaderConstants.CommandLength +
-                                   HeaderConstants.DataLength;
-                var buffer = new byte[headerLength];
-                try
+                while (!Exit)
                 {
-                    ReceiveData(headerLength, buffer);
-                    var header = new Header();
-                    header.DecodeData(buffer);
-                    switch (header.ICommand)
+                    var headerLength = HeaderConstants.Request.Length + HeaderConstants.CommandLength +
+                                       HeaderConstants.DataLength;
+                    var buffer = new byte[headerLength];
+                    try
                     {
-                        case CommandConstants.Login:
-                            Login(header);
-                            break;
-                        case CommandConstants.ListGames:
-                            ListGames(header);
-                            break;
-                        case CommandConstants.DetailGame:
-                            DetailGame(header);
-                            break;
-                        case CommandConstants.Purchase:
-                            Purchase(header);
-                            break;
-                        case CommandConstants.GetReviews:
-                            GetReviews(header);
-                            break;
-                        case CommandConstants.Publish:
-                            Publish(header);
-                            break;
-                        case CommandConstants.Search:
-                            Search(header);
-                            break;
-                        case CommandConstants.FilterRating:
-                            FilterRating(header);
-                            break;
-                        case CommandConstants.ListPublishedGames:
-                            ListPublishedGames(header);
-                            break;
-                        case CommandConstants.ModifyGame:
-                            ModifyGame(header);
-                            break;
-                        case CommandConstants.DeleteGame:
-                            DeleteGame(header);
-                            break;
-                        case CommandConstants.Rate:
-                            Rate(header);
-                            break;
-                        case CommandConstants.Download:
-                            Download(header);
-                            break;
-                        case CommandConstants.ModifyImage:
-                            ModifyImage(header);
-                            break;
-                        case CommandConstants.ListPurchasedGames:
-                            GetPurchasedGames(header);
-                            break;
+                        await ReceiveDataAsync(headerLength, buffer);
+                        var header = new Header();
+                        header.DecodeData(buffer);
+                        switch (header.ICommand)
+                        {
+                            case CommandConstants.Login:
+                                await LoginAsync(header);
+                                break;
+                            case CommandConstants.ListGames:
+                                await ListGamesAsync(header);
+                                break;
+                            case CommandConstants.DetailGame:
+                                await DetailGameAsync(header);
+                                break;
+                            case CommandConstants.Purchase:
+                                await PurchaseAsync(header);
+                                break;
+                            case CommandConstants.GetReviews:
+                                await GetReviewsAsync(header);
+                                break;
+                            case CommandConstants.Publish:
+                                await PublishAsync(header);
+                                break;
+                            case CommandConstants.Search:
+                                await SearchAsync(header);
+                                break;
+                            case CommandConstants.FilterRating:
+                                await FilterRatingAsync(header);
+                                break;
+                            case CommandConstants.ListPublishedGames:
+                                await ListPublishedGamesAsync(header);
+                                break;
+                            case CommandConstants.ModifyGame:
+                                await ModifyGameAsync(header);
+                                break;
+                            case CommandConstants.DeleteGame:
+                                await DeleteGameAsync(header);
+                                break;
+                            case CommandConstants.Rate:
+                                await RateAsync(header);
+                                break;
+                            case CommandConstants.Download:
+                                await DownloadAsync(header);
+                                break;
+                            case CommandConstants.ModifyImage:
+                                await ModifyImageAsync(header);
+                                break;
+                            case CommandConstants.ListPurchasedGames:
+                                await GetPurchasedGamesAsync(header);
+                                break;
+                        }
+                    }
+                    catch (ClientDisconnected c)
+                    {
+                        Console.WriteLine(_userLogged != null
+                            ? $"{c.Message} {_userLogged.UserName} disconnected"
+                            : $"{c.Message} Unlogged user disconnected");
+                        Exit = true;
                     }
                 }
-                catch (ClientDisconnected c)
-                {
-                    Console.WriteLine(_userLogged != null
-                        ? $"{c.Message} {_userLogged.UserName} disconnected"
-                        : $"{c.Message} Unlogged user disconnected");
-                    Exit = true;
-                }
-            }
         }
 
-        private void GetPurchasedGames(Header header)
+        private async Task GetPurchasedGamesAsync(Header header)
         {
             var purchasedGames = _userLogic.GetPurchasedGames(_userLogged.Id);
-            Response(purchasedGames.Count.ToString(),CommandConstants.ListPurchasedGames);
+            await ResponseAsync(purchasedGames.Count.ToString(),CommandConstants.ListPurchasedGames);
             
-            SendGames(header,purchasedGames);
+            await SendGamesAsync(header,purchasedGames);
         }
 
-        private void SendGames(Header header, List<Game> gamesFound)
+        private async Task SendGamesAsync(Header header, List<Game> gamesFound)
         {
             foreach (var game in gamesFound)
             {
                 var gameToString =
                     $"{game.Id}*{game.Title}*{game.Genre}*{game.Rating}*{game.Sinopsis}*{game.Image}";
-                Response(gameToString, header.ICommand);
+                await ResponseAsync(gameToString, header.ICommand);
             }
         }
 
-        private void FilterRating(Header header)
+        private async Task FilterRatingAsync(Header header)
         {
             var bufferData = new byte[header.IDataLength];
-            ReceiveData(header.IDataLength, bufferData);
+            await ReceiveDataAsync(header.IDataLength, bufferData);
             var minRating = Convert.ToInt32(Encoding.UTF8.GetString(bufferData));
             var gamesFound = _gamesLogic.GetGamesOverRating(minRating);
-            Response(gamesFound.Count.ToString(), CommandConstants.FilterRating);
+            await ResponseAsync(gamesFound.Count.ToString(), CommandConstants.FilterRating);
             
-            SendGames(header, gamesFound);
+            await SendGamesAsync(header, gamesFound);
         }
 
-        private void Search(Header header)
+        private async Task SearchAsync(Header header)
         {
             var bufferData = new byte[header.IDataLength];
-            ReceiveData(header.IDataLength, bufferData);
+            await ReceiveDataAsync(header.IDataLength, bufferData);
             var keywords = Encoding.UTF8.GetString(bufferData);
             var gamesFound = _gamesLogic.GetSearchedGames(keywords);
-            Response(gamesFound.Count.ToString(), CommandConstants.Search);
+            await ResponseAsync(gamesFound.Count.ToString(), CommandConstants.Search);
             
-            SendGames(header,gamesFound);
+            await SendGamesAsync(header,gamesFound);
         }
 
-        private void Download(Header header)
+        private async Task DownloadAsync(Header header)
         {
             var bufferData = new byte[header.IDataLength];
-            ReceiveData(header.IDataLength, bufferData);
+            await ReceiveDataAsync(header.IDataLength, bufferData);
             var gameIdString = Encoding.UTF8.GetString(bufferData);
             var gameId = Convert.ToInt32(gameIdString);
-            Response($"The image of the game with id {gameId} is going to be sent", header.ICommand);
+            await ResponseAsync($"The image of the game with id {gameId} is going to be sent", header.ICommand);
             var game = _gamesLogic.GetById(gameId);
             var path = game.Image;
-            SendFile(path);
+            await SendFileAsync(path);
         }
 
-        private void Rate(Header header)
+        private async Task RateAsync(Header header)
         {
             var bufferData = new byte[header.IDataLength];
-            ReceiveData(header.IDataLength, bufferData);
+            await ReceiveDataAsync(header.IDataLength, bufferData);
 
             var splittedReview = (Encoding.UTF8.GetString(bufferData)).Split("*");
             var gameId = Convert.ToInt32(splittedReview[0]);
@@ -172,55 +176,55 @@ namespace GameStoreServer
             _reviewLogic.Add(newReview);
             _reviewLogic.AdjustRating(gameId);
             var response = $"{_userLogged.UserName} successfully reviewed {reviewedGame.Title}";
-            Response(response, header.ICommand);
+            await ResponseAsync(response, header.ICommand);
         }
 
-        private void DeleteGame(Header header)
+        private async Task DeleteGameAsync(Header header)
         {
             var bufferData = new byte[header.IDataLength];
-            ReceiveData(header.IDataLength, bufferData);
+            await ReceiveDataAsync(header.IDataLength, bufferData);
             var gameIdString = Encoding.UTF8.GetString(bufferData);
 
             var gameId = Convert.ToInt32(gameIdString);
             _gamesLogic.Delete(gameId);
-            Response($"Your game with id {gameId} was deleted.", header.ICommand);
+            await ResponseAsync($"Your game with id {gameId} was deleted.", header.ICommand);
         }
 
-        private void ModifyGame(Header header)
+        private async Task ModifyGameAsync(Header header)
         {
             var bufferData = new byte[header.IDataLength];
-            ReceiveData(header.IDataLength, bufferData);
+            await ReceiveDataAsync(header.IDataLength, bufferData);
             var modifySplit = (Encoding.UTF8.GetString(bufferData)).Split("*");
             var gameModifyId = Convert.ToInt32(modifySplit[0]);
             _gamesLogic.Modify(modifySplit);
-            Response($"Your game with id {gameModifyId} was modified.",header.ICommand);
+            await ResponseAsync($"Your game with id {gameModifyId} was modified.",header.ICommand);
         }
         
-        private void ModifyImage(Header header)
+        private async Task ModifyImageAsync(Header header)
         {
             var bufferData = new byte[header.IDataLength];
-            ReceiveData(header.IDataLength, bufferData);
-            ReceiveFile();
+            await ReceiveDataAsync(header.IDataLength, bufferData);
+            await ReceiveFileAsync();
             Console.WriteLine("File received");
             var modifySplit = (Encoding.UTF8.GetString(bufferData)).Split("*");
             var gameModifyId = Convert.ToInt32(modifySplit[0]);
             _gamesLogic.ModifyImage(modifySplit);
-            Response($"Your game with id {gameModifyId} was modified.",header.ICommand);
+            await ResponseAsync($"Your game with id {gameModifyId} was modified.",header.ICommand);
         }
 
-        private void ListPublishedGames(Header header)
+        private async Task ListPublishedGamesAsync(Header header)
         {
             var listPublished = _gamesLogic.GetPublishedGames(_userLogged);
-            Response(listPublished.Count.ToString(),CommandConstants.ListPublishedGames);
+            await ResponseAsync(listPublished.Count.ToString(),CommandConstants.ListPublishedGames);
             
-            SendGames(header,listPublished);
+            await SendGamesAsync(header,listPublished);
         }
 
-        private void Publish(Header header)
+        private async Task PublishAsync(Header header)
         {
             var bufferPublish = new byte[header.IDataLength];
-            ReceiveData(header.IDataLength, bufferPublish);
-            ReceiveFile();
+            await ReceiveDataAsync(header.IDataLength, bufferPublish);
+            await ReceiveFileAsync();
             Console.WriteLine("File received");
             var split = (Encoding.UTF8.GetString(bufferPublish)).Split("*");
             var newGame = new Game(split[0], split[1], split[2], split[3])
@@ -230,39 +234,39 @@ namespace GameStoreServer
             var newGameInDb = _gamesLogic.Add(newGame);
 
             var response = $"{newGameInDb.Title} was published to the store with id {newGameInDb.Id}";
-            Response(response, header.ICommand);
+            await ResponseAsync(response, header.ICommand);
         }
 
-        private void GetReviews(Header header)
+        private async Task GetReviewsAsync(Header header)
         {
             var bufferData = new byte[header.IDataLength];
-            ReceiveData(header.IDataLength, bufferData);
+            await ReceiveDataAsync(header.IDataLength, bufferData);
             var gameIdString = Encoding.UTF8.GetString(bufferData);
             var gameId = Convert.ToInt32(gameIdString);
             var reviewsList = _reviewLogic.GetGameReviews(gameId);
-            Response(reviewsList.Count.ToString(), CommandConstants.GetReviews);
+            await ResponseAsync(reviewsList.Count.ToString(), CommandConstants.GetReviews);
             foreach (var review in reviewsList)
             {
                 var reviewToString = review.Rating + "*" + review.Comment;
-                Response(reviewToString, header.ICommand);
+                await ResponseAsync(reviewToString, header.ICommand);
             }
         }
 
-        private void Purchase(Header header)
+        private async Task PurchaseAsync(Header header)
         {
             var bufferData = new byte[header.IDataLength];
-            ReceiveData(header.IDataLength, bufferData);
+            await ReceiveDataAsync(header.IDataLength, bufferData);
             var gameIdString = Encoding.UTF8.GetString(bufferData);
             var gameId = Convert.ToInt32(gameIdString);
             var response = _userLogic.PurchaseGame(_userLogged, gameId);
             
-            Response(response, header.ICommand);
+            await ResponseAsync(response, header.ICommand);
         }
 
-        private void DetailGame(Header header)
+        private async Task DetailGameAsync(Header header)
         {
             var bufferData = new byte[header.IDataLength];
-            ReceiveData(header.IDataLength, bufferData);
+            await ReceiveDataAsync(header.IDataLength, bufferData);
             var gameIdString = Encoding.UTF8.GetString(bufferData);
             var gameId = Convert.ToInt32(gameIdString);
 
@@ -271,69 +275,62 @@ namespace GameStoreServer
             {
                 var gameToString =
                     $"{detailedGame.Id}*{detailedGame.Title}*{detailedGame.Genre}*{detailedGame.Rating}*{detailedGame.Sinopsis}*{detailedGame.Image}";
-                Response(gameToString, header.ICommand);
+                await ResponseAsync(gameToString, header.ICommand);
             }
             else
             {
-                Response("The game selected has been deleted from the store.", header.ICommand);
+                await ResponseAsync("The game selected has been deleted from the store.", header.ICommand);
             }
         }
 
-        private void ListGames(Header header)
+        private async Task ListGamesAsync(Header header)
         {
             var list = _gamesLogic.GetAll();
-            Response(list.Count.ToString(), CommandConstants.ListGames);
+            await ResponseAsync(list.Count.ToString(), CommandConstants.ListGames);
             
-            SendGames(header,list);
+            await SendGamesAsync(header,list);
         }
 
-        private void Login(Header header)
+        private async Task LoginAsync(Header header)
         {
             var bufferData = new byte[header.IDataLength];
-            ReceiveData(header.IDataLength, bufferData);
+            await ReceiveDataAsync(header.IDataLength, bufferData);
             var user = Encoding.UTF8.GetString(bufferData);
             Console.WriteLine("User: " + Encoding.UTF8.GetString(bufferData));
             var userInDb = _userLogic.Login(user);
             _userLogged = userInDb;
             var response =
                 $"Log in of the user: {userInDb.UserName} (created at {userInDb.DateCreated.Day}/{userInDb.DateCreated.Month}).";
-            Response(response, header.ICommand);
+            await ResponseAsync(response, header.ICommand);
         }
 
 
-        private void Response(string mensaje, int command)
+        private async Task ResponseAsync(string mensaje, int command)
         {
-            var header = new Header(HeaderConstants.Response, command, mensaje.Length);
+            var header = new Header(HeaderConstants.Request, command, mensaje.Length);
             var data = header.GetRequest();
-            var sentBytes = 0;
-            while (sentBytes < data.Length)
-            {
-                sentBytes += _connectedSocket.Send(data, sentBytes, data.Length - sentBytes, SocketFlags.None);
-            }
-
-            sentBytes = 0;
             var bytesMessage = Encoding.UTF8.GetBytes(mensaje);
-            while (sentBytes < bytesMessage.Length)
-            {
-                sentBytes += _connectedSocket.Send(bytesMessage, sentBytes, bytesMessage.Length - sentBytes,
-                    SocketFlags.None);
-            }
+            await _networkStream.WriteAsync(data, 0, data.Length).ConfigureAwait(false);
+            await _networkStream.WriteAsync(bytesMessage, 0, bytesMessage.Length).ConfigureAwait(false);
         }
 
-        private void ReceiveData(int length, byte[] buffer)
+        private async Task ReceiveDataAsync(int length, byte[] buffer)
         {
             var iRecv = 0;
             while (iRecv < length)
             {
                 try
                 {
-                    var localRecv = _connectedSocket.Receive(buffer, iRecv, length - iRecv, SocketFlags.None);
-                    if (localRecv == 0) // Si recieve retorna 0 -> la conexion se cerro desde el endpoint remoto
+                    var received = await _networkStream
+                        .ReadAsync(buffer, iRecv, length - iRecv)
+                        .ConfigureAwait(false);
+
+                    if (received == 0) // Si recieve retorna 0 -> la conexion se cerro desde el endpoint remoto
                     {
                         if (!Exit)
                         {
-                            _connectedSocket.Shutdown(SocketShutdown.Both);
-                            _connectedSocket.Close();
+                            _connectedClient.Close();
+                            _networkStream.Close();
                             throw new ClientDisconnected();
                         }
                         else
@@ -342,9 +339,9 @@ namespace GameStoreServer
                         }
                     }
 
-                    iRecv += localRecv;
+                    iRecv += received;
                 }
-                catch (SocketException se)
+                catch (IOException se)
                 {
                     Console.WriteLine(se.Message);
                     throw new ClientDisconnected();
@@ -352,15 +349,15 @@ namespace GameStoreServer
             }
         }
 
-        private void ReceiveFile()
+        private async Task ReceiveFileAsync()
         {
             var fileHeader = new byte[Header.GetLength()];
-            ReceiveData(Header.GetLength(), fileHeader);
+            await ReceiveDataAsync(Header.GetLength(), fileHeader);
             var fileNameSize = BitConverter.ToInt32(fileHeader, 0);
             var fileSize = BitConverter.ToInt64(fileHeader, HeaderConstants.FixedFileNameLength);
             
             var bufferName = new byte[fileNameSize];
-            ReceiveData(fileNameSize, bufferName);
+            await ReceiveDataAsync(fileNameSize, bufferName);
             var fileName = Encoding.UTF8.GetString(bufferName);
             
             var parts = Header.GetParts(fileSize);
@@ -377,7 +374,7 @@ namespace GameStoreServer
                     var lastPartSize = (int) (fileSize - offset);
                     Console.WriteLine($"Will receive segment number {currentPart} with size {lastPartSize}");
                     data = new byte[lastPartSize];
-                    ReceiveData(lastPartSize, data);
+                    await ReceiveDataAsync(lastPartSize, data);
                     offset += lastPartSize;
                 }
                 else
@@ -385,7 +382,7 @@ namespace GameStoreServer
                     Console.WriteLine(
                         $"Will receive segment number {currentPart} with size {HeaderConstants.MaxPacketSize}");
                     data = new byte[HeaderConstants.MaxPacketSize];
-                    ReceiveData(HeaderConstants.MaxPacketSize, data);
+                    await ReceiveDataAsync(HeaderConstants.MaxPacketSize, data);
                     offset += HeaderConstants.MaxPacketSize;
                 }
 
@@ -394,15 +391,15 @@ namespace GameStoreServer
             }
         }
         
-        private void SendFile(string path)
+        private async Task SendFileAsync(string path)
         {
             var fileName = _fileHandler.GetFileName(path);
             var fileSize = _fileHandler.GetFileSize(path);
             var header = new Header().Create(fileName, fileSize);
-            _connectedSocket.Send(header, header.Length, SocketFlags.None);
+            await _networkStream.WriteAsync(header, 0, header.Length);
             
             var fileNameToBytes = Encoding.UTF8.GetBytes(fileName);
-            _connectedSocket.Send(fileNameToBytes, fileNameToBytes.Length, SocketFlags.None);
+            await _networkStream.WriteAsync(fileNameToBytes, 0, fileNameToBytes.Length);
             
             var parts = Header.GetParts(fileSize);
             Console.WriteLine("Will Send {0} parts",parts);
@@ -423,7 +420,7 @@ namespace GameStoreServer
                     data = _fileStreamHandler.Read(path, offset, HeaderConstants.MaxPacketSize);
                     offset += HeaderConstants.MaxPacketSize;
                 }
-                _connectedSocket.Send(data, data.Length, SocketFlags.None);
+                await _networkStream.WriteAsync(data, 0, data.Length);
                 currentPart++;
             }
         }
