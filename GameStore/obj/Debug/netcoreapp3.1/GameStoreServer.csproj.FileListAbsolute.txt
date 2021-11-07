@@ -176,3 +176,6 @@ C:\Users\franc\Desktop\PR_231918-231073\GameStore\bin\Debug\netcoreapp3.1\runtim
 C:\Users\franc\Desktop\PR_231918-231073\GameStore\bin\Debug\netcoreapp3.1\runtimes\unix\lib\netcoreapp2.1\System.Security.Principal.Windows.dll
 C:\Users\franc\Desktop\PR_231918-231073\GameStore\bin\Debug\netcoreapp3.1\runtimes\win\lib\netcoreapp2.1\System.Security.Principal.Windows.dll
 C:\Users\franc\Desktop\PR_231918-231073\GameStore\bin\Debug\netcoreapp3.1\runtimes\win\lib\netcoreapp3.1\System.Windows.Extensions.dll
+C:\Users\Matias\Desktop\PR_231918-231073\GameStore\bin\Debug\netcoreapp3.1\RabbitMQ.Client.dll
+C:\Users\Matias\Desktop\PR_231918-231073\GameStore\bin\Debug\netcoreapp3.1\RabbitMQ.Client.pdb
+C:\Users\Matias\Desktop\PR_231918-231073\GameStore\bin\Debug\netcoreapp3.1\RabbitMQ.Client.xml

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Net.Sockets;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Domain;
 using Domain.Exceptions;
@@ -11,6 +12,8 @@ using Microsoft.Extensions.DependencyInjection;
 using ProtocolLibrary;
 using ProtocolLibrary.FileHandler;
 using ProtocolLibrary.FileHandler.Interfaces;
+using RabbitMQ.Client;
+using IModel = Microsoft.EntityFrameworkCore.Metadata.IModel;
 
 namespace GameStoreServer
 {
@@ -26,6 +29,7 @@ namespace GameStoreServer
         private readonly IReviewLogic _reviewLogic;
         private readonly IFileStreamHandler _fileStreamHandler;
         private readonly IFileHandler _fileHandler;
+        private RabbitMQ.Client.IModel _channel;
 
         private User _userLogged;
 
@@ -38,6 +42,12 @@ namespace GameStoreServer
             _fileHandler = new FileHandler();
             _connectedClient = clientConnected;
             _networkStream = clientConnected.GetStream();
+            _channel = new ConnectionFactory() {HostName = "localhost"}.CreateConnection().CreateModel();
+            _channel.QueueDeclare(queue: "log_queue",
+                durable: false,
+                exclusive: false,
+                autoDelete: false,
+                arguments: null);
         }
 
         public async void HandleConnectionAsync()
@@ -289,6 +299,9 @@ namespace GameStoreServer
             await ResponseAsync(list.Count.ToString(), CommandConstants.ListGames);
             
             await SendGamesAsync(header,list);
+            Log newLog = new Log("GTA", "Pedro", DateTime.Now, "List", "Pedro pidio los juegos");
+            bool result = await SendLog(newLog);
+            Console.WriteLine(result);
         }
 
         private async Task LoginAsync(Header header)
@@ -423,6 +436,28 @@ namespace GameStoreServer
                 await _networkStream.WriteAsync(data, 0, data.Length);
                 currentPart++;
             }
+        }
+
+        private Task<bool> SendLog(Log log)
+        {
+            var stringLog = JsonSerializer.Serialize(log);
+            bool returnVal;
+            try
+            {
+                var body = Encoding.UTF8.GetBytes(stringLog);
+                _channel.BasicPublish(exchange: "",
+                    routingKey: "log_queue",
+                    basicProperties: null,
+                    body: body);
+                returnVal = true;
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                returnVal = false;
+            }
+
+            return Task.FromResult(returnVal);
         }
     }
 }
