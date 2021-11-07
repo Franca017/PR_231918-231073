@@ -10,6 +10,7 @@ namespace GameStoreLogs.Controllers
     public class LogServerController : ControllerBase
     {
         private readonly ILogger<LogServerController> _logger;
+        private List<Log> 
 
         public LogServerController(ILogger<LogServerController> logger)
         {
@@ -20,6 +21,11 @@ namespace GameStoreLogs.Controllers
         public IEnumerable<Log> GetAll()
         {
             return null;
+        }
+
+        private void GetLogsFromRabbtMQ()
+        {
+            
         }
     }
 }
