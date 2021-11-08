@@ -1,10 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Text;
 using System.Text.Json;
 using Domain;
+using GameStoreLogs.LogLogic;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 
@@ -14,12 +13,12 @@ namespace GameStoreLogs.Controllers
     [Route("api/logs")]
     public class LogServerController : ControllerBase
     {
-        private readonly ILogger<LogServerController> _logger;
+        private readonly ILogsLogic _logsLogic;
         private List<Log> _logs;
 
-        public LogServerController(ILogger<LogServerController> logger)
+        public LogServerController(ILogsLogic logsLogic)
         {
-            _logger = logger;
+            this._logsLogic = logsLogic;
             _logs = new List<Log>();
         }
 
@@ -27,7 +26,7 @@ namespace GameStoreLogs.Controllers
         public IEnumerable<Log> GetAll()
         {
             GetLogsFromRabbtMq();
-            return _logs;
+            return _logsLogic.GetAll();
         }
 
         private void GetLogsFromRabbtMq()
@@ -45,7 +44,7 @@ namespace GameStoreLogs.Controllers
                 var body = ea.Body.ToArray();
                 var message = Encoding.UTF8.GetString(body);
                 var log = JsonSerializer.Deserialize<Log>(message);
-                _logs.Add(log);
+                _logsLogic.Add(log);
             };
             channel.BasicConsume(queue: "log_queue",
                 autoAck: true,
