@@ -44,9 +44,9 @@ namespace GameStoreLogs.Controllers
         public async Task<ActionResult<List<Log>>> GetLogsFilteredAsync([FromBody] ParametersModel parameters)
         {
             var logs = await _logsLogic.GetLogsFilteredAsync(parameters);
-            if (logs == null || logs.Any())
+            if (logs == null || !logs.Any())
             {
-                return NotFound();
+                return NoContent();
             }
             return logs;
         }

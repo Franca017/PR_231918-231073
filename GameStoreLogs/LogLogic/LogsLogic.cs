@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Threading.Tasks;
 using Domain;
 using GameStoreLogs.Context;
@@ -44,12 +45,12 @@ namespace GameStoreLogs.LogLogic
 
         public async Task<List<Log>> GetLogsFilteredAsync(ParametersModel parameters)
         {
-            var gameTitle = parameters.GameTitle;
-            var userName = parameters.UserName;
+            var gameTitle = parameters.GameTitle.ToLower();
+            var userName = parameters.UserName.ToLower();
             var dateTime = new DateTime();
             try
             {
-                dateTime = DateTime.Parse(parameters.Date);
+                dateTime = DateTime.ParseExact(parameters.Date, "dd/MM/yyyy", CultureInfo.InvariantCulture);
             }
             catch (Exception e)
             {
@@ -60,15 +61,15 @@ namespace GameStoreLogs.LogLogic
             List<Log> filteredLogs = (List<Log>) logs;
             if(dateTime != DateTime.MinValue)
             {
-                filteredLogs.RemoveAll(x => !x.Date.Equals(dateTime));
+                filteredLogs.RemoveAll(x => !x.Date.Date.Equals(dateTime));//Documentar que lo hacemos por dia
             }
             if(gameTitle != "")
             {
-                filteredLogs.RemoveAll(x => !x.GameTitle.Contains(gameTitle));
+                filteredLogs.RemoveAll(x => !x.GameTitle.ToLower().Contains(gameTitle));
             }
             if(userName != "")
             {
-                filteredLogs.RemoveAll(x => !x.User.Contains(userName));
+                filteredLogs.RemoveAll(x => !x.User.ToLower().Contains(userName));
             }
 
             return filteredLogs;
