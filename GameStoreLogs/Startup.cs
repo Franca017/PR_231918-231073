@@ -1,5 +1,6 @@
 using GameStoreLogs.Context;
 using GameStoreLogs.LogLogic;
+using GameStoreLogs.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
@@ -22,12 +23,9 @@ namespace GameStoreLogs
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllers();
-            /*services.AddSwaggerGen(c =>
-            {
-                c.SwaggerDoc("v1", new OpenApiInfo {Title = "GameStoreLogs", Version = "v1"});
-            });*/
             services.AddDbContext<LogsContext>(opt =>
                 opt.UseInMemoryDatabase("LogsList"));
+            services.AddHostedService<Worker>();
             services.AddScoped<ILogsLogic, LogsLogic>();
         }
 
@@ -37,8 +35,6 @@ namespace GameStoreLogs
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
-                /*app.UseSwagger();
-                app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "GameStoreLogs v1"));*/
             }
 
             app.UseHttpsRedirection();
