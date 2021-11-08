@@ -171,6 +171,7 @@ namespace GameStoreServer
             var game = _gamesLogic.GetById(gameId);
             var path = game.Image;
             await SendFileAsync(path);
+            await BuildLog(game.Title, _userLogged.UserName, "Download", $"The user {_userLogged.UserName} downloaded the image of the game {game.Title}");
         }
 
         private async Task RateAsync(Header header)
@@ -187,6 +188,7 @@ namespace GameStoreServer
             _reviewLogic.AdjustRating(gameId);
             var response = $"{_userLogged.UserName} successfully reviewed {reviewedGame.Title}";
             await ResponseAsync(response, header.ICommand);
+            await BuildLog(reviewedGame.Title, _userLogged.UserName, "Rate", $"The user {_userLogged.UserName} rated the game {reviewedGame.Title}");
         }
 
         private async Task DeleteGameAsync(Header header)
@@ -194,10 +196,11 @@ namespace GameStoreServer
             var bufferData = new byte[header.IDataLength];
             await ReceiveDataAsync(header.IDataLength, bufferData);
             var gameIdString = Encoding.UTF8.GetString(bufferData);
-
             var gameId = Convert.ToInt32(gameIdString);
+            var deleteGame = _gamesLogic.GetById(gameId);
             _gamesLogic.Delete(gameId);
             await ResponseAsync($"Your game with id {gameId} was deleted.", header.ICommand);
+            await BuildLog(deleteGame.Title, _userLogged.UserName, "Delete", $"The user {_userLogged.UserName} deleted the game {deleteGame.Title}");
         }
 
         private async Task ModifyGameAsync(Header header)
@@ -206,8 +209,10 @@ namespace GameStoreServer
             await ReceiveDataAsync(header.IDataLength, bufferData);
             var modifySplit = (Encoding.UTF8.GetString(bufferData)).Split("*");
             var gameModifyId = Convert.ToInt32(modifySplit[0]);
+            var modifyGame = _gamesLogic.GetById(gameModifyId);
             _gamesLogic.Modify(modifySplit);
             await ResponseAsync($"Your game with id {gameModifyId} was modified.",header.ICommand);
+            await BuildLog(modifyGame.Title, _userLogged.UserName, "Modify", $"The user {_userLogged.UserName} modified the game {modifyGame.Title}");
         }
         
         private async Task ModifyImageAsync(Header header)
@@ -218,8 +223,10 @@ namespace GameStoreServer
             Console.WriteLine("File received");
             var modifySplit = (Encoding.UTF8.GetString(bufferData)).Split("*");
             var gameModifyId = Convert.ToInt32(modifySplit[0]);
+            var modifyGame = _gamesLogic.GetById(gameModifyId);
             _gamesLogic.ModifyImage(modifySplit);
             await ResponseAsync($"Your game with id {gameModifyId} was modified.",header.ICommand);
+            await BuildLog(modifyGame.Title, _userLogged.UserName, "Modify image", $"The user {_userLogged.UserName} modified the image of the game {modifyGame.Title}");
         }
 
         private async Task ListPublishedGamesAsync(Header header)
@@ -245,6 +252,7 @@ namespace GameStoreServer
 
             var response = $"{newGameInDb.Title} was published to the store with id {newGameInDb.Id}";
             await ResponseAsync(response, header.ICommand);
+            await BuildLog(newGameInDb.Title, _userLogged.UserName, "Publish", $"The user {_userLogged.UserName} published the game {newGameInDb.Title}");
         }
 
         private async Task GetReviewsAsync(Header header)
@@ -268,9 +276,11 @@ namespace GameStoreServer
             await ReceiveDataAsync(header.IDataLength, bufferData);
             var gameIdString = Encoding.UTF8.GetString(bufferData);
             var gameId = Convert.ToInt32(gameIdString);
+            var purchaseGame = _gamesLogic.GetById(gameId);
             var response = _userLogic.PurchaseGame(_userLogged, gameId);
             
             await ResponseAsync(response, header.ICommand);
+            await BuildLog(purchaseGame.Title, _userLogged.UserName, "Purchase", $"The user {_userLogged.UserName} purchased the game {purchaseGame.Title}");
         }
 
         private async Task DetailGameAsync(Header header)
@@ -299,9 +309,6 @@ namespace GameStoreServer
             await ResponseAsync(list.Count.ToString(), CommandConstants.ListGames);
             
             await SendGamesAsync(header,list);
-            Log newLog = new Log("GTA", "Pedro", DateTime.Now, "List", "Pedro pidio los juegos");
-            bool result = await SendLog(newLog);
-            Console.WriteLine(result);
         }
 
         private async Task LoginAsync(Header header)
@@ -458,6 +465,12 @@ namespace GameStoreServer
             }
 
             return Task.FromResult(returnVal);
+        }
+
+        private async Task BuildLog(string game, string user, string action, string message)
+        {
+            Log newLog = new Log(game, user, DateTime.Now, action, message);
+            bool result = await SendLog(newLog);
         }
     }
 }
