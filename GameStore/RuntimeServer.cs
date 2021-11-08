@@ -171,7 +171,7 @@ namespace GameStoreServer
             var game = _gamesLogic.GetById(gameId);
             var path = game.Image;
             await SendFileAsync(path);
-            await BuildLog(game.Title, _userLogged.UserName, "Download", $"The user {_userLogged.UserName} downloaded the image of the game {game.Title}");
+            await BuildLog(game, _userLogged.UserName, "Download", $"The user {_userLogged.UserName} downloaded the image of the game {game.Title}");
         }
 
         private async Task RateAsync(Header header)
@@ -188,7 +188,7 @@ namespace GameStoreServer
             _reviewLogic.AdjustRating(gameId);
             var response = $"{_userLogged.UserName} successfully reviewed {reviewedGame.Title}";
             await ResponseAsync(response, header.ICommand);
-            await BuildLog(reviewedGame.Title, _userLogged.UserName, "Rate", $"The user {_userLogged.UserName} rated the game {reviewedGame.Title}");
+            await BuildLog(reviewedGame, _userLogged.UserName, "Rate", $"The user {_userLogged.UserName} rated the game {reviewedGame.Title}");
         }
 
         private async Task DeleteGameAsync(Header header)
@@ -200,7 +200,7 @@ namespace GameStoreServer
             var deleteGame = _gamesLogic.GetById(gameId);
             _gamesLogic.Delete(gameId);
             await ResponseAsync($"Your game with id {gameId} was deleted.", header.ICommand);
-            await BuildLog(deleteGame.Title, _userLogged.UserName, "Delete", $"The user {_userLogged.UserName} deleted the game {deleteGame.Title}");
+            await BuildLog(deleteGame, _userLogged.UserName, "Delete", $"The user {_userLogged.UserName} deleted the game {deleteGame.Title}");
         }
 
         private async Task ModifyGameAsync(Header header)
@@ -212,7 +212,7 @@ namespace GameStoreServer
             var modifyGame = _gamesLogic.GetById(gameModifyId);
             _gamesLogic.Modify(modifySplit);
             await ResponseAsync($"Your game with id {gameModifyId} was modified.",header.ICommand);
-            await BuildLog(modifyGame.Title, _userLogged.UserName, "Modify", $"The user {_userLogged.UserName} modified the game {modifyGame.Title}");
+            await BuildLog(modifyGame, _userLogged.UserName, "Modify", $"The user {_userLogged.UserName} modified the game {modifyGame.Title}");
         }
         
         private async Task ModifyImageAsync(Header header)
@@ -226,7 +226,7 @@ namespace GameStoreServer
             var modifyGame = _gamesLogic.GetById(gameModifyId);
             _gamesLogic.ModifyImage(modifySplit);
             await ResponseAsync($"Your game with id {gameModifyId} was modified.",header.ICommand);
-            await BuildLog(modifyGame.Title, _userLogged.UserName, "Modify image", $"The user {_userLogged.UserName} modified the image of the game {modifyGame.Title}");
+            await BuildLog(modifyGame, _userLogged.UserName, "Modify image", $"The user {_userLogged.UserName} modified the image of the game {modifyGame.Title}");
         }
 
         private async Task ListPublishedGamesAsync(Header header)
@@ -252,7 +252,7 @@ namespace GameStoreServer
 
             var response = $"{newGameInDb.Title} was published to the store with id {newGameInDb.Id}";
             await ResponseAsync(response, header.ICommand);
-            await BuildLog(newGameInDb.Title, _userLogged.UserName, "Publish", $"The user {_userLogged.UserName} published the game {newGameInDb.Title}");
+            await BuildLog(newGameInDb, _userLogged.UserName, "Publish", $"The user {_userLogged.UserName} published the game {newGameInDb.Title}");
         }
 
         private async Task GetReviewsAsync(Header header)
@@ -280,7 +280,7 @@ namespace GameStoreServer
             var response = _userLogic.PurchaseGame(_userLogged, gameId);
             
             await ResponseAsync(response, header.ICommand);
-            await BuildLog(purchaseGame.Title, _userLogged.UserName, "Purchase", $"The user {_userLogged.UserName} purchased the game {purchaseGame.Title}");
+            await BuildLog(purchaseGame, _userLogged.UserName, "Purchase", $"The user {_userLogged.UserName} purchased the game {purchaseGame.Title}");
         }
 
         private async Task DetailGameAsync(Header header)
@@ -467,9 +467,9 @@ namespace GameStoreServer
             return Task.FromResult(returnVal);
         }
 
-        private async Task BuildLog(string game, string user, string action, string message)
+        private async Task BuildLog(Game game, string user, string action, string message)
         {
-            Log newLog = new Log(game, user, DateTime.Now, action, message);
+            Log newLog = new Log(game.Id, game.Title , user, DateTime.Now, action, message);
             bool result = await SendLog(newLog);
         }
     }

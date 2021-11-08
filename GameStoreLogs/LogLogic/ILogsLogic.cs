@@ -1,6 +1,8 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Domain;
+using GameStoreLogs.Model;
+using Microsoft.AspNetCore.Mvc;
 
 namespace GameStoreLogs.LogLogic
 {
@@ -10,5 +12,6 @@ namespace GameStoreLogs.LogLogic
         Task<Log> GetLog(int id);
         void Add(Log log);
         void Delete(Log log);
+        Task<List<Log>> GetLogsFilteredAsync(ParametersModel parameters);
     }
 }

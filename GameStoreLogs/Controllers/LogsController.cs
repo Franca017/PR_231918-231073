@@ -1,8 +1,10 @@
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Domain;
 using GameStoreLogs.LogLogic;
+using GameStoreLogs.Model;
 
 namespace GameStoreLogs.Controllers
 {
@@ -37,14 +39,16 @@ namespace GameStoreLogs.Controllers
 
             return log;
         }
-
-        // POST: api/Logs
-        [HttpPost]
-        public ActionResult<Log> PostLog(Log log)
+        
+        [HttpGet("filtered")]
+        public async Task<ActionResult<List<Log>>> GetLogsFilteredAsync([FromBody] ParametersModel parameters)
         {
-            _logsLogic.Add(log);
-
-            return CreatedAtAction(nameof(GetLog), new { id = log.Id }, log);
+            var logs = await _logsLogic.GetLogsFilteredAsync(parameters);
+            if (logs == null || logs.Any())
+            {
+                return NotFound();
+            }
+            return logs;
         }
 
         // DELETE: api/Logs/5
