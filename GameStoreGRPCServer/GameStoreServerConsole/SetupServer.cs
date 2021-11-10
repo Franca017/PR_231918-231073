@@ -1,19 +1,22 @@
 ﻿using System;
 using System.Net;
 using System.Net.Sockets;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 
 namespace GameStoreGRPCServer.GameStoreServerConsole
 {
-    public class Setup
+    public class Setup : BackgroundService
     {
         private string IpConfig { get; set; }
         private int Port { get; set; }
+        private readonly IServiceProvider _serviceProvider;
 
-        public Setup()
+        public Setup(IServiceProvider serviceProvider)
         {
+            _serviceProvider = serviceProvider;
             ReadAppSettings();
         }
 
@@ -33,17 +36,8 @@ namespace GameStoreGRPCServer.GameStoreServerConsole
                 Environment.Exit(0);
             }
         }
-        
-        public IServiceProvider BuildServiceProvider()
-        {
-            IServiceCollection services = new ServiceCollection();
-            var startup = new Startup();
-            startup.ConfigureServices(services);
-            IServiceProvider serviceProvider = services.BuildServiceProvider();
-            return serviceProvider;
-        }
-        
-        public void InitializeSocketServer(IServiceProvider serviceProvider)
+
+        protected override Task ExecuteAsync(CancellationToken stoppingToken)
         {
             var ipEndPoint = new IPEndPoint(
                 IPAddress.Parse(IpConfig),
@@ -52,10 +46,12 @@ namespace GameStoreGRPCServer.GameStoreServerConsole
             tcpListener.Start(100);
             var connections = new Connections();
 
-            var task = Task.Run(async () => await connections.ListenConnectionsAsync(tcpListener, serviceProvider)).ConfigureAwait(false);
+            var task = Task.Run(async () => await connections.ListenConnectionsAsync(tcpListener, _serviceProvider), stoppingToken).ConfigureAwait(false);
 
             Console.WriteLine($"IpConfig: {IpConfig} - Port: {Port}");
             connections.HandleServer();
+
+            return null;
         }
     }
 }

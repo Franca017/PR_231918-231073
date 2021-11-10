@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Factory;
+using GameStoreGRPCServer.GameStoreServerConsole;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -20,6 +21,7 @@ namespace GameStoreGRPCServer
             services.AddGrpc();
             ServiceFactory serviceFactory = new ServiceFactory(services);
             serviceFactory.ConfigureServices();
+            services.AddHostedService<Setup>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

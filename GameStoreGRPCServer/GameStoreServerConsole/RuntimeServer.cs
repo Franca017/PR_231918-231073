@@ -28,7 +28,7 @@ namespace GameStoreGRPCServer.GameStoreServerConsole
         private readonly IReviewLogic _reviewLogic;
         private readonly IFileStreamHandler _fileStreamHandler;
         private readonly IFileHandler _fileHandler;
-        private RabbitMQ.Client.IModel _channel;
+        private readonly RabbitMQ.Client.IModel _channel;
 
         private User _userLogged;
 

@@ -13,11 +13,6 @@ namespace GameStoreGRPCServer
     {
         public static void Main(string[] args)
         {
-            /*var setup = new Setup();
-            _serviceProvider = setup.BuildServiceProvider();  //VERIFICAR LO DEL _SERVICEPROVIDER
-
-            setup.InitializeSocketServer(_serviceProvider);*/
-            
             CreateHostBuilder(args).Build().Run();
         }
 
