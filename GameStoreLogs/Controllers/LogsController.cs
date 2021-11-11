@@ -22,10 +22,19 @@ namespace GameStoreLogs.Controllers
 
         // GET: api/Logs
         [HttpGet]
-        public async Task<IEnumerable<Log>> GetLogs(string game, string user, string dateFrom, string dateTo, string date)
+        public async Task<ActionResult<List<Log>>> GetLogs(string game, string user, string dateFrom, 
+            string dateTo, string date)
         {
-            var param = new ParametersModel(game,user,dateFrom,dateTo,date);
-            return await _logsLogic.GetAll();
+            if (game == null && user == null && (dateFrom == null || dateTo == null) && date == null)
+                return (List<Log>) await _logsLogic.GetAll();
+            
+            var parameters = new ParametersModel(game,user,dateFrom,dateTo,date);
+            var logs = await _logsLogic.GetLogsFilteredAsync(parameters);
+            if (logs == null || !logs.Any())
+            {
+                return NoContent();
+            }
+            return logs;
         }
 
         // GET: api/Logs/5
@@ -40,17 +49,6 @@ namespace GameStoreLogs.Controllers
             }
 
             return log;
-        }
-        
-        [HttpGet("filtered")]
-        public async Task<ActionResult<List<Log>>> GetLogsFilteredAsync([FromBody] ParametersModel parameters)
-        {
-            var logs = await _logsLogic.GetLogsFilteredAsync(parameters);
-            if (logs == null || !logs.Any())
-            {
-                return NoContent();
-            }
-            return logs;
         }
 
         // DELETE: api/Logs/5
