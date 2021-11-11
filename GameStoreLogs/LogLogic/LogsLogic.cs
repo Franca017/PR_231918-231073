@@ -19,7 +19,7 @@ namespace GameStoreLogs.LogLogic
             _context = context;
         }
 
-        public async Task<IEnumerable<Log>> GetAll()
+        public async Task<List<Log>> GetAll()
         {
             return await _context.Logs.ToListAsync();
         }
@@ -45,30 +45,44 @@ namespace GameStoreLogs.LogLogic
 
         public async Task<List<Log>> GetLogsFilteredAsync(ParametersModel parameters)
         {
-            var gameTitle = parameters.GameTitle.ToLower();
-            var userName = parameters.UserName.ToLower();
-            var dateTime = new DateTime();
+            var date = DateTime.MinValue;
+            var dateFrom = DateTime.MinValue;
+            var dateTo = DateTime.MinValue;
             try
             {
-                dateTime = DateTime.ParseExact(parameters.Date, "dd/MM/yyyy", CultureInfo.InvariantCulture);
+                date = DateTime.ParseExact(parameters.Date, "dd/MM/yyyy", CultureInfo.InvariantCulture);
             }
-            catch (Exception e)
+            catch
             {
-                dateTime = DateTime.MinValue;
+                try
+                {
+                    dateFrom = DateTime.ParseExact(parameters.DateFrom, "dd/MM/yyyy", CultureInfo.InvariantCulture);
+                    dateTo = DateTime.ParseExact(parameters.DateTo, "dd/MM/yyyy", CultureInfo.InvariantCulture);
+                }
+                catch (Exception)
+                {
+                    // ignored
+                }
             }
-            
+
             var logs = await GetAll();
             List<Log> filteredLogs = (List<Log>) logs;
-            if(dateTime != DateTime.MinValue)
+            if (dateFrom != DateTime.MinValue && dateTo != DateTime.MinValue)
             {
-                filteredLogs.RemoveAll(x => !x.Date.Date.Equals(dateTime));//Documentar que lo hacemos por dia
+                filteredLogs.RemoveAll(x => x.Date.Date > dateFrom && x.Date.Date < dateTo);
             }
-            if(gameTitle != "")
+            if(date != DateTime.MinValue)
             {
+                filteredLogs.RemoveAll(x => !x.Date.Date.Equals(date));//Documentar que lo hacemos por dia
+            }
+            if(parameters.GameTitle != null)
+            {
+                var gameTitle = parameters.GameTitle.ToLower();
                 filteredLogs.RemoveAll(x => !x.GameTitle.ToLower().Contains(gameTitle));
             }
-            if(userName != "")
+            if(parameters.UserName != null)
             {
+                var userName = parameters.UserName.ToLower();
                 filteredLogs.RemoveAll(x => !x.User.ToLower().Contains(userName));
             }
 
