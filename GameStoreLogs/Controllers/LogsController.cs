@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -21,8 +22,9 @@ namespace GameStoreLogs.Controllers
 
         // GET: api/Logs
         [HttpGet]
-        public async Task<IEnumerable<Log>> GetLogs()
+        public async Task<IEnumerable<Log>> GetLogs(string game, string user, string dateFrom, string dateTo, string date)
         {
+            var param = new ParametersModel(game,user,dateFrom,dateTo,date);
             return await _logsLogic.GetAll();
         }
 
