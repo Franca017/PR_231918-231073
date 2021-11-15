@@ -12,11 +12,11 @@ namespace GameStoreAdminServer.Controllers
     public class GamesController : ControllerBase
     {
 
-        private readonly ILogger<GamesController> _logger;
+        private readonly Greeter.GreeterClient _client;
 
-        public GamesController(ILogger<GamesController> logger)
+        public GamesController()
         {
-            _logger = logger;
+            _client = GrpcClient.Instance;
         }
 
     }
