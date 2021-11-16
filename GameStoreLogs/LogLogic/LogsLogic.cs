@@ -52,7 +52,7 @@ namespace GameStoreLogs.LogLogic
             {
                 dateTime = DateTime.ParseExact(parameters.Date, "dd/MM/yyyy", CultureInfo.InvariantCulture);
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 dateTime = DateTime.MinValue;
             }

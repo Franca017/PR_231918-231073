@@ -1,3 +1,4 @@
+
 namespace GameStoreAdminServer
 {
     public sealed class GrpcClient {  

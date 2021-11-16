@@ -51,5 +51,10 @@ namespace Logic
             List<Game> purchasedGames = _userRepository.GetPurchasedGames(userLoggedId);
             return purchasedGames;
         }
+
+        public User Add(User newUser)
+        {
+            return _userRepository.Add(newUser);
+        }
     }
 }

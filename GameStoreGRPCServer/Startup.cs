@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Factory;
 using GameStoreGRPCServer.GameStoreServerConsole;
+using GameStoreGRPCServer.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;

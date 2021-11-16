@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using GameStoreAdminServer.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 
@@ -18,6 +19,22 @@ namespace GameStoreAdminServer.Controllers
         {
             _client = GrpcClient.Instance;
         }
-
+        
+        /*// GET: api/games
+        [HttpGet]
+        public async Task<IEnumerable<Game>> GetGames()
+        {
+            return await;
+        }*/
+        [HttpPost]
+        public async Task<string> AddGame([FromBody]GameInModel game)
+        {
+            var reply = await _client.AddGameAsync(
+                new AddRequest() { 
+                    Name = game.Title, 
+                    Genre = game.Genre, 
+                    Sinopsis = game.Sinopsis});
+            return reply.Message;
+        }
     }
 }

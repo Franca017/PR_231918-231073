@@ -1,27 +1,39 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
+using Domain;
 using Grpc.Core;
-using Microsoft.Extensions.Logging;
+using LogicInterface;
 
-namespace GameStoreGRPCServer
+namespace GameStoreGRPCServer.Services
 {
     public class GreeterService : Greeter.GreeterBase
     {
-        private readonly ILogger<GreeterService> _logger;
-
-        public GreeterService(ILogger<GreeterService> logger)
+        private readonly IGamesLogic _gamesLogic;
+        private readonly IUserLogic _userLogic;
+        public GreeterService(IGamesLogic gamesLogic, IUserLogic userLogic)
         {
-            _logger = logger;
+            _gamesLogic = gamesLogic;
+            _userLogic = userLogic;
         }
-
-        public override Task<HelloReply> SayHello(HelloRequest request, ServerCallContext context)
+        public override Task<AddReply> AddGame(AddRequest request, ServerCallContext context)
         {
-            return Task.FromResult(new HelloReply
+            var newGame = new Game(request.Name, request.Genre, request.Sinopsis);
+            //settearle un adminUser
+            var gameAdded = _gamesLogic.Add(newGame);
+            return Task.FromResult(new AddReply()
             {
-                Message = "Hello " + request.Name
+                Message = $"{gameAdded.Title} was published to the store with id {gameAdded.Id}"
             });
         }
+        public override Task<AddReply> AddUser(AddRequest request, ServerCallContext context)
+        {
+            var newUser = new User(request.Name, DateTime.Now);
+            var userAdded = _userLogic.Add(newUser);
+            return Task.FromResult(new AddReply()
+            {
+                Message = $"{userAdded.UserName} (created at {userAdded.DateCreated.Day}/{userAdded.DateCreated.Month}"
+            });
+        }
+
     }
 }
