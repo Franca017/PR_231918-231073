@@ -28,7 +28,7 @@ namespace GameStoreAdminServer
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllers();
-            var channel = GrpcChannel.ForAddress("https://localhost:7042");
+            var channel = GrpcChannel.ForAddress("https://localhost:7041");
             GrpcClient.Instance = new Greeter.GreeterClient(channel);
         }
 
@@ -47,6 +47,11 @@ namespace GameStoreAdminServer
             app.UseAuthorization();
 
             app.UseEndpoints(endpoints => { endpoints.MapControllers(); });
+            
+            app.UseCors(x => x
+                .AllowAnyOrigin()
+                .AllowAnyMethod()
+                .AllowAnyHeader());
         }
     }
 }
