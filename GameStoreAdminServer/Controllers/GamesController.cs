@@ -37,5 +37,26 @@ namespace GameStoreAdminServer.Controllers
                     Sinopsis = game.Sinopsis});
             return reply.Message;
         }
+        
+        [HttpPut("{id}")]
+        public async Task<string> ModifyGame([FromRoute]int id, [FromBody]GameInModel game)
+        {
+            var reply = await _client.ModifyGameAsync(
+                new ModifyRequest() { 
+                    Id = id,
+                    Name = game.Title, 
+                    Genre = game.Genre, 
+                    Sinopsis = game.Sinopsis});
+            return reply.Message;
+        }
+        
+        [HttpDelete("{id}")]
+        public async Task<string> DeleteGame([FromRoute]int id, [FromBody]GameInModel game)
+        {
+            var reply = await _client.DeleteGameAsync(
+                new DeleteRequest() { 
+                    Id = id });
+            return reply.Message;
+        }
     }
 }
