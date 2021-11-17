@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Net;
 using System.Net.Sockets;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
@@ -37,7 +38,7 @@ namespace GameStoreGRPCServer.GameStoreServerConsole
             }
         }
 
-        protected override Task ExecuteAsync(CancellationToken stoppingToken)
+        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             var ipEndPoint = new IPEndPoint(
                 IPAddress.Parse(IpConfig),
@@ -49,9 +50,42 @@ namespace GameStoreGRPCServer.GameStoreServerConsole
             var task = Task.Run(async () => await connections.ListenConnectionsAsync(tcpListener, _serviceProvider), stoppingToken).ConfigureAwait(false);
 
             Console.WriteLine($"IpConfig: {IpConfig} - Port: {Port}");
-            connections.HandleServer();
+            var taskServer = Task.Run(HandleServer, stoppingToken).ConfigureAwait(false);
 
-            return null;
+            await Task.Yield();
+        }
+
+        private async Task FakeConnection()
+        {
+            var clientIpEndPoint = new IPEndPoint(IPAddress.Loopback, 0);
+            var tcpClient = new TcpClient(clientIpEndPoint);
+
+            await tcpClient.ConnectAsync(
+                IPAddress.Parse(IpConfig),
+                Port).ConfigureAwait(false);
+        }
+
+        private async void HandleServer()
+        {
+            Console.WriteLine("Bienvenido al Sistema Server");
+            while (!Exit.Instance)
+            {
+                Console.WriteLine("Opciones validas: ");
+                Console.WriteLine("exit -> abandonar el programa");
+                Console.Write("Ingrese su opcion: ");
+
+                var userInput = Console.ReadLine();
+
+                if (userInput != null && userInput.ToLower().Equals("exit"))
+                {
+                    Exit.Instance = true;
+                    await FakeConnection();
+                }
+                else
+                {
+                    Console.WriteLine("Opcion incorrecta ingresada");
+                }
+            }
         }
     }
 }

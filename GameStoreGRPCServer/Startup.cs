@@ -47,10 +47,6 @@ namespace GameStoreGRPCServer
                     });
             });
             
-            app.UseCors(x => x
-                .AllowAnyOrigin()
-                .AllowAnyMethod()
-                .AllowAnyHeader());
         }
     }
 }

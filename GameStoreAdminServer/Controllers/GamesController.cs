@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Domain;
 using GameStoreAdminServer.Models;
+using Grpc.Net.Client;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 
@@ -30,7 +31,9 @@ namespace GameStoreAdminServer.Controllers
         [HttpPost]
         public async Task<string> AddGame([FromBody]GameInModel game)
         {
-            var reply = await _client.AddGameAsync(
+            var channel = GrpcChannel.ForAddress("https://localhost:7041");
+            var greeter = new Greeter.GreeterClient(channel);
+            var reply = await greeter.AddGameAsync(
                 new AddRequest() { 
                     Name = game.Title, 
                     Genre = game.Genre, 

@@ -18,7 +18,7 @@ namespace GameStoreGRPCServer.GameStoreServerConsole
 {
     public class Runtime
     {
-        private bool Exit { get; set; }
+        private bool _exit = false;
 
         private readonly TcpClient _connectedClient;
         private readonly NetworkStream _networkStream;
@@ -49,75 +49,75 @@ namespace GameStoreGRPCServer.GameStoreServerConsole
                 arguments: null);
         }
 
-        public async void HandleConnectionAsync()
+        public async Task HandleConnectionAsync()
         {
-                while (!Exit)
+            while (!_exit && !Exit.Instance)
+            {
+                var headerLength = HeaderConstants.Request.Length + HeaderConstants.CommandLength +
+                                   HeaderConstants.DataLength;
+                var buffer = new byte[headerLength];
+                try
                 {
-                    var headerLength = HeaderConstants.Request.Length + HeaderConstants.CommandLength +
-                                       HeaderConstants.DataLength;
-                    var buffer = new byte[headerLength];
-                    try
+                    await ReceiveDataAsync(headerLength, buffer);
+                    var header = new Header();
+                    header.DecodeData(buffer);
+                    switch (header.ICommand)
                     {
-                        await ReceiveDataAsync(headerLength, buffer);
-                        var header = new Header();
-                        header.DecodeData(buffer);
-                        switch (header.ICommand)
-                        {
-                            case CommandConstants.Login:
-                                await LoginAsync(header);
-                                break;
-                            case CommandConstants.ListGames:
-                                await ListGamesAsync(header);
-                                break;
-                            case CommandConstants.DetailGame:
-                                await DetailGameAsync(header);
-                                break;
-                            case CommandConstants.Purchase:
-                                await PurchaseAsync(header);
-                                break;
-                            case CommandConstants.GetReviews:
-                                await GetReviewsAsync(header);
-                                break;
-                            case CommandConstants.Publish:
-                                await PublishAsync(header);
-                                break;
-                            case CommandConstants.Search:
-                                await SearchAsync(header);
-                                break;
-                            case CommandConstants.FilterRating:
-                                await FilterRatingAsync(header);
-                                break;
-                            case CommandConstants.ListPublishedGames:
-                                await ListPublishedGamesAsync(header);
-                                break;
-                            case CommandConstants.ModifyGame:
-                                await ModifyGameAsync(header);
-                                break;
-                            case CommandConstants.DeleteGame:
-                                await DeleteGameAsync(header);
-                                break;
-                            case CommandConstants.Rate:
-                                await RateAsync(header);
-                                break;
-                            case CommandConstants.Download:
-                                await DownloadAsync(header);
-                                break;
-                            case CommandConstants.ModifyImage:
-                                await ModifyImageAsync(header);
-                                break;
-                            case CommandConstants.ListPurchasedGames:
-                                await GetPurchasedGamesAsync(header);
-                                break;
-                        }
-                    }
-                    catch (ClientDisconnected c)
-                    {
-                        Console.WriteLine(_userLogged != null
-                            ? $"{c.Message} {_userLogged.UserName} disconnected"
-                            : $"{c.Message} Unlogged user disconnected");
-                        Exit = true;
+                        case CommandConstants.Login:
+                            await LoginAsync(header);
+                            break;
+                        case CommandConstants.ListGames:
+                            await ListGamesAsync(header);
+                            break;
+                        case CommandConstants.DetailGame:
+                            await DetailGameAsync(header);
+                            break;
+                        case CommandConstants.Purchase:
+                            await PurchaseAsync(header);
+                            break;
+                        case CommandConstants.GetReviews:
+                            await GetReviewsAsync(header);
+                            break;
+                        case CommandConstants.Publish:
+                            await PublishAsync(header);
+                            break;
+                        case CommandConstants.Search:
+                            await SearchAsync(header);
+                            break;
+                        case CommandConstants.FilterRating:
+                            await FilterRatingAsync(header);
+                            break;
+                        case CommandConstants.ListPublishedGames:
+                            await ListPublishedGamesAsync(header);
+                            break;
+                        case CommandConstants.ModifyGame:
+                            await ModifyGameAsync(header);
+                            break;
+                        case CommandConstants.DeleteGame:
+                            await DeleteGameAsync(header);
+                            break;
+                        case CommandConstants.Rate:
+                            await RateAsync(header);
+                            break;
+                        case CommandConstants.Download:
+                            await DownloadAsync(header);
+                            break;
+                        case CommandConstants.ModifyImage:
+                            await ModifyImageAsync(header);
+                            break;
+                        case CommandConstants.ListPurchasedGames:
+                            await GetPurchasedGamesAsync(header);
+                            break;
                     }
                 }
+                catch (ClientDisconnected c)
+                {
+                    Console.WriteLine(_userLogged != null
+                        ? $"{c.Message} {_userLogged.UserName} disconnected"
+                        : $"{c.Message} Unlogged user disconnected");
+                    _exit = true;
+                }
+            }
         }
 
         private async Task GetPurchasedGamesAsync(Header header)
@@ -346,7 +346,7 @@ namespace GameStoreGRPCServer.GameStoreServerConsole
 
                     if (received == 0) // Si recieve retorna 0 -> la conexion se cerro desde el endpoint remoto
                     {
-                        if (!Exit)
+                        if (!_exit)
                         {
                             _connectedClient.Close();
                             _networkStream.Close();
