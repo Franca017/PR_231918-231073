@@ -31,7 +31,7 @@ namespace GameStoreGRPCServer.GameStoreServerConsole
                 }
             }
 
-            Console.WriteLine("Exiting....");
+            Console.WriteLine("Closing clients server...");
         }
 
         private async Task StartRuntime(IServiceProvider serviceProvider, TcpClient clientConnected)
