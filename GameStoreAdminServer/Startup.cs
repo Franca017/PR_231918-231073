@@ -29,7 +29,7 @@ namespace GameStoreAdminServer
         {
             services.AddControllers();
             var channel = GrpcChannel.ForAddress("http://localhost:7041");
-            GrpcClient.Instance = new Greeter.GreeterClient(channel);
+            GrpcChannelAccess.Instance = channel;
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

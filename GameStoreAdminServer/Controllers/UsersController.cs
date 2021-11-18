@@ -8,11 +8,12 @@ namespace GameStoreAdminServer.Controllers
     public class UsersController : ControllerBase
     {
         
-        private readonly Greeter.GreeterClient _client;
+        private readonly UserComs.UserComsClient _client;
 
         public UsersController()
         {
-            _client = GrpcClient.Instance;
+            var channel = GrpcChannelAccess.Instance;
+            _client = new UserComs.UserComsClient(channel);
         } 
         
         // GET
@@ -26,7 +27,7 @@ namespace GameStoreAdminServer.Controllers
         public async Task<string> AddUser([FromBody]string username)
         {
             var reply = await _client.AddUserAsync(
-                new AddRequest() {Name = username});
+                new AddUserRequest() {Name = username});
             return reply.Message;
         }
     }

@@ -37,7 +37,8 @@ namespace GameStoreGRPCServer
 
             app.UseEndpoints(endpoints =>
             {
-                endpoints.MapGrpcService<GreeterService>();
+                endpoints.MapGrpcService<GameComsService>();
+                endpoints.MapGrpcService<UserComsService>();
 
                 endpoints.MapGet("/",
                     async context =>

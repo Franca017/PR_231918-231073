@@ -1,0 +1,50 @@
+syntax = "proto3";
+
+option csharp_namespace = "GameStoreGRPCServer";
+
+package greet;
+
+service GameComs {
+  rpc GetGames(RequestGames) returns (GamesReply);
+  rpc AddGame(AddGameRequest) returns (GameReply);
+  rpc ModifyGame(ModifyGameRequest) returns (GameReply);
+  rpc DeleteGame(DeleteGameRequest) returns (GameReply);
+}
+
+message RequestGames {
+  
+}
+
+message GameOut {
+  int64 id = 1;
+  string name = 2;
+  string genre = 3;
+  string sinopsis = 4;
+  int64 rating = 5;
+}
+
+message GamesReply {
+  repeated GameOut gamesList = 1;
+}
+
+message AddGameRequest {
+  string name = 1;
+  string genre = 2;
+  string sinopsis = 3;
+}
+
+message ModifyGameRequest {
+  int64 id = 1;
+  string name = 2;
+  string genre = 3;
+  string sinopsis = 4;
+}
+
+message DeleteGameRequest {
+  int64 id = 1;
+}
+
+message GameReply {
+  string message = 1;
+}
+
