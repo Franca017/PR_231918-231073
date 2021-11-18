@@ -31,9 +31,7 @@ namespace GameStoreAdminServer.Controllers
         [HttpPost]
         public async Task<string> AddGame([FromBody]GameInModel game)
         {
-            var channel = GrpcChannel.ForAddress("https://localhost:7041");
-            var greeter = new Greeter.GreeterClient(channel);
-            var reply = await greeter.AddGameAsync(
+            var reply = await _client.AddGameAsync(
                 new AddRequest() { 
                     Name = game.Title, 
                     Genre = game.Genre, 
