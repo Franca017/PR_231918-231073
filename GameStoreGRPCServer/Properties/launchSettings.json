@@ -1,0 +1,13 @@
+﻿{
+  "profiles": {
+    "GameStoreGRPCServer": {
+      "commandName": "Project",
+      "dotnetRunMessages": "true",
+      "launchBrowser": false,
+      "applicationUrl": "http://localhost:7041;https://localhost:7042",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      }
+    }
+  }
+}

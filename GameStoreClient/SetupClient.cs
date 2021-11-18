@@ -2,6 +2,7 @@
 using System.Net;
 using System.Net.Sockets;
 using System.Threading.Tasks;
+using Domain.Exceptions;
 using Microsoft.Extensions.Configuration;
 
 namespace GameStoreClient
@@ -38,10 +39,17 @@ namespace GameStoreClient
             var clientIpEndPoint = new IPEndPoint(IPAddress.Loopback,0);
             var tcpClient = new TcpClient(clientIpEndPoint);
             Console.WriteLine("Trying to connect to server");
+            try
+            {
+                await tcpClient.ConnectAsync(
+                    IPAddress.Parse(IpConfig),
+                    Port).ConfigureAwait(false);
+            }
+            catch (SocketException)
+            {
+                throw new ServerDisconnected();
+            }
 
-            await tcpClient.ConnectAsync(
-                IPAddress.Parse(IpConfig),
-                Port).ConfigureAwait(false);
             return tcpClient;
         }
     }
