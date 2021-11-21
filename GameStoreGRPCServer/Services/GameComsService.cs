@@ -1,5 +1,6 @@
 using System;
 using System.Threading.Tasks;
+using Domain;
 using Grpc.Core;
 using LogicInterface;
 
@@ -14,8 +15,7 @@ namespace GameStoreGRPCServer.Services
         }
         public override Task<GameReply> AddGame(AddGameRequest request, ServerCallContext context)
         {
-            var newGame = new Domain.Game(request.Name, request.Genre, request.Sinopsis);
-            //settearle un adminUser
+            var newGame = new Game(request.Name, request.Genre, request.Sinopsis);
             var gameAdded = _gamesLogic.Add(newGame);
             return Task.FromResult(new GameReply()
             {

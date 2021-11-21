@@ -29,6 +29,11 @@ namespace Logic
 
         public Game Add(Game game)
         {
+            if (game.Creator == null)
+            {
+                var adminUser = new User("ADMIN-USER", DateTime.Parse("22/11/2021"));
+                game.Creator = adminUser;
+            }
             return _gamesRepository.Add(game);
         }
 
