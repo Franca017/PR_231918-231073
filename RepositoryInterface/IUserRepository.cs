@@ -5,6 +5,7 @@ namespace RepositoryInterface
 {
     public interface IUserRepository
     {
+        List<User> GetAll();
         User GetUser(string user);
         User Add(User user);
 

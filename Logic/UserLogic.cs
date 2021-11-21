@@ -29,6 +29,16 @@ namespace Logic
 
             return user;
         }
+        
+        public List<User> GetAll()
+        {
+            return _userRepository.GetAll();
+        }
+        
+        public User GetById(int userId)
+        {
+            return _userRepository.GetById(userId);
+        }
 
         public string PurchaseGame(User userLogged, int gameId)
         {

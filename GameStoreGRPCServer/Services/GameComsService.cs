@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Domain;
 using Grpc.Core;
@@ -13,6 +14,31 @@ namespace GameStoreGRPCServer.Services
         {
             _gamesLogic = gamesLogic;
         }
+        
+        
+        public override Task<GamesReply> GetGames(RequestGames request, ServerCallContext context)
+        {
+            var games = _gamesLogic.GetAll();
+            var gamesOut = new List<GameOut>();
+            foreach (var game in games)
+            {
+                GameOut gameAdd = new GameOut()
+                {
+                    Id = game.Id,
+                    Name = game.Title,
+                    Genre = game.Genre,
+                    Rating = game.Rating,
+                    Sinopsis = game.Sinopsis
+                };
+                gamesOut.Add(gameAdd);
+            }
+
+            return Task.FromResult(new GamesReply()
+            {
+                GamesList = {gamesOut}
+            });
+        }
+        
         public override Task<GameReply> AddGame(AddGameRequest request, ServerCallContext context)
         {
             var newGame = new Game(request.Name, request.Genre, request.Sinopsis);

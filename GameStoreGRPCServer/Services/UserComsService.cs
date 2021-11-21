@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Grpc.Core;
 using LogicInterface;
@@ -12,6 +13,28 @@ namespace GameStoreGRPCServer.Services
         {
             _userLogic = userLogic;
         }
+        
+        public override Task<UsersReply> GetUsers(RequestUsers request, ServerCallContext context)
+        {
+            var users = _userLogic.GetAll();
+            var usersOut = new List<UserOut>();
+            foreach (var user in users)
+            {
+                UserOut userAdd = new UserOut()
+                {
+                    DateCreated = user.DateCreated.ToString(),
+                    Id = user.Id,
+                    Name = user.UserName
+                };
+                usersOut.Add(userAdd);
+            }
+
+            return Task.FromResult(new UsersReply()
+            {
+                UsersList = {usersOut}
+            });
+        }
+        
         public override Task<UserReply> AddUser(AddUserRequest request, ServerCallContext context)
         {
             var newUser = new Domain.User(request.Name, DateTime.Now);

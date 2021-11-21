@@ -21,6 +21,9 @@ namespace GameStoreAdminServer.Controllers
         public async Task<string> GetGames()
         {
             return "HolaMundo";
+            /*var reply = await _client.GetGamesAsync(
+                new RequestGames());
+            return reply.GamesList.ToString();*/
         }
         [HttpPost]
         public async Task<string> AddGame([FromBody]GameInModel game)
@@ -46,7 +49,7 @@ namespace GameStoreAdminServer.Controllers
         }
         
         [HttpDelete("{id}")]
-        public async Task<string> DeleteGame([FromRoute]int id, [FromBody]GameInModel game)
+        public async Task<string> DeleteGame([FromRoute]int id)
         {
             var reply = await _client.DeleteGameAsync(
                 new DeleteGameRequest() { 

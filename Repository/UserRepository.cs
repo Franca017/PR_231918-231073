@@ -14,6 +14,14 @@ namespace Repository
         {
             _users = new List<User>();
         }
+        
+        public List<User> GetAll()
+        {
+            lock (Locker)
+            {
+                return _users;
+            }
+        }
 
         public User GetUser(string user)
         {

@@ -9,6 +9,7 @@ service UserComs {
   rpc AddUser(AddUserRequest) returns (UserReply);
   rpc ModifyUser(ModifyUserRequest) returns (UserReply);
   rpc DeleteUser(DeleteUserRequest) returns (UserReply);
+  rpc PurchaseGame(PurchaseGameRequest) returns (UserReply);
 }
 
 message RequestUsers {
@@ -36,6 +37,11 @@ message ModifyUserRequest {
 
 message DeleteUserRequest {
   int32 id = 1;
+}
+
+message PurchaseGameRequest {
+  int32 userId = 1;
+  int32 gameId = 2;
 }
 
 message UserReply {
