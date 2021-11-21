@@ -16,7 +16,7 @@ message RequestGames {
 }
 
 message GameOut {
-  int64 id = 1;
+  int32 id = 1;
   string name = 2;
   string genre = 3;
   string sinopsis = 4;
@@ -34,14 +34,14 @@ message AddGameRequest {
 }
 
 message ModifyGameRequest {
-  int64 id = 1;
+  int32 id = 1;
   string name = 2;
   string genre = 3;
   string sinopsis = 4;
 }
 
 message DeleteGameRequest {
-  int64 id = 1;
+  int32 id = 1;
 }
 
 message GameReply {

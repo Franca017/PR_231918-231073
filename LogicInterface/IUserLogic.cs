@@ -9,5 +9,7 @@ namespace LogicInterface
         string PurchaseGame(User userLogged, int gameId);
         List<Game> GetPurchasedGames(int userLoggedId);
         User Add(User newUser);
+        User Modify(int requestId, string requestName);
+        void Delete(int requestId);
     }
 }

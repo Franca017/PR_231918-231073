@@ -56,5 +56,16 @@ namespace Logic
         {
             return _userRepository.Add(newUser);
         }
+        public User Modify(int requestId, string requestName)
+        {
+            var userToModify = _userRepository.GetById(requestId);
+            userToModify.UserName = requestName;
+            return userToModify;
+        }
+
+        public void Delete(int requestId)
+        {
+            _userRepository.Delete(requestId);
+        }
     }
 }

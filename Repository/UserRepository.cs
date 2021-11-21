@@ -41,5 +41,22 @@ namespace Repository
                 return _users.Find(e => e.Id == userLoggedId).PurchasedGames;
             }
         }
+
+        public User GetById(int requestId)
+        {
+            lock (Locker)
+            {
+                return _users.First(u => u.Id == requestId);
+            }
+        }
+
+        public void Delete(int requestId)
+        {
+            lock (Locker)
+            {
+                var user = _users.First(u => u.Id == requestId);
+                _users.Remove(user);
+            }
+        }
     }
 }

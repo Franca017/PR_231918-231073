@@ -16,7 +16,7 @@ message RequestUsers {
 }
 
 message UserOut {
-  int64 id = 1;
+  int32 id = 1;
   string name = 2;
   string dateCreated = 3;
 }
@@ -30,12 +30,12 @@ message AddUserRequest {
 }
 
 message ModifyUserRequest {
-  int64 id = 1;
+  int32 id = 1;
   string name = 2;
 }
 
 message DeleteUserRequest {
-  int64 id = 1;
+  int32 id = 1;
 }
 
 message UserReply {
