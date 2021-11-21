@@ -77,5 +77,21 @@ namespace Logic
         {
             _userRepository.Delete(requestId);
         }
+        
+        public string SellGame(User userLogged, int gameId)
+        {
+            var game = _gamesLogic.GetById(gameId);
+            if (game == null)
+            {
+                return "The game has been deleted from the store.";
+            }
+
+            if (userLogged.PurchasedGames.Contains(game))
+            {
+                userLogged.PurchasedGames.Remove(game);
+                return $"Game {gameId} was disassociated from {userLogged.UserName}";
+            }
+            return $"The game {gameId} is not a game purchased by {userLogged.UserName}";
+        }
     }
 }

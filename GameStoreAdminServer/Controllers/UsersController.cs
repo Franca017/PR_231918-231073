@@ -53,7 +53,17 @@ namespace GameStoreAdminServer.Controllers
         public async Task<string> PurchaseGame([FromRoute]int userId, [FromBody]int gameId)
         {
             var reply = await _client.PurchaseGameAsync(
-                new PurchaseGameRequest() { 
+                new AssociateGameRequest() { 
+                    UserId = userId,
+                    GameId = gameId});
+            return reply.Message;
+        }
+        
+        [HttpPut("{userid}/sell")]
+        public async Task<string> SellGame([FromRoute]int userId, [FromBody]int gameId)
+        {
+            var reply = await _client.SellGameAsync(
+                new AssociateGameRequest() { 
                     UserId = userId,
                     GameId = gameId});
             return reply.Message;

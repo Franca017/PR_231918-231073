@@ -62,5 +62,25 @@ namespace GameStoreGRPCServer.Services
                 Message = $"User with id {request} was removed from the store."
             });
         }
+        
+        public override async Task<UserReply> PurchaseGame(AssociateGameRequest request, ServerCallContext context)
+        {
+            var user = _userLogic.GetById(request.UserId);
+            var purchase = _userLogic.PurchaseGame(user, request.GameId);
+            return await Task.FromResult(new UserReply()
+            {
+                Message = purchase
+            });
+        }
+        
+        public override async Task<UserReply> SellGame(AssociateGameRequest request, ServerCallContext context)
+        {
+            var user = _userLogic.GetById(request.UserId);
+            var purchase = _userLogic.SellGame(user, request.GameId);
+            return await Task.FromResult(new UserReply()
+            {
+                Message = purchase
+            });
+        }
     }
 }
