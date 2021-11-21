@@ -10,7 +10,7 @@ namespace RepositoryInterface
         User Add(User user);
 
         List<Game> GetPurchasedGames(int userLoggedId);
-        User GetById(int requestId);
+        User GetById(int userId);
         void Delete(int requestId);
     }
 }

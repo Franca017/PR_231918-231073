@@ -13,6 +13,6 @@ namespace LogicInterface
         List<Game> GetPurchasedGames(int userLoggedId);
         User Add(User newUser);
         User Modify(int requestId, string requestName);
-        void Delete(int requestId);
+        string Delete(int requestId);
     }
 }

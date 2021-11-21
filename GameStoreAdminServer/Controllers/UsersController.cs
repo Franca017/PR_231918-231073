@@ -14,15 +14,8 @@ namespace GameStoreAdminServer.Controllers
         {
             var channel = GrpcChannelAccess.Instance;
             _client = new UserComs.UserComsClient(channel);
-        } 
-        
-        // GET
-        public IActionResult Index()
-        {
-            return null;
-            
         }
-        
+
         [HttpGet]
         public async Task<string> GetUsers()
         {

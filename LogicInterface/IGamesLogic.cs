@@ -9,7 +9,7 @@ namespace LogicInterface
         Game GetById(int gameId);
         Game Add(Game game);
         List<Game> GetSearchedGames(string keywords);
-        void Delete(int gameId);
+        string Delete(int gameId);
         List<Game> GetPublishedGames(User userLogged);
         void Modify(string[] modifySplit);
         void AdjustRating(int gameId, int newRating);

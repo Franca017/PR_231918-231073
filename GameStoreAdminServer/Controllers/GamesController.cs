@@ -20,10 +20,10 @@ namespace GameStoreAdminServer.Controllers
         [HttpGet]
         public async Task<string> GetGames()
         {
-            return "HolaMundo";
-            /*var reply = await _client.GetGamesAsync(
+            //return "HolaMundo";
+            var reply = await _client.GetGamesAsync(
                 new RequestGames());
-            return reply.GamesList.ToString();*/
+            return reply.GamesList.ToString();
         }
         [HttpPost]
         public async Task<string> AddGame([FromBody]GameInModel game)

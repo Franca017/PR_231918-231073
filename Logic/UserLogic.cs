@@ -73,9 +73,16 @@ namespace Logic
             return userToModify;
         }
 
-        public void Delete(int requestId)
+        public string Delete(int requestId)
         {
+            var user = GetById(requestId);
+            if (user == null)
+            {
+                return "El usuario ingresado no existe en el sistema";
+            }
+
             _userRepository.Delete(requestId);
+            return $"User with id {requestId} was removed from the store.";
         }
         
         public string SellGame(User userLogged, int gameId)

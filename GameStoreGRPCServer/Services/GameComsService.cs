@@ -62,10 +62,10 @@ namespace GameStoreGRPCServer.Services
         public override Task<GameReply> DeleteGame(DeleteGameRequest request, ServerCallContext context)
         {
             var gameToDelete = request.Id;
-            _gamesLogic.Delete(Int32.Parse(gameToDelete.ToString()));
+            var response = _gamesLogic.Delete(Int32.Parse(gameToDelete.ToString()));
             return Task.FromResult(new GameReply()
             {
-                Message = $"Game with id {gameToDelete} was deleted from the store."
+                Message = response
             });
         }
     }

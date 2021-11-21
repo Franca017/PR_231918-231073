@@ -41,7 +41,7 @@ namespace GameStoreGRPCServer.Services
             var userAdded = _userLogic.Add(newUser);
             return Task.FromResult(new UserReply()
             {
-                Message = $"{userAdded.UserName} (created at {userAdded.DateCreated.Day}/{userAdded.DateCreated.Month}"
+                Message = $"{userAdded.UserName} (created at {userAdded.DateCreated.Day}/{userAdded.DateCreated.Month})"
             });
         }
         
@@ -56,10 +56,10 @@ namespace GameStoreGRPCServer.Services
         
         public override Task<UserReply> DeleteUser(DeleteUserRequest request, ServerCallContext context)
         {
-            _userLogic.Delete(request.Id);
+            var response = _userLogic.Delete(request.Id);
             return Task.FromResult(new UserReply()
             {
-                Message = $"User with id {request} was removed from the store."
+                Message = response
             });
         }
         

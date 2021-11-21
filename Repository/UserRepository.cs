@@ -46,15 +46,15 @@ namespace Repository
         {
             lock (Locker)
             {
-                return _users.Find(e => e.Id == userLoggedId).PurchasedGames;
+                return _users.Find(e => e.Id == userLoggedId)?.PurchasedGames;
             }
         }
 
-        public User GetById(int requestId)
+        public User GetById(int userId)
         {
             lock (Locker)
             {
-                return _users.First(u => u.Id == requestId);
+                return _users.Exists(u => u.Id == userId) ? _users.First(u => u.Id == userId) : null;
             }
         }
 
