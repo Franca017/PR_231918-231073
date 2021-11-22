@@ -5,9 +5,12 @@ namespace RepositoryInterface
 {
     public interface IUserRepository
     {
+        List<User> GetAll();
         User GetUser(string user);
         User Add(User user);
 
         List<Game> GetPurchasedGames(int userLoggedId);
+        User GetById(int userId);
+        void Delete(int requestId);
     }
 }

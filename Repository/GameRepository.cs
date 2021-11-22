@@ -29,7 +29,7 @@ namespace Repository
         {
             lock (Locker)
             {
-                return _games.First(g => g.Id == gameId);
+                return _games.Exists(g => g.Id == gameId) ? _games.First(g => g.Id == gameId) : null;
             }
         }
 

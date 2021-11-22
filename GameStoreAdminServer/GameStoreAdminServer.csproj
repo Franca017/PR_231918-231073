@@ -15,11 +15,12 @@
     </ItemGroup>
 
     <ItemGroup>
-        <Protobuf Include="Protos\greet.proto" GrpcServices="Client" />
+      <ProjectReference Include="..\Domain\Domain.csproj" />
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\Domain\Domain.csproj" />
+      <Protobuf Include="Protos\game.proto" GrpcServices="Client" />
+      <Protobuf Include="Protos\user.proto" GrpcServices="Client" />
     </ItemGroup>
 
 </Project>

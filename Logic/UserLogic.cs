@@ -29,6 +29,16 @@ namespace Logic
 
             return user;
         }
+        
+        public List<User> GetAll()
+        {
+            return _userRepository.GetAll();
+        }
+        
+        public User GetById(int userId)
+        {
+            return _userRepository.GetById(userId);
+        }
 
         public string PurchaseGame(User userLogged, int gameId)
         {
@@ -55,6 +65,40 @@ namespace Logic
         public User Add(User newUser)
         {
             return _userRepository.Add(newUser);
+        }
+        public User Modify(int requestId, string requestName)
+        {
+            var userToModify = _userRepository.GetById(requestId);
+            userToModify.UserName = requestName;
+            return userToModify;
+        }
+
+        public string Delete(int requestId)
+        {
+            var user = GetById(requestId);
+            if (user == null)
+            {
+                return "El usuario ingresado no existe en el sistema";
+            }
+
+            _userRepository.Delete(requestId);
+            return $"User with id {requestId} was removed from the store.";
+        }
+        
+        public string SellGame(User userLogged, int gameId)
+        {
+            var game = _gamesLogic.GetById(gameId);
+            if (game == null)
+            {
+                return "The game has been deleted from the store.";
+            }
+
+            if (userLogged.PurchasedGames.Contains(game))
+            {
+                userLogged.PurchasedGames.Remove(game);
+                return $"Game {gameId} was disassociated from {userLogged.UserName}";
+            }
+            return $"The game {gameId} is not a game purchased by {userLogged.UserName}";
         }
     }
 }

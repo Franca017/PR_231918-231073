@@ -29,6 +29,11 @@ namespace Logic
 
         public Game Add(Game game)
         {
+            if (game.Creator == null)
+            {
+                var adminUser = new User("ADMIN-USER", DateTime.Parse("22/11/2021"));
+                game.Creator = adminUser;
+            }
             return _gamesRepository.Add(game);
         }
 
@@ -55,9 +60,16 @@ namespace Logic
             return ret;
         }
 
-        public void Delete(int gameId)
+        public string Delete(int gameId)
         {
+            var game = GetById(gameId);
+            if (game == null)
+            {
+                return "El juego ingresado no existe en el sistema";
+            }
+            
             _gamesRepository.Delete(gameId);
+            return $"Game with id {gameId} was deleted from the store.";
         }
 
         public List<Game> GetPublishedGames(User userLogged)

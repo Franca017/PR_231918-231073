@@ -1,12 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Domain;
+﻿using System.Threading.Tasks;
 using GameStoreAdminServer.Models;
-using Grpc.Net.Client;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
 
 namespace GameStoreAdminServer.Controllers
 {
@@ -14,25 +8,28 @@ namespace GameStoreAdminServer.Controllers
     [Route("api/games")]
     public class GamesController : ControllerBase
     {
-
-        private readonly Greeter.GreeterClient _client;
+        private readonly GameComs.GameComsClient _client;
 
         public GamesController()
         {
-            _client = GrpcClient.Instance;
-        }
+            var channel = GrpcChannelAccess.Instance;
+            _client = new GameComs.GameComsClient(channel);
+        } 
         
         // GET: api/games
         [HttpGet]
         public async Task<string> GetGames()
         {
-            return "HolaMundo";
+            //return "HolaMundo";
+            var reply = await _client.GetGamesAsync(
+                new RequestGames());
+            return reply.GamesList.ToString();
         }
         [HttpPost]
         public async Task<string> AddGame([FromBody]GameInModel game)
         {
             var reply = await _client.AddGameAsync(
-                new AddRequest() { 
+                new AddGameRequest() { 
                     Name = game.Title, 
                     Genre = game.Genre, 
                     Sinopsis = game.Sinopsis});
@@ -43,7 +40,7 @@ namespace GameStoreAdminServer.Controllers
         public async Task<string> ModifyGame([FromRoute]int id, [FromBody]GameInModel game)
         {
             var reply = await _client.ModifyGameAsync(
-                new ModifyRequest() { 
+                new ModifyGameRequest() { 
                     Id = id,
                     Name = game.Title, 
                     Genre = game.Genre, 
@@ -52,10 +49,10 @@ namespace GameStoreAdminServer.Controllers
         }
         
         [HttpDelete("{id}")]
-        public async Task<string> DeleteGame([FromRoute]int id, [FromBody]GameInModel game)
+        public async Task<string> DeleteGame([FromRoute]int id)
         {
             var reply = await _client.DeleteGameAsync(
-                new DeleteRequest() { 
+                new DeleteGameRequest() { 
                     Id = id });
             return reply.Message;
         }
