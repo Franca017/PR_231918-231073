@@ -72,7 +72,7 @@ namespace GameStoreLogs.LogLogic
             }
             if(date != DateTime.MinValue)
             {
-                filteredLogs.RemoveAll(x => !x.Date.Date.Equals(date));//Documentar que lo hacemos por dia
+                filteredLogs.RemoveAll(x => !x.Date.Date.Equals(date));
             }
             if(parameters.GameTitle != null)
             {

@@ -99,6 +99,7 @@ namespace Logic
             if (userLogged.PurchasedGames.Contains(game))
             {
                 userLogged.PurchasedGames.Remove(game);
+                _logBuilder.BuildLog(game, userLogged.UserName, "Sell", $"The user {userLogged.UserName} sold the game {game.Title}");
                 return $"Game {gameId} was disassociated from {userLogged.UserName}";
             }
             return $"The game {gameId} is not a game purchased by {userLogged.UserName}";
