@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using Domain;
 using GameStoreLogs.Context;
 using GameStoreLogs.Model;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace GameStoreLogs.LogLogic
@@ -66,7 +65,7 @@ namespace GameStoreLogs.LogLogic
             }
 
             var logs = await GetAll();
-            List<Log> filteredLogs = (List<Log>) logs;
+            var filteredLogs = logs;
             if (dateFrom != DateTime.MinValue && dateTo != DateTime.MinValue)
             {
                 filteredLogs.RemoveAll(x => x.Date.Date > dateFrom.Date || x.Date.Date < dateTo.Date);
