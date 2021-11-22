@@ -68,7 +68,7 @@ namespace Logic
             var game = GetById(gameId);
             if (game == null)
             {
-                return "El juego ingresado no existe en el sistema";
+                return $"No game was found with id {gameId}";
             }
             
             _gamesRepository.Delete(gameId);
@@ -81,13 +81,18 @@ namespace Logic
             return _gamesRepository.GetPublishedGames(userLogged);
         }
 
-        public void Modify(string[] modifySplit, string userLoggedUserName)
+        public string Modify(string[] modifySplit, string userLoggedUserName)
         {
             var gameToModify = GetById(Convert.ToInt32(modifySplit[0]));
+            if (gameToModify == null)
+            {
+                return $"No game was found with id {modifySplit[0]}";
+            }
             if (!modifySplit[1].Equals("-")) gameToModify.Title = modifySplit[1];
             if (!modifySplit[2].Equals("-")) gameToModify.Genre = modifySplit[2];
             if (!modifySplit[3].Equals("-")) gameToModify.Sinopsis = modifySplit[3];
             _logBuilder.BuildLog(gameToModify, userLoggedUserName, "Modify", $"The user {userLoggedUserName} modified the game {gameToModify.Title}");
+            return $"Game with id {modifySplit[0]} was modified.";
         }
 
         public void AdjustRating(int gameId, int newRating, string userLoggedUserName)
