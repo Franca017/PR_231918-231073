@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 using Domain;
 
 namespace LogicInterface
@@ -9,11 +10,11 @@ namespace LogicInterface
         Game GetById(int gameId);
         Game Add(Game game);
         List<Game> GetSearchedGames(string keywords);
-        string Delete(int gameId);
+        string Delete(int gameId, string userLoggedUserName);
         List<Game> GetPublishedGames(User userLogged);
-        void Modify(string[] modifySplit);
-        void AdjustRating(int gameId, int newRating);
+        void Modify(string[] modifySplit, string userLoggedUserName);
+        void AdjustRating(int gameId, int newRating, string userLoggedUserName);
         List<Game> GetGamesOverRating(int minRating);
-        void ModifyImage(string[] modifySplit);
+        void ModifyImage(string[] modifySplit, string userLoggedUserName);
     }
 }

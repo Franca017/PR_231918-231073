@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Domain;
 using LogicInterface;
 using Microsoft.Extensions.DependencyInjection;
@@ -10,11 +11,12 @@ namespace Logic
     public class GamesLogic : IGamesLogic
     {
         private readonly IGameRepository _gamesRepository;
+        private readonly ILogBuilderLogic _logBuilder;
 
         public GamesLogic(IServiceProvider serviceProvider)
         {
             _gamesRepository = serviceProvider.GetService<IGameRepository>();
-            
+            _logBuilder = serviceProvider.GetService<ILogBuilderLogic>();
         }
         
         public List<Game> GetAll()
@@ -34,6 +36,7 @@ namespace Logic
                 var adminUser = new User("ADMIN-USER", DateTime.Parse("22/11/2021"));
                 game.Creator = adminUser;
             }
+            _logBuilder.BuildLog(game, game.Creator.UserName, "Publish", $"The user {game.Creator.UserName} published the game {game.Title}");
             return _gamesRepository.Add(game);
         }
 
@@ -60,7 +63,7 @@ namespace Logic
             return ret;
         }
 
-        public string Delete(int gameId)
+        public string Delete(int gameId, string userLoggedUserName)
         {
             var game = GetById(gameId);
             if (game == null)
@@ -69,6 +72,7 @@ namespace Logic
             }
             
             _gamesRepository.Delete(gameId);
+            _logBuilder.BuildLog(game, userLoggedUserName, "Delete", $"The user {userLoggedUserName} deleted the game {game.Title}");
             return $"Game with id {gameId} was deleted from the store.";
         }
 
@@ -77,18 +81,20 @@ namespace Logic
             return _gamesRepository.GetPublishedGames(userLogged);
         }
 
-        public void Modify(string[] modifySplit)
+        public void Modify(string[] modifySplit, string userLoggedUserName)
         {
             var gameToModify = GetById(Convert.ToInt32(modifySplit[0]));
             if (!modifySplit[1].Equals("-")) gameToModify.Title = modifySplit[1];
             if (!modifySplit[2].Equals("-")) gameToModify.Genre = modifySplit[2];
             if (!modifySplit[3].Equals("-")) gameToModify.Sinopsis = modifySplit[3];
+            _logBuilder.BuildLog(gameToModify, userLoggedUserName, "Modify", $"The user {userLoggedUserName} modified the game {gameToModify.Title}");
         }
 
-        public void AdjustRating(int gameId, int newRating)
+        public void AdjustRating(int gameId, int newRating, string userLoggedUserName)
         {
             var game = GetById(gameId);
             game.Rating = newRating;
+            _logBuilder.BuildLog(game, userLoggedUserName, "Rate", $"The user {userLoggedUserName} rated the game {game.Title}");
         }
 
         public List<Game> GetGamesOverRating(int minRating)
@@ -96,10 +102,11 @@ namespace Logic
             return _gamesRepository.GetGamesOverRating(minRating);
         }
 
-        public void ModifyImage(string[] modifySplit)
+        public void ModifyImage(string[] modifySplit, string userLoggedUserName)
         {
             var gameToModify = GetById(Convert.ToInt32(modifySplit[0]));
             gameToModify.Image = modifySplit[1];
+            _logBuilder.BuildLog(gameToModify, userLoggedUserName, "Modify image", $"The user {userLoggedUserName} modified the image of the game {gameToModify.Title}");
         }
     }
 }
