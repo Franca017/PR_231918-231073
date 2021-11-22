@@ -19,7 +19,6 @@ namespace GameStoreLogs.Controllers
             _logsLogic = logsLogic;
         }
 
-        // GET: api/Logs
         [HttpGet]
         public async Task<ActionResult<List<Log>>> GetLogs(string game, string user, string dateFrom, 
             string dateTo, string date)
@@ -36,7 +35,6 @@ namespace GameStoreLogs.Controllers
             return logs;
         }
 
-        // GET: api/Logs/5
         [HttpGet("{id}")]
         public async Task<ActionResult<Log>> GetLog(int id)
         {
@@ -50,7 +48,6 @@ namespace GameStoreLogs.Controllers
             return log;
         }
 
-        // DELETE: api/Logs/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteLog(int id)
         {
