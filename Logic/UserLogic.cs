@@ -11,11 +11,13 @@ namespace Logic
     {
         private readonly IUserRepository _userRepository;
         private readonly IGamesLogic _gamesLogic;
+        private readonly ILogBuilderLogic _logBuilder;
 
         public UserLogic(IServiceProvider serviceProvider)
         {
             _userRepository = serviceProvider.GetService<IUserRepository>();
             _gamesLogic = serviceProvider.GetService<IGamesLogic>();
+            _logBuilder = serviceProvider.GetService<ILogBuilderLogic>();
         }
 
         public User Login(string userName)
@@ -40,7 +42,7 @@ namespace Logic
             return _userRepository.GetById(userId);
         }
 
-        public string PurchaseGame(User userLogged, int gameId)
+        public string PurchaseGame(User userLogged, int gameId, string userLoggedUserName)
         {
             var game = _gamesLogic.GetById(gameId);
             if (game == null)
@@ -51,6 +53,7 @@ namespace Logic
             if (!userLogged.PurchasedGames.Contains(game))
             {
                 userLogged.PurchasedGames.Add(game);
+                _logBuilder.BuildLog(game, userLoggedUserName, "Purchase", $"The user {userLoggedUserName} purchased the game {game.Title}");
                 return $"Game {gameId} was purchased by {userLogged.UserName}";
             }
             return $"The game {gameId} is already purchased by {userLogged.UserName}";

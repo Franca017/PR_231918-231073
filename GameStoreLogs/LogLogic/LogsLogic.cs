@@ -69,7 +69,7 @@ namespace GameStoreLogs.LogLogic
             List<Log> filteredLogs = (List<Log>) logs;
             if (dateFrom != DateTime.MinValue && dateTo != DateTime.MinValue)
             {
-                filteredLogs.RemoveAll(x => x.Date.Date > dateFrom && x.Date.Date < dateTo);
+                filteredLogs.RemoveAll(x => x.Date.Date > dateFrom.Date || x.Date.Date < dateTo.Date);
             }
             if(date != DateTime.MinValue)
             {

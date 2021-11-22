@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Net.Sockets;
 using System.Text;
-using System.Text.Json;
 using System.Threading.Tasks;
 using Domain;
 using Domain.Exceptions;
@@ -12,13 +11,12 @@ using Microsoft.Extensions.DependencyInjection;
 using ProtocolLibrary;
 using ProtocolLibrary.FileHandler;
 using ProtocolLibrary.FileHandler.Interfaces;
-using RabbitMQ.Client;
 
 namespace GameStoreGRPCServer.GameStoreServerConsole
 {
     public class Runtime
     {
-        private bool _exit = false;
+        private bool _exit;
 
         private readonly TcpClient _connectedClient;
         private readonly NetworkStream _networkStream;
@@ -28,7 +26,7 @@ namespace GameStoreGRPCServer.GameStoreServerConsole
         private readonly IReviewLogic _reviewLogic;
         private readonly IFileStreamHandler _fileStreamHandler;
         private readonly IFileHandler _fileHandler;
-        private readonly RabbitMQ.Client.IModel _channel;
+        private readonly ILogBuilderLogic _logBuilder;
 
         private User _userLogged;
 
@@ -37,16 +35,11 @@ namespace GameStoreGRPCServer.GameStoreServerConsole
             _gamesLogic = serviceProvider.GetService<IGamesLogic>();
             _userLogic = serviceProvider.GetService<IUserLogic>();
             _reviewLogic = serviceProvider.GetService<IReviewLogic>();
+            _logBuilder = serviceProvider.GetService<ILogBuilderLogic>();
             _fileStreamHandler = new FileStreamHandler();
             _fileHandler = new FileHandler();
             _connectedClient = clientConnected;
             _networkStream = clientConnected.GetStream();
-            _channel = new ConnectionFactory() {HostName = "localhost"}.CreateConnection().CreateModel();
-            _channel.QueueDeclare(queue: "log_queue",
-                durable: false,
-                exclusive: false,
-                autoDelete: false,
-                arguments: null);
         }
 
         public async Task HandleConnectionAsync()
@@ -170,7 +163,7 @@ namespace GameStoreGRPCServer.GameStoreServerConsole
             var game = _gamesLogic.GetById(gameId);
             var path = game.Image;
             await SendFileAsync(path);
-            await BuildLog(game, _userLogged.UserName, "Download", $"The user {_userLogged.UserName} downloaded the image of the game {game.Title}");
+            _logBuilder.BuildLog(game, _userLogged.UserName, "Download", $"The user {_userLogged.UserName} downloaded the image of the game {game.Title}");
         }
 
         private async Task RateAsync(Header header)
@@ -184,10 +177,9 @@ namespace GameStoreGRPCServer.GameStoreServerConsole
             var newReview = new Review(_userLogged, reviewedGame, Convert.ToInt32(splittedReview[1]),
                 splittedReview[2]);
             _reviewLogic.Add(newReview);
-            _reviewLogic.AdjustRating(gameId);
+            _reviewLogic.AdjustRating(gameId, _userLogged.UserName);
             var response = $"{_userLogged.UserName} successfully reviewed {reviewedGame.Title}";
             await ResponseAsync(response, header.ICommand);
-            await BuildLog(reviewedGame, _userLogged.UserName, "Rate", $"The user {_userLogged.UserName} rated the game {reviewedGame.Title}");
         }
 
         private async Task DeleteGameAsync(Header header)
@@ -196,10 +188,8 @@ namespace GameStoreGRPCServer.GameStoreServerConsole
             await ReceiveDataAsync(header.IDataLength, bufferData);
             var gameIdString = Encoding.UTF8.GetString(bufferData);
             var gameId = Convert.ToInt32(gameIdString);
-            var deleteGame = _gamesLogic.GetById(gameId);
-            _gamesLogic.Delete(gameId);
-            await ResponseAsync($"Your game with id {gameId} was deleted.", header.ICommand);
-            await BuildLog(deleteGame, _userLogged.UserName, "Delete", $"The user {_userLogged.UserName} deleted the game {deleteGame.Title}");
+            var response = _gamesLogic.Delete(gameId, _userLogged.UserName);
+            await ResponseAsync(response, header.ICommand);
         }
 
         private async Task ModifyGameAsync(Header header)
@@ -208,10 +198,8 @@ namespace GameStoreGRPCServer.GameStoreServerConsole
             await ReceiveDataAsync(header.IDataLength, bufferData);
             var modifySplit = (Encoding.UTF8.GetString(bufferData)).Split("*");
             var gameModifyId = Convert.ToInt32(modifySplit[0]);
-            var modifyGame = _gamesLogic.GetById(gameModifyId);
-            _gamesLogic.Modify(modifySplit);
+            _gamesLogic.Modify(modifySplit, _userLogged.UserName);
             await ResponseAsync($"Your game with id {gameModifyId} was modified.",header.ICommand);
-            await BuildLog(modifyGame, _userLogged.UserName, "Modify", $"The user {_userLogged.UserName} modified the game {modifyGame.Title}");
         }
         
         private async Task ModifyImageAsync(Header header)
@@ -222,10 +210,8 @@ namespace GameStoreGRPCServer.GameStoreServerConsole
             Console.WriteLine("File received");
             var modifySplit = (Encoding.UTF8.GetString(bufferData)).Split("*");
             var gameModifyId = Convert.ToInt32(modifySplit[0]);
-            var modifyGame = _gamesLogic.GetById(gameModifyId);
-            _gamesLogic.ModifyImage(modifySplit);
+            _gamesLogic.ModifyImage(modifySplit, _userLogged.UserName);
             await ResponseAsync($"Your game with id {gameModifyId} was modified.",header.ICommand);
-            await BuildLog(modifyGame, _userLogged.UserName, "Modify image", $"The user {_userLogged.UserName} modified the image of the game {modifyGame.Title}");
         }
 
         private async Task ListPublishedGamesAsync(Header header)
@@ -251,7 +237,6 @@ namespace GameStoreGRPCServer.GameStoreServerConsole
 
             var response = $"{newGameInDb.Title} was published to the store with id {newGameInDb.Id}";
             await ResponseAsync(response, header.ICommand);
-            await BuildLog(newGameInDb, _userLogged.UserName, "Publish", $"The user {_userLogged.UserName} published the game {newGameInDb.Title}");
         }
 
         private async Task GetReviewsAsync(Header header)
@@ -275,11 +260,9 @@ namespace GameStoreGRPCServer.GameStoreServerConsole
             await ReceiveDataAsync(header.IDataLength, bufferData);
             var gameIdString = Encoding.UTF8.GetString(bufferData);
             var gameId = Convert.ToInt32(gameIdString);
-            var purchaseGame = _gamesLogic.GetById(gameId);
-            var response = _userLogic.PurchaseGame(_userLogged, gameId);
+            var response = _userLogic.PurchaseGame(_userLogged, gameId, _userLogged.UserName);
             
             await ResponseAsync(response, header.ICommand);
-            await BuildLog(purchaseGame, _userLogged.UserName, "Purchase", $"The user {_userLogged.UserName} purchased the game {purchaseGame.Title}");
         }
 
         private async Task DetailGameAsync(Header header)
@@ -442,34 +425,6 @@ namespace GameStoreGRPCServer.GameStoreServerConsole
                 await _networkStream.WriteAsync(data, 0, data.Length);
                 currentPart++;
             }
-        }
-
-        private Task<bool> SendLog(Log log)
-        {
-            var stringLog = JsonSerializer.Serialize(log);
-            bool returnVal;
-            try
-            {
-                var body = Encoding.UTF8.GetBytes(stringLog);
-                _channel.BasicPublish(exchange: "",
-                    routingKey: "log_queue",
-                    basicProperties: null,
-                    body: body);
-                returnVal = true;
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e);
-                returnVal = false;
-            }
-
-            return Task.FromResult(returnVal);
-        }
-
-        private async Task BuildLog(Game game, string user, string action, string message)
-        {
-            Log newLog = new Log(game.Id, game.Title , user, DateTime.Now, action, message);
-            bool result = await SendLog(newLog);
         }
     }
 }

@@ -8,7 +8,7 @@ namespace LogicInterface
         User Login(string userName);
         List<User> GetAll();
         User GetById(int userId);
-        string PurchaseGame(User userLogged, int gameId);
+        string PurchaseGame(User userLogged, int gameId, string userLoggedUserName);
         string SellGame(User user, int requestGameId);
         List<Game> GetPurchasedGames(int userLoggedId);
         User Add(User newUser);

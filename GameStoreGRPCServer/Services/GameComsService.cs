@@ -10,6 +10,8 @@ namespace GameStoreGRPCServer.Services
     public class GameComsService : GameComs.GameComsBase
     {
         private readonly IGamesLogic _gamesLogic;
+        private const string AdminUserName = "ADMIN-USER";
+
         public GameComsService(IGamesLogic gamesLogic)
         {
             _gamesLogic = gamesLogic;
@@ -22,7 +24,7 @@ namespace GameStoreGRPCServer.Services
             var gamesOut = new List<GameOut>();
             foreach (var game in games)
             {
-                GameOut gameAdd = new GameOut()
+                var gameAdd = new GameOut()
                 {
                     Id = game.Id,
                     Name = game.Title,
@@ -52,7 +54,7 @@ namespace GameStoreGRPCServer.Services
         public override Task<GameReply> ModifyGame(ModifyGameRequest request, ServerCallContext context)
         {
             string[] modifiedGame = {request.Id.ToString(), request.Name, request.Genre, request.Sinopsis};
-            _gamesLogic.Modify(modifiedGame);
+            _gamesLogic.Modify(modifiedGame,AdminUserName);
             return Task.FromResult(new GameReply()
             {
                 Message = $"{modifiedGame[0]} was modified."
@@ -62,7 +64,7 @@ namespace GameStoreGRPCServer.Services
         public override Task<GameReply> DeleteGame(DeleteGameRequest request, ServerCallContext context)
         {
             var gameToDelete = request.Id;
-            var response = _gamesLogic.Delete(Int32.Parse(gameToDelete.ToString()));
+            var response = _gamesLogic.Delete(Int32.Parse(gameToDelete.ToString()),AdminUserName);
             return Task.FromResult(new GameReply()
             {
                 Message = response

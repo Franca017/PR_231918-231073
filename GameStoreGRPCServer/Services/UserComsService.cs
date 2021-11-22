@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Threading.Tasks;
 using Grpc.Core;
 using LogicInterface;
@@ -9,6 +10,7 @@ namespace GameStoreGRPCServer.Services
     public class UserComsService : UserComs.UserComsBase
     {
         private readonly IUserLogic _userLogic;
+        private const string AdminUserName = "ADMIN-USER";
         public UserComsService(IUserLogic userLogic)
         {
             _userLogic = userLogic;
@@ -20,9 +22,9 @@ namespace GameStoreGRPCServer.Services
             var usersOut = new List<UserOut>();
             foreach (var user in users)
             {
-                UserOut userAdd = new UserOut()
+                var userAdd = new UserOut()
                 {
-                    DateCreated = user.DateCreated.ToString(),
+                    DateCreated = user.DateCreated.ToString(CultureInfo.InvariantCulture),
                     Id = user.Id,
                     Name = user.UserName
                 };
@@ -66,7 +68,7 @@ namespace GameStoreGRPCServer.Services
         public override async Task<UserReply> PurchaseGame(AssociateGameRequest request, ServerCallContext context)
         {
             var user = _userLogic.GetById(request.UserId);
-            var purchase = _userLogic.PurchaseGame(user, request.GameId);
+            var purchase = _userLogic.PurchaseGame(user, request.GameId,AdminUserName);
             return await Task.FromResult(new UserReply()
             {
                 Message = purchase

@@ -22,6 +22,7 @@ namespace Factory
             _services.AddSingleton<IGamesLogic, GamesLogic>();
             _services.AddSingleton<IUserLogic, UserLogic>();
             _services.AddSingleton<IReviewLogic, ReviewLogic>();
+            _services.AddSingleton<ILogBuilderLogic, LogBuilderLogic>();
 
             _services.AddSingleton<IGameRepository, GameRepository>();
             _services.AddSingleton<IUserRepository, UserRepository>();
