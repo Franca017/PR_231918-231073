@@ -24,7 +24,7 @@ namespace GameStoreGRPCServer.Services
             var gamesOut = new List<GameOut>();
             foreach (var game in games)
             {
-                GameOut gameAdd = new GameOut()
+                var gameAdd = new GameOut()
                 {
                     Id = game.Id,
                     Name = game.Title,

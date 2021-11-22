@@ -20,7 +20,6 @@ namespace GameStoreAdminServer.Controllers
         [HttpGet]
         public async Task<string> GetGames()
         {
-            //return "HolaMundo";
             var reply = await _client.GetGamesAsync(
                 new RequestGames());
             return reply.GamesList.ToString();

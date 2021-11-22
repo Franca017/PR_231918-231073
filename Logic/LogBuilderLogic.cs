@@ -43,7 +43,7 @@ namespace Logic
             return returnVal;
         }
 
-        public async void BuildLog(Game game, string user, string action, string message)
+        public void BuildLog(Game game, string user, string action, string message)
         {
             var newLog = new Log(game.Id, game.Title , user, DateTime.Now, action, message);
             SendLog(newLog);
