@@ -2,7 +2,6 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Domain;
 using GameStoreLogs.Model;
-using Microsoft.AspNetCore.Mvc;
 
 namespace GameStoreLogs.LogLogic
 {

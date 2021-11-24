@@ -49,10 +49,10 @@ namespace GameStoreGRPCServer.Services
         
         public override Task<UserReply> ModifyUser(ModifyUserRequest request, ServerCallContext context)
         {
-            var userModified = _userLogic.Modify(request.Id, request.Name);
+            var response = _userLogic.Modify(request.Id, request.Name);
             return Task.FromResult(new UserReply()
             {
-                Message = $"{request.Name} was modified to {userModified.UserName}."
+                Message = response
             });
         }
         

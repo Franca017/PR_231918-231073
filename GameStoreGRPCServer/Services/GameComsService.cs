@@ -54,10 +54,10 @@ namespace GameStoreGRPCServer.Services
         public override Task<GameReply> ModifyGame(ModifyGameRequest request, ServerCallContext context)
         {
             string[] modifiedGame = {request.Id.ToString(), request.Name, request.Genre, request.Sinopsis};
-            _gamesLogic.Modify(modifiedGame,AdminUserName);
+            var response = _gamesLogic.Modify(modifiedGame,AdminUserName);
             return Task.FromResult(new GameReply()
             {
-                Message = $"{modifiedGame[0]} was modified."
+                Message = response
             });
         }
         

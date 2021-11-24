@@ -16,7 +16,6 @@ namespace GameStoreAdminServer.Controllers
             _client = new GameComs.GameComsClient(channel);
         } 
         
-        // GET: api/games
         [HttpGet]
         public async Task<string> GetGames()
         {

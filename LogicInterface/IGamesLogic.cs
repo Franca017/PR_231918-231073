@@ -12,7 +12,7 @@ namespace LogicInterface
         List<Game> GetSearchedGames(string keywords);
         string Delete(int gameId, string userLoggedUserName);
         List<Game> GetPublishedGames(User userLogged);
-        void Modify(string[] modifySplit, string userLoggedUserName);
+        string Modify(string[] modifySplit, string userLoggedUserName);
         void AdjustRating(int gameId, int newRating, string userLoggedUserName);
         List<Game> GetGamesOverRating(int minRating);
         void ModifyImage(string[] modifySplit, string userLoggedUserName);

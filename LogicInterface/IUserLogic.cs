@@ -12,7 +12,7 @@ namespace LogicInterface
         string SellGame(User user, int requestGameId);
         List<Game> GetPurchasedGames(int userLoggedId);
         User Add(User newUser);
-        User Modify(int requestId, string requestName);
+        string Modify(int requestId, string requestName);
         string Delete(int requestId);
     }
 }

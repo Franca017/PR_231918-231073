@@ -69,11 +69,15 @@ namespace Logic
         {
             return _userRepository.Add(newUser);
         }
-        public User Modify(int requestId, string requestName)
+        public string Modify(int requestId, string requestName)
         {
             var userToModify = _userRepository.GetById(requestId);
+            if (userToModify == null)
+            {
+                return $"No user was found with id {requestId}";
+            }
             userToModify.UserName = requestName;
-            return userToModify;
+            return $"User with id {requestId} was modified to {userToModify.UserName}.";
         }
 
         public string Delete(int requestId)
@@ -81,7 +85,7 @@ namespace Logic
             var user = GetById(requestId);
             if (user == null)
             {
-                return "El usuario ingresado no existe en el sistema";
+                return $"No game was found with id {requestId}";
             }
 
             _userRepository.Delete(requestId);
@@ -99,6 +103,7 @@ namespace Logic
             if (userLogged.PurchasedGames.Contains(game))
             {
                 userLogged.PurchasedGames.Remove(game);
+                _logBuilder.BuildLog(game, userLogged.UserName, "Sell", $"The user {userLogged.UserName} sold the game {game.Title}");
                 return $"Game {gameId} was disassociated from {userLogged.UserName}";
             }
             return $"The game {gameId} is not a game purchased by {userLogged.UserName}";
