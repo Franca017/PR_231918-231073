@@ -14,6 +14,14 @@ namespace Repository
         {
             _users = new List<User>();
         }
+        
+        public List<User> GetAll()
+        {
+            lock (Locker)
+            {
+                return _users;
+            }
+        }
 
         public User GetUser(string user)
         {
@@ -38,7 +46,24 @@ namespace Repository
         {
             lock (Locker)
             {
-                return _users.Find(e => e.Id == userLoggedId).PurchasedGames;
+                return _users.Find(e => e.Id == userLoggedId)?.PurchasedGames;
+            }
+        }
+
+        public User GetById(int userId)
+        {
+            lock (Locker)
+            {
+                return _users.Exists(u => u.Id == userId) ? _users.First(u => u.Id == userId) : null;
+            }
+        }
+
+        public void Delete(int requestId)
+        {
+            lock (Locker)
+            {
+                var user = _users.First(u => u.Id == requestId);
+                _users.Remove(user);
             }
         }
     }

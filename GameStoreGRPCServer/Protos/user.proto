@@ -1,0 +1,52 @@
+syntax = "proto3";
+
+option csharp_namespace = "GameStoreGRPCServer";
+
+package greet;
+
+service UserComs {
+  rpc GetUsers(RequestUsers) returns (UsersReply);
+  rpc AddUser(AddUserRequest) returns (UserReply);
+  rpc ModifyUser(ModifyUserRequest) returns (UserReply);
+  rpc DeleteUser(DeleteUserRequest) returns (UserReply);
+  rpc PurchaseGame(AssociateGameRequest) returns (UserReply);
+  rpc SellGame(AssociateGameRequest) returns (UserReply);
+}
+
+message RequestUsers {
+
+}
+
+message UserOut {
+  int32 id = 1;
+  string name = 2;
+  string dateCreated = 3;
+}
+
+message UsersReply {
+  repeated UserOut usersList = 1;
+}
+
+message AddUserRequest {
+  string name = 1;
+}
+
+message ModifyUserRequest {
+  int32 id = 1;
+  string name = 2;
+}
+
+message DeleteUserRequest {
+  int32 id = 1;
+}
+
+message AssociateGameRequest {
+  int32 userId = 1;
+  int32 gameId = 2;
+}
+
+message UserReply {
+  string message = 1;
+}
+
+

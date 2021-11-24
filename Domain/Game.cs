@@ -19,5 +19,13 @@ namespace Domain
             this.Rating = 0;
             this.Image = path;
         }
+
+        public Game(string title, string genre, string sinopsis)
+        {
+            this.Title = title;
+            this.Genre = genre;
+            this.Sinopsis = sinopsis;
+            this.Rating = 0;
+        }
     }
 }

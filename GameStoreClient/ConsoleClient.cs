@@ -1,5 +1,7 @@
 ﻿
+using System;
 using System.Threading.Tasks;
+using Domain.Exceptions;
 
 namespace GameStoreClient
 {
@@ -9,10 +11,16 @@ namespace GameStoreClient
         {
             var setup = new Setup();
             var runtime = new Runtime();
+            try
+            {
+                var socket = await setup.InitializeSocketServerAsync();
 
-            var socket = await setup.InitializeSocketServerAsync();
-            
-            await runtime.ExecuteAsync(socket);
+                await runtime.ExecuteAsync(socket);
+            }
+            catch (ServerDisconnected s)
+            {
+                Console.WriteLine(s.Message);
+            }
         }
     }
 }
